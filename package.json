@@ -1,6 +1,5 @@
 {
-  "name": "ts-monorepo",
-  "description": "Template for setting up a TypeScript monorepo",
+  "name": "unipass-wallet.js",
   "private": true,
   "workspaces": [
     "packages/*",
