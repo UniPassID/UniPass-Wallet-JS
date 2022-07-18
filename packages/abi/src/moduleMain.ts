@@ -1,4 +1,4 @@
-export const moduleMain = [
+export const abi = [
   {
     inputs: [
       {
