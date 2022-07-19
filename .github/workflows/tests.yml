@@ -3,7 +3,7 @@ name: tests
 on:
   push:
   pull_request:
-    branches: [ $default-branch ]
+    branches: [$default-branch]
 
 jobs:
   tests:
@@ -13,6 +13,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - uses: pnpm/action-setup@v2.2.2
         with:
           version: latest
@@ -21,7 +25,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm i

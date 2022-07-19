@@ -7,11 +7,12 @@
   "scripts": {
     "docs": "doctoc --title '**Table of content**' README.md",
     "clean": "pnpm run -r clean",
-    "build": "pnpm run -r build",
+    "build": "pnpm run hardhat:compile && pnpm run -r build",
     "test": "pnpm run test:concurrently 'sleep 3 && . scripts/parseEnvFile.sh && pnpm run -r test'",
-    "test:concurrently": "pnpm concurrently -k --success first 'pnpm run hardhat:start > /dev/null'",
+    "test:concurrently": "pnpm concurrently -k --success first 'pnpm run hardhat:start > /dev/null' 'pnpm run hardhat:compile'",
     "lint": "eslint --ext js,ts,tsx .",
-    "hardhat:start": "pnpm hardhat node --port 7547"
+    "hardhat:start": "pnpm hardhat node --port 7547",
+    "hardhat:compile": "pnpm hardhat compile"
   },
   "devDependencies": {
     "@nighttrax/eslint-config-tsx": "~10.0.0-beta.0",
