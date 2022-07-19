@@ -1,7 +1,6 @@
 {
   "name": "unipass-wallet",
   "description": "Example of using ts-node in a TS monorepo",
-  "private": true,
   "version": "0.0.1",
   "main": "dist/index",
   "types": "dist/index",
