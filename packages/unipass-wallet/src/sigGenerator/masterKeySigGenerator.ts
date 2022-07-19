@@ -1,5 +1,5 @@
 import { Wallet } from "ethers";
-import { Bytes } from "ethers/lib/utils";
+import { arrayify, Bytes, BytesLike } from "ethers/lib/utils";
 import { DkimParams } from "unipass-wallet-dkim";
 import { RecoveryEmails } from "../recoveryEmails";
 import { BaseSigner, SignType } from "./baseSigner";
@@ -9,12 +9,12 @@ export class MasterKeySigGenerator extends BaseSigner {
     super();
   }
 
-  public ethSign(message: string | Bytes): Promise<string> {
-    return this.masterKey.signMessage(message);
+  public ethSign(message: BytesLike): Promise<string> {
+    return this.masterKey.signMessage(arrayify(message));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
-  public eip712Sign(hash: string | Bytes): Promise<string> {
+  public eip712Sign(hash: BytesLike): Promise<string> {
     throw new Error("Unimplement");
   }
 

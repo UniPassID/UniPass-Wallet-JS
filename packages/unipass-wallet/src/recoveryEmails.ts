@@ -35,7 +35,7 @@ export class RecoveryEmails {
       } else {
         sig = solidityPack(
           ["bytes", "uint8", "bytes32", "bytes"],
-          [sig, GenSigFlag.WithDkimParams, recoveryEmail[0], params.serialize()]
+          [sig, GenSigFlag.WithDkimParams, recoveryEmail, params.serialize()]
         );
         count++;
       }

@@ -1,5 +1,11 @@
 import { Wallet } from "ethers";
-import { Bytes, keccak256, solidityPack } from "ethers/lib/utils";
+import {
+  arrayify,
+  Bytes,
+  BytesLike,
+  keccak256,
+  solidityPack,
+} from "ethers/lib/utils";
 import { MasterKeySigGenerator } from "./masterKeySigGenerator";
 import { RecoveryEmails } from "../recoveryEmails";
 import { BaseSigner, SignType } from "./baseSigner";
@@ -15,19 +21,23 @@ export class SessionKeySigGenerator extends BaseSigner {
     super();
   }
 
-  async init(masterKeySigner: MasterKeySigGenerator, signType: SignType) {
+  async init(
+    masterKeySigner: MasterKeySigGenerator,
+    signType: SignType
+  ): Promise<SessionKeySigGenerator> {
     this.permit = await masterKeySigner.sign(
       this.digestPermitMessage(),
       signType
     );
+    return this;
   }
 
-  public ethSign(hash: string | Bytes): Promise<string> {
-    return this.sessionKey.signMessage(hash);
+  public ethSign(hash: BytesLike): Promise<string> {
+    return this.sessionKey.signMessage(arrayify(hash));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, class-methods-use-this
-  public eip712Sign(hash: string | Bytes): Promise<string> {
+  public eip712Sign(hash: BytesLike): Promise<string> {
     throw new Error(`Unimplement`);
   }
 
@@ -51,6 +61,9 @@ export class SessionKeySigGenerator extends BaseSigner {
     hash: string | Bytes,
     signType: SignType
   ): Promise<string> {
+    if (this.permit === undefined) {
+      throw new Error("Permit is undefined, Please init Permit");
+    }
     let sig = await this.sign(hash, signType);
     sig = solidityPack(
       ["address", "uint256", "bytes", "bytes"],

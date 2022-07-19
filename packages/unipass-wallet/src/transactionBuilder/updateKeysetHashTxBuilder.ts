@@ -92,10 +92,13 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
+    if (this.signature === undefined) {
+      throw new Error("expecting generating signature");
+    }
     return new Transaction(
       CallType.CallAccountLayer,
       constants.Zero,
-      "0x",
+      constants.AddressZero,
       constants.Zero,
       this.signature
     );

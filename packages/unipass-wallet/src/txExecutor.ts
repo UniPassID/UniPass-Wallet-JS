@@ -1,4 +1,4 @@
-import { BigNumber, BytesLike } from "ethers";
+import { BigNumber, BytesLike, Contract } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { DkimParams } from "unipass-wallet-dkim";
 import {
@@ -9,12 +9,15 @@ import {
 import { GenerateSigType, Transaction } from "./transaction";
 
 export class TxExcutor {
+  public signature;
+
   constructor(
     public chainId: number,
     public nonce: number,
     public txs: Transaction[],
     public feeToken: BytesLike,
-    public feeAmount: BigNumber
+    public feeAmount: BigNumber,
+    public feeReceiver: BytesLike
   ) {}
 
   public digestMessage(): string {
@@ -39,24 +42,28 @@ export class TxExcutor {
     );
   }
 
-  public generateSigByMasterKey(
+  public async generateSigByMasterKey(
     masterKeySigGenerator: MasterKeySigGenerator,
     signType: SignType
-  ): string {
-    return solidityPack(
+  ): Promise<TxExcutor> {
+    this.signature = solidityPack(
       ["uint8", "bytes"],
       [
         GenerateSigType.SignByMasterKey,
-        masterKeySigGenerator.generateSignature(this.digestMessage(), signType),
+        await masterKeySigGenerator.generateSignature(
+          this.digestMessage(),
+          signType
+        ),
       ]
     );
+    return this;
   }
 
   public async generateSigBySessionKey(
     sessionKeySigGenerator: SessionKeySigGenerator,
     signType: SignType
-  ): Promise<string> {
-    return solidityPack(
+  ): Promise<TxExcutor> {
+    this.signature = solidityPack(
       ["uint8", "bytes"],
       [
         GenerateSigType.SignBySessionKey,
@@ -66,14 +73,15 @@ export class TxExcutor {
         ),
       ]
     );
+    return this;
   }
 
   public async generateSigByMasterKeyWithDkimParams(
     masterKeySigGenerator: MasterKeySigGenerator,
     signType: SignType,
     dkimParams: Map<string, DkimParams>
-  ): Promise<string> {
-    return solidityPack(
+  ): Promise<TxExcutor> {
+    this.signature = solidityPack(
       ["uint8", "bytes"],
       [
         GenerateSigType.SignBySessionKey,
@@ -84,9 +92,26 @@ export class TxExcutor {
         ),
       ]
     );
+    return this;
   }
 
-  public static generateSigBySigNone(): string {
-    return solidityPack(["uint8"], [GenerateSigType.SignNone]);
+  public generateSigBySigNone(): TxExcutor {
+    this.signature = solidityPack(["uint8"], [GenerateSigType.SignNone]);
+    return this;
+  }
+
+  public async execute(contract: Contract, gasLimit: BigNumber) {
+    if (this.signature === undefined) {
+      throw new Error(`expected generating signature`);
+    }
+    return contract.execute(
+      this.txs,
+      this.nonce,
+      this.feeToken,
+      this.feeReceiver,
+      this.feeAmount,
+      this.signature,
+      { gasLimit }
+    );
   }
 }

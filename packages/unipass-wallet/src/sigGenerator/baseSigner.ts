@@ -1,4 +1,5 @@
 import { Bytes } from "ethers";
+import { BytesLike, solidityPack } from "ethers/lib/utils";
 
 export enum SignType {
   EIP712Sign = 1,
@@ -6,21 +7,25 @@ export enum SignType {
 }
 
 export abstract class BaseSigner {
-  public abstract ethSign(hash: string | Bytes): Promise<string>;
+  public abstract ethSign(hash: BytesLike): Promise<string>;
 
-  public abstract eip712Sign(hash: string | Bytes): Promise<string>;
+  public abstract eip712Sign(hash: BytesLike): Promise<string>;
 
-  public sign(hash: string | Bytes, signType: SignType): Promise<string> {
+  public async sign(hash: string | Bytes, signType: SignType): Promise<string> {
+    let sig;
     switch (signType) {
       case SignType.EIP712Sign: {
-        return this.eip712Sign(hash);
+        sig = await this.eip712Sign(hash);
+        break;
       }
       case SignType.EthSign: {
-        return this.ethSign(hash);
+        sig = await this.ethSign(hash);
+        break;
       }
       default: {
         throw new Error(`Invalid SignType: ${signType}`);
       }
     }
+    return solidityPack(["bytes", "uint8"], [sig, signType]);
   }
 }
