@@ -143,9 +143,7 @@ describe("Test ModuleMain", () => {
       ethers.constants.Zero,
       ethers.constants.AddressZero
     ).generateSigBySessionKey(sessionKeySigGenerator, SignType.EthSign);
-    console.log(
-      await (await provider.getBalance(proxyModuleMain.address)).toBigInt()
-    );
+
     const ret = await (
       await txExecutor.execute(proxyModuleMain, optimalGasLimit)
     ).wait();
