@@ -11,12 +11,11 @@ import { Transaction, CallType, GenerateSigType } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
-  public signature: string;
-
   constructor(
     public userAddr: BytesLike,
     public metaNonce: number,
-    public newKeysetHash: BytesLike
+    public newKeysetHash: BytesLike,
+    public signature: string | undefined = undefined
   ) {
     super();
   }

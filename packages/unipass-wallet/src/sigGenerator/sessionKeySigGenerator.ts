@@ -11,12 +11,11 @@ import { RecoveryEmails } from "../recoveryEmails";
 import { BaseSigner, SignType } from "./baseSigner";
 
 export class SessionKeySigGenerator extends BaseSigner {
-  public permit: string;
-
   constructor(
     public sessionKey: Wallet,
     public expired: number,
-    public recoveryEmails: RecoveryEmails
+    public recoveryEmails: RecoveryEmails,
+    public permit: string | undefined = undefined
   ) {
     super();
   }

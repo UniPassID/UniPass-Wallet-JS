@@ -7,12 +7,11 @@ import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UpdateTimeLockTxBuilder extends BaseTxBuilder {
-  public signature: string;
-
   constructor(
     public userAddr: BytesLike,
     public metaNonce: number,
-    public newDelay: number
+    public newDelay: number,
+    public signature: string | undefined = undefined
   ) {
     super();
   }

@@ -9,15 +9,14 @@ import {
 import { GenerateSigType, Transaction } from "./transaction";
 
 export class TxExcutor {
-  public signature;
-
   constructor(
     public chainId: number,
     public nonce: number,
     public txs: Transaction[],
     public feeToken: BytesLike,
     public feeAmount: BigNumber,
-    public feeReceiver: BytesLike
+    public feeReceiver: BytesLike,
+    public signature: string | undefined = undefined
   ) {}
 
   public digestMessage(): string {
