@@ -9554,7 +9554,7 @@ packages:
     dependencies:
       '@openzeppelin/contracts': 4.7.1
       '@types/node-rsa': 1.1.1
-      dkim: github.com/zzhengzhuo/node-dkim/c5417b76c81d75d2e9854042adcb9ca588c9c615
+      dkim: github.com/zzhengzhuo/node-dkim/80847d6d85b0298664946c5a06320a83fb3daf1b
       mailparser: github.com/zzhengzhuo/mailparser/a9bfccd72ccc89499e313b085c6b81972b785c0f
       node-rsa: 1.1.1
       nodemailer: 6.7.7
@@ -9585,10 +9585,10 @@ packages:
       nodemailer: 6.7.3
       tlds: 1.231.0
 
-  github.com/zzhengzhuo/node-dkim/c5417b76c81d75d2e9854042adcb9ca588c9c615:
-    resolution: {tarball: https://codeload.github.com/zzhengzhuo/node-dkim/tar.gz/c5417b76c81d75d2e9854042adcb9ca588c9c615}
+  github.com/zzhengzhuo/node-dkim/80847d6d85b0298664946c5a06320a83fb3daf1b:
+    resolution: {tarball: https://codeload.github.com/zzhengzhuo/node-dkim/tar.gz/80847d6d85b0298664946c5a06320a83fb3daf1b}
     name: dkim
-    version: 0.7.2
+    version: 0.7.3
     dependencies:
       dkim-key: 1.3.0
       dkim-signature: 1.3.0
