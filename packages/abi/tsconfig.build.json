@@ -3,8 +3,9 @@
 
   "compilerOptions": {
     "types": ["node"],
-    "resolveJsonModule": true,
-    "outDir": "./dist"
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
 
   "include": ["src/**/*"]

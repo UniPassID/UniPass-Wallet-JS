@@ -1,15 +1,17 @@
 {
   "name": "unipass-wallet-dkim",
   "version": "0.0.2",
-  "main": "dist/index",
-  "types": "dist/index",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
+    "compile:esm": " tsc --module es2015 --outDir dist/esm -p tsconfig.build.json",
+    "compile:cjs": " tsc --module commonjs --outDir dist/cjs -p tsconfig.build.json",
     "clean": "rimraf -rf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "compile": "pnpm compile:esm && pnpm compile:cjs",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {

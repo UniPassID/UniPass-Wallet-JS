@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { solidityPack } from "ethers/lib/utils";
+import { utils } from "ethers";
 import * as Dkim from "dkim";
 
 const mailParser = require("mailparser");
@@ -42,15 +42,15 @@ export class DkimParams {
   ) {}
 
   public serialize(): string {
-    let sig = solidityPack(
+    let sig = utils.solidityPack(
       ["uint32", "bytes"],
       [this.emailHeader.length / 2 - 1, this.emailHeader]
     );
-    sig = solidityPack(
+    sig = utils.solidityPack(
       ["bytes", "uint32", "bytes"],
       [sig, this.dkimSig.length / 2 - 1, this.dkimSig]
     );
-    sig = solidityPack(
+    sig = utils.solidityPack(
       ["bytes", "uint32", "uint32", "uint32", "uint32", "uint32"],
       [
         sig,
@@ -61,22 +61,25 @@ export class DkimParams {
         this.subjectRightIndex,
       ]
     );
-    sig = solidityPack(["bytes", "uint32"], [sig, this.isSubBase64.length]);
+    sig = utils.solidityPack(
+      ["bytes", "uint32"],
+      [sig, this.isSubBase64.length]
+    );
     this.isSubBase64.forEach((isBase64) => {
-      sig = solidityPack(["bytes", "uint8"], [sig, isBase64 ? 1 : 0]);
+      sig = utils.solidityPack(["bytes", "uint8"], [sig, isBase64 ? 1 : 0]);
     });
-    sig = solidityPack(
+    sig = utils.solidityPack(
       ["bytes", "uint32", "bytes"],
       [sig, this.subjectPadding.length, this.subjectPadding]
     );
-    sig = solidityPack(["bytes", "uint32"], [sig, this.subject.length]);
+    sig = utils.solidityPack(["bytes", "uint32"], [sig, this.subject.length]);
     this.subject.forEach((subject) => {
-      sig = solidityPack(
+      sig = utils.solidityPack(
         ["bytes", "uint32", "bytes"],
         [sig, subject.length, subject]
       );
     });
-    sig = solidityPack(
+    sig = utils.solidityPack(
       ["bytes", "uint32", "uint32", "uint32", "uint32", "uint32"],
       [
         sig,

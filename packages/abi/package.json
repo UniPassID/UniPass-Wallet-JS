@@ -1,7 +1,8 @@
 {
   "name": "unipass-wallet-abi",
   "version": "0.0.2",
-  "main": "dist/index",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "types": "dist/index",
   "files": [
     "dist"
@@ -9,7 +10,9 @@
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf -rf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "compile:esm": " tsc --module es2015 --outDir dist/esm -p tsconfig.build.json",
+    "compile:cjs": " tsc --module commonjs --outDir dist/cjs -p tsconfig.build.json",
+    "compile": "pnpm run compile:esm && pnpm run compile:cjs",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {

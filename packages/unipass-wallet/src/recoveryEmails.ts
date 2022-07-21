@@ -1,6 +1,6 @@
 import { BytesLike } from "ethers";
 import { solidityPack } from "ethers/lib/utils";
-import { DkimParams, emailHash } from "unipass-wallet-dkim/dist";
+import { DkimParams, emailHash } from "unipass-wallet-dkim";
 
 export enum GenSigFlag {
   WithoutDkimParams = 0,
