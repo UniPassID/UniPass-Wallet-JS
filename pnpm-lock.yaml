@@ -4,8 +4,8 @@ importers:
 
   .:
     specifiers:
-      '@nighttrax/eslint-config-tsx': ~10.0.0-beta.2
-      '@openzeppelin/contracts': ^4.7.1
+      '@nighttrax/eslint-config-tsx': ~10.0.0-beta.0
+      '@openzeppelin/contracts': ^4.7.0
       concurrently: ^7.3.0
       doctoc: ~2.2.0
       eslint: ~8.20.0
@@ -14,7 +14,7 @@ importers:
       hardhat-dependency-compiler: ^1.1.3
       lerna: ^5.1.8
       ts-node: ^10.9.1
-      typescript: ~4.7.4
+      typescript: ~4.7.0
       unipass-wallet-contracts: github:UniPassID/Unipass-Wallet-Contract#v0.0.3
     dependencies:
       concurrently: 7.3.0
@@ -40,7 +40,7 @@ importers:
       rimraf: ~3.0.2
       typescript: ~4.7.0
     dependencies:
-      dkim: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
+      dkim: github.com/zzhengzhuo/node-dkim/80847d6d85b0298664946c5a06320a83fb3daf1b
       ethers: 5.6.9
       mailparser: github.com/zzhengzhuo/mailparser/a9bfccd72ccc89499e313b085c6b81972b785c0f
     devDependencies:
@@ -60,7 +60,7 @@ importers:
       rimraf: ~3.0.2
       ts-jest: ~28.0.0
       typescript: ~4.7.0
-      unipass-wallet-dkim: ^0.0.2
+      unipass-wallet-dkim: ^0.0.3-alpha.2
     dependencies:
       ethers: 5.6.9
       unipass-wallet-dkim: link:../unipass-wallet-dkim
@@ -84,7 +84,7 @@ importers:
       rimraf: ~3.0.2
       typescript: ~4.7.0
     dependencies:
-      dkim: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
+      dkim: github.com/zzhengzhuo/node-dkim/80847d6d85b0298664946c5a06320a83fb3daf1b
       ethers: 5.6.9
       mailparser: github.com/zzhengzhuo/mailparser/a9bfccd72ccc89499e313b085c6b81972b785c0f
     devDependencies:
@@ -9592,13 +9592,3 @@ packages:
     dependencies:
       dkim-key: 1.3.0
       dkim-signature: 1.3.0
-    dev: true
-
-  github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565:
-    resolution: {tarball: https://codeload.github.com/zzhengzhuo/node-dkim/tar.gz/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565}
-    name: dkim
-    version: 0.7.2
-    dependencies:
-      dkim-key: 1.3.0
-      dkim-signature: 1.3.0
-    dev: false
