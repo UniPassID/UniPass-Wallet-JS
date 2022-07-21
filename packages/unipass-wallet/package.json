@@ -1,7 +1,7 @@
 {
   "name": "unipass-wallet",
   "description": "Example of using ts-node in a TS monorepo",
-  "version": "0.0.3-alpha.1",
+  "version": "0.0.3-alpha.2",
   "main": "dist/index",
   "types": "dist/index",
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "ethers": "^5.6.9",
-    "unipass-wallet-dkim": "^0.0.2"
+    "unipass-wallet-dkim": "^0.0.3-alpha.2"
   },
   "devDependencies": {
     "@jest/types": "~28.1.0",
