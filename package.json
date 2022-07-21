@@ -8,8 +8,8 @@
     "docs": "doctoc --title '**Table of content**' README.md",
     "clean": "pnpm run -r clean",
     "build": "pnpm run hardhat:compile && pnpm run -r build",
-    "test": "pnpm run test:concurrently 'sleep 3 && . scripts/parseEnvFile.sh && pnpm run -r test'",
-    "test:concurrently": "pnpm concurrently -k --success first 'pnpm run hardhat:start > /dev/null' 'pnpm run hardhat:compile'",
+    "test": "pnpm run test:concurrently 'pnpm run hardhat:compile && sleep 3 && . scripts/parseEnvFile.sh && pnpm run -r test'",
+    "test:concurrently": "pnpm concurrently -k --success first 'pnpm run hardhat:start > /dev/null'",
     "lint": "eslint --ext js,ts,tsx .",
     "hardhat:start": "pnpm hardhat node --port 7547",
     "hardhat:compile": "pnpm hardhat compile"
@@ -25,7 +25,7 @@
     "lerna": "^5.1.8",
     "ts-node": "^10.9.1",
     "typescript": "~4.7.0",
-    "unipass-wallet-contracts": "github:UniPassID/Unipass-Wallet-Contract"
+    "unipass-wallet-contracts": "github:UniPassID/Unipass-Wallet-Contract#v0.0.3"
   },
   "pnpm": {
     "peerDependencyRules": {
