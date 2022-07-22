@@ -1,6 +1,6 @@
 import { BigNumber, BytesLike, Contract } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
-import { DkimParams } from "unipass-wallet-dkim";
+import { DkimParamsBase } from "unipass-wallet-dkim-base";
 import {
   MasterKeySigGenerator,
   SessionKeySigGenerator,
@@ -78,7 +78,7 @@ export class TxExcutor {
   public async generateSigByMasterKeyWithDkimParams(
     masterKeySigGenerator: MasterKeySigGenerator,
     signType: SignType,
-    dkimParams: Map<string, DkimParams>
+    dkimParams: Map<string, DkimParamsBase>
   ): Promise<TxExcutor> {
     this.signature = solidityPack(
       ["uint8", "bytes"],

@@ -1,2 +1,2 @@
 export * from "./dkimParams";
-export * from "./email";
+export * from "unipass-wallet-dkim-base";

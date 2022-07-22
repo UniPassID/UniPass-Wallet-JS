@@ -6,3 +6,4 @@ results
 artifacts
 cache
 .env
+config.ts
