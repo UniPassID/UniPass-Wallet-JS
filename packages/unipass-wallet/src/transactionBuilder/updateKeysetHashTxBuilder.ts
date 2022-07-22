@@ -1,6 +1,6 @@
 import { BytesLike, constants } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
-import { DkimParams } from "unipass-wallet-dkim";
+import { DkimParamsBase } from "unipass-wallet-dkim-base";
 import { AccountLayerActionType } from ".";
 import {
   MasterKeySigGenerator,
@@ -37,7 +37,7 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
 
   public generateSigByRecoveryEmails(
     sigGenerator: RecoveryEmailsSigGenerator,
-    dkimParams: Map<string, DkimParams>
+    dkimParams: Map<string, DkimParamsBase>
   ): UpdateKeysetHashTxBuilder {
     this.signature = solidityPack(
       ["bytes", "uint8", "bytes"],
@@ -53,7 +53,7 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
   public generateSigByMasterKeyWithDkimParams(
     sigGenerator: MasterKeySigGenerator,
     signType: SignType,
-    dkimParams: Map<string, DkimParams>
+    dkimParams: Map<string, DkimParamsBase>
   ): UpdateKeysetHashTxBuilder {
     this.signature = solidityPack(
       ["bytes", "uint8", "bytes"],

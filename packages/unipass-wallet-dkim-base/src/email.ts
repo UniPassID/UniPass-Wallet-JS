@@ -5,29 +5,48 @@ const MAX_EMAIL_LEN = 100;
 const FR_EMAIL_LEN = Math.floor(MAX_EMAIL_LEN / 31) + 1;
 const MIN_EMAIL_LEN = 6;
 
-export function emailHash(address: string): string {
-  const emailAddress = updateEmail(address);
-  if (!emailAddress) {
-    throw new Error("Invalid Address");
+export function emailHash(inputEmailAddress: string): string {
+  if (!inputEmailAddress) {
+    throw new Error("Email Address is None");
+  }
+  let emailAddress = inputEmailAddress.toLowerCase();
+  const split = emailAddress.split("@", 2);
+
+  if (
+    split[1] === "gmail.com" ||
+    split[1] === "googlemail.com" ||
+    split[1] === "protonmail.com" ||
+    split[1] === "ptoton.me" ||
+    split[1] === "pm.me"
+  ) {
+    emailAddress = Buffer.concat([
+      Buffer.from(split[0].replace(".", "")),
+      Buffer.from("@"),
+      Buffer.from(split[1]),
+    ]).toString("utf8");
   }
 
-  const split = emailAddress.split("@", 2);
-  let buf = Buffer.concat([
-    Buffer.from(split[0]),
-    Buffer.from("@"),
-    Buffer.from(split[1]),
-  ]);
+  return pureEmailHash(emailAddress);
+}
+
+export function pureEmailHash(emailAddress: string): string {
+  if (!emailAddress) {
+    throw new Error("Email Address is None");
+  }
+
+  let buf = Buffer.from(emailAddress, "utf-8");
   let i;
-  const len = split[0].length + 1 + split[1].length;
+  const len = buf.length;
   for (i = 0; i < FR_EMAIL_LEN * 31 - len; ++i) {
     buf = Buffer.concat([buf, new Uint8Array([0])]);
   }
   const hash = createHash("sha256").update(buf).digest();
   const hashRev = hash.reverse();
   hashRev[31] &= 0x1f;
-  return `0x${hashRev.toString("hex")}`;
+  return `0x${Buffer.from(hashRev).toString("hex")}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function updateEmail(address: string): string {
   if (!address) {
     return "";

@@ -1,5 +1,5 @@
 import { BytesLike } from "ethers";
-import { DkimParams } from "unipass-wallet-dkim";
+import { DkimParamsBase } from "unipass-wallet-dkim-base";
 import { RecoveryEmails } from "../recoveryEmails";
 
 export class RecoveryEmailsSigGenerator {
@@ -8,7 +8,7 @@ export class RecoveryEmailsSigGenerator {
     public recoveryEmails: RecoveryEmails
   ) {}
 
-  public generateSignature(dkimParams: Map<string, DkimParams>): string {
+  public generateSignature(dkimParams: Map<string, DkimParamsBase>): string {
     return this.recoveryEmails.generateSignature(
       this.masterKeyAddr,
       dkimParams

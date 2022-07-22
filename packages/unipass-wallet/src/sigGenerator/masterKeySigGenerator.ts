@@ -1,6 +1,6 @@
 import { Wallet } from "ethers";
 import { arrayify, Bytes, BytesLike } from "ethers/lib/utils";
-import { DkimParams } from "unipass-wallet-dkim";
+import { DkimParamsBase } from "unipass-wallet-dkim-base";
 import { RecoveryEmails } from "../recoveryEmails";
 import { BaseSigner, SignType } from "./baseSigner";
 
@@ -29,7 +29,7 @@ export class MasterKeySigGenerator extends BaseSigner {
   public async generateSignatureWithDkimParams(
     message: string | Bytes,
     signType: SignType,
-    dkimParams: Map<string, DkimParams>
+    dkimParams: Map<string, DkimParamsBase>
   ): Promise<string> {
     const sig = await this.sign(message, signType);
     return this.recoveryEmails.generateSignature(sig, dkimParams);

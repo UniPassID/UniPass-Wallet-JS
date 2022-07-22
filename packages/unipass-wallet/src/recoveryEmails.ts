@@ -1,6 +1,6 @@
 import { BytesLike } from "ethers";
 import { solidityPack } from "ethers/lib/utils";
-import { DkimParams, emailHash } from "unipass-wallet-dkim";
+import { DkimParamsBase, pureEmailHash } from "unipass-wallet-dkim-base";
 
 export enum GenSigFlag {
   WithoutDkimParams = 0,
@@ -13,14 +13,17 @@ export class RecoveryEmails {
   public serializeWithSignature(signature: BytesLike): string {
     let sig = solidityPack(["bytes", "uint16"], [signature, this.threshold]);
     this.recoveryEmails.forEach((recoveryEmail) => {
-      sig = solidityPack(["bytes", "bytes32"], [sig, emailHash(recoveryEmail)]);
+      sig = solidityPack(
+        ["bytes", "bytes32"],
+        [sig, pureEmailHash(recoveryEmail)]
+      );
     });
     return sig;
   }
 
   public generateSignature(
     input: BytesLike,
-    dkimParams: Map<string, DkimParams>
+    dkimParams: Map<string, DkimParamsBase>
   ): string {
     let sig = solidityPack(["bytes", "uint16"], [input, this.threshold]);
 
@@ -29,13 +32,24 @@ export class RecoveryEmails {
       const params = dkimParams.get(recoveryEmail);
       if (params === undefined) {
         sig = solidityPack(
-          ["bytes", "uint8", "bytes32"],
-          [sig, GenSigFlag.WithoutDkimParams, emailHash(recoveryEmail)]
+          ["bytes", "uint8", "uint8", "bytes"],
+          [
+            sig,
+            GenSigFlag.WithoutDkimParams,
+            recoveryEmail.length,
+            Buffer.from(recoveryEmail),
+          ]
         );
       } else {
         sig = solidityPack(
-          ["bytes", "uint8", "bytes32", "bytes"],
-          [sig, GenSigFlag.WithDkimParams, recoveryEmail, params.serialize()]
+          ["bytes", "uint8", "uint8", "bytes", "bytes"],
+          [
+            sig,
+            GenSigFlag.WithDkimParams,
+            recoveryEmail.length,
+            Buffer.from(recoveryEmail),
+            params.serialize(),
+          ]
         );
         count++;
       }

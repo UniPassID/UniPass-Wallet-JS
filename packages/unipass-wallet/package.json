@@ -6,14 +6,14 @@
   "types": "dist/index",
   "scripts": {
     "build": "pnpm run clean && pnpm run compile",
-    "test": "jest --testTimeout 30000",
+    "test": "jest --testTimeout 60000",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "ethers": "^5.6.9",
-    "unipass-wallet-dkim": "^0.0.3-alpha.3"
+    "unipass-wallet-dkim-base": "^0.0.3-alpha.3"
   },
   "devDependencies": {
     "@jest/types": "~28.1.0",
@@ -24,6 +24,9 @@
     "jest": "~28.1.0",
     "rimraf": "~3.0.2",
     "ts-jest": "~28.0.0",
+    "@types/nodemailer": "^6.4.4",
+    "unipass-wallet-dkim": "^0.0.3-alpha.3",
+    "nodemailer": "^6.7.2",
     "typescript": "~4.7.0"
   }
 }
