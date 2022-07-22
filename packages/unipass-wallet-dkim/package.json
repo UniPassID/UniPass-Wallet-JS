@@ -1,6 +1,6 @@
 {
   "name": "unipass-wallet-dkim",
-  "version": "0.0.3-alpha.3",
+  "version": "0.0.3",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -15,8 +15,8 @@
   "dependencies": {
     "dkim": "github:zzhengzhuo/node-dkim#next",
     "ethers": "^5.6.9",
-    "unipass-wallet-dkim-base": "^0.0.3-alpha.3",
-    "mailparser": "github:zzhengzhuo/mailparser"
+    "mailparser": "github:zzhengzhuo/mailparser",
+    "unipass-wallet-dkim-base": "^0.0.3"
   },
   "devDependencies": {
     "@types/node": "^18.0.5",
