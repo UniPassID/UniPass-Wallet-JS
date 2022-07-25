@@ -65,3 +65,7 @@ const ret = await (
   await txExecutor.execute(proxyModuleMain, optimalGasLimit)
 ).wait();
 ```
+
+## Notice
+
+- lerna verstion has to be 0.0.4

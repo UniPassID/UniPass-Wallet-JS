@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 import {
   getCreate2Address,
   keccak256,
@@ -8,7 +7,7 @@ import {
 import { DkimParams, pureEmailHash } from "unipass-wallet-dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
-import { UnipassPrivateKey } from "../../../../config";
+import { BigNumber, ethers, Wallet } from "ethers";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
 
@@ -16,7 +15,7 @@ export function generateRecoveryEmails(length: number): string[] {
   return [...Array(length)].map(() => {
     const recoveryEmail = `${Buffer.from(randomBytes(16)).toString(
       "hex"
-    )}@mail.unipass.me`;
+    )}@unipass.com`;
     return recoveryEmail;
   });
 }
@@ -67,7 +66,8 @@ export function getProxyAddress(
 export async function getSignEmailWithDkim(
   subject: string,
   from: string,
-  to: string
+  to: string,
+  unipassPrivateKey: string
 ) {
   const mail = new MailComposer({
     from,
@@ -77,9 +77,9 @@ export async function getSignEmailWithDkim(
   });
 
   const dkim = new DKIM({
-    keySelector: "eth",
-    domainName: "unipass.id",
-    privateKey: UnipassPrivateKey,
+    keySelector: "s2055",
+    domainName: "unipass.com",
+    privateKey: unipassPrivateKey,
   });
   const email = await signEmailWithDkim(mail, dkim);
   return email;
@@ -100,13 +100,19 @@ export async function signEmailWithDkim(mail: MailComposer, dkim: DKIM) {
 export async function generateDkimParams(
   emailFrom: string[],
   subject: string,
-  indexes: number[]
+  indexes: number[],
+  unipassPrivateKey: string
 ): Promise<Map<string, DkimParams>> {
   const ret: Map<string, DkimParams> = new Map();
 
   const emails = await Promise.all(
     indexes.map((i) =>
-      getSignEmailWithDkim(subject, emailFrom[i], "test@unipass.id.com")
+      getSignEmailWithDkim(
+        subject,
+        emailFrom[i],
+        "test@unipass.id.com",
+        unipassPrivateKey
+      )
     )
   );
   const dkims = await Promise.all(
@@ -115,5 +121,15 @@ export async function generateDkimParams(
   indexes.forEach((index, i) => {
     ret.set(emailFrom[index], dkims[i]);
   });
+  return ret;
+}
+
+export async function transferEth(from: Wallet, to: string, amount: BigNumber) {
+  const ret = await (
+    await from.sendTransaction({
+      to,
+      value: amount,
+    })
+  ).wait();
   return ret;
 }

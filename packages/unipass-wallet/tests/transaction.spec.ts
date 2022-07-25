@@ -1,5 +1,7 @@
 import { BigNumber, Contract, ContractFactory, ethers, Wallet } from "ethers";
 import { Interface, randomBytes } from "ethers/lib/utils";
+import NodeRsa from "node-rsa";
+import * as dotenv from "dotenv";
 
 import ModuleMainArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json";
 import FactoryArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/Factory.sol/Factory.json";
@@ -15,6 +17,7 @@ import {
   getKeysetHash,
   getProxyAddress,
   optimalGasLimit,
+  transferEth,
 } from "./utils/common";
 import {
   MasterKeySigGenerator,
@@ -24,7 +27,6 @@ import {
 } from "../src/sigGenerator";
 import { RecoveryEmails } from "../src/recoveryEmails";
 import { TxExcutor } from "../src/txExecutor";
-import { JsonRpcNode } from "../../../config";
 
 describe("Test ModuleMain", () => {
   let moduleMain: Contract;
@@ -41,7 +43,12 @@ describe("Test ModuleMain", () => {
   let chainId: number;
   let TestERC20Token: ContractFactory;
   let testERC20Token: Contract;
+  let JsonRpcNode;
+  let UnipassPrivateKey;
   beforeAll(async () => {
+    dotenv.config({ path: `${__dirname}/../../../.env` });
+    JsonRpcNode = process.env.JSON_RPC_NODE;
+    UnipassPrivateKey = process.env.UNIPASS_PRIVATE_KEY;
     provider = new ethers.providers.JsonRpcProvider(JsonRpcNode);
     chainId = (await provider.getNetwork()).chainId;
     const Factory = new ContractFactory(
@@ -55,8 +62,27 @@ describe("Test ModuleMain", () => {
       DkimKeysArtifact.bytecode,
       provider.getSigner()
     );
-    dkimKeysAdmin = Wallet.createRandom();
+    dkimKeysAdmin = Wallet.createRandom().connect(provider);
     dkimKeys = await DkimKeys.deploy(dkimKeysAdmin.address);
+    const nodeRsa = new NodeRsa(UnipassPrivateKey);
+    const keyServer = ethers.utils.solidityPack(
+      ["bytes", "bytes"],
+      [Buffer.from("s2055"), Buffer.from("unipass.com")]
+    );
+
+    await transferEth(
+      new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
+      dkimKeysAdmin.address,
+      ethers.utils.parseEther("10")
+    );
+    (
+      await dkimKeys
+        .connect(dkimKeysAdmin)
+        .updateDKIMKey(
+          keyServer,
+          nodeRsa.exportKey("components-public").n.subarray(1)
+        )
+    ).wait();
     ModuleMain = new ContractFactory(
       new Interface(ModuleMainArtifact.abi),
       ModuleMainArtifact.bytecode,
@@ -152,7 +178,12 @@ describe("Test ModuleMain", () => {
     const tx = (
       await txBuilder.generateSigByRecoveryEmails(
         recoveryEmailsSigGeneraror,
-        await generateDkimParams(recoveryEmails, subject, [1, 2, 3, 4, 5])
+        await generateDkimParams(
+          recoveryEmails,
+          subject,
+          [1, 2, 3, 4, 5],
+          UnipassPrivateKey
+        )
       )
     ).build();
     const txExecutor = await new TxExcutor(
@@ -210,9 +241,10 @@ describe("Test ModuleMain", () => {
     );
   });
   it("Transfer ETH Should Success", async () => {
+    const to = Wallet.createRandom();
     const tx = new CallTxBuilder(
       ethers.constants.Zero,
-      dkimKeysAdmin.address,
+      to.address,
       ethers.utils.parseEther("10"),
       "0x"
     ).build();
@@ -241,9 +273,7 @@ describe("Test ModuleMain", () => {
     expect(ret.status).toEqual(1);
     expect(
       Number.parseInt(
-        ethers.utils.formatEther(
-          await provider.getBalance(dkimKeysAdmin.address)
-        ),
+        ethers.utils.formatEther(await provider.getBalance(to.address)),
         10
       )
     ).toEqual(10);

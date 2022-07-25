@@ -29,7 +29,7 @@ fs.writeFileSync(
 const moduleMain = JSON.parse(
   fs
     .readFileSync(
-      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/modules/moduleMain.sol/moduleMain.json`
+      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json`
     )
     .toString("utf-8")
 );

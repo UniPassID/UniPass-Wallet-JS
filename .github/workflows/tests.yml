@@ -38,3 +38,7 @@ jobs:
 
       - name: Test
         run: pnpm run test
+        env:
+          UNIPASS_PRIVATE_KEY: ${{secrets.UNIPASS_PRIVATE_KEY}}
+          JSON_RPC_NODE: http://localhost:7547
+          HARDHAT_PRIVATE_KEY: ${{secrets.HARDHAT_PRIVATE_KEY}}
