@@ -29,6 +29,24 @@ export interface IDkimParamsBaseSerMiddler {
 export class DkimParamsBase {
   public emailHeader: Uint8Array;
 
+  /**
+   *
+   * @param _emailHeader The original message For Dkim, UTF8 string or Uint8Array
+   * @param dkimSig The Dkim Signature
+   * @param fromIndex The From Header Index Of emailHeader
+   * @param fromLeftIndex The Start Index Of From Email Address in the From Header
+   * @param fromRightIndex The End Index Of From Email Address in the From Header
+   * @param subjectIndex The Start Index Of Subject Header
+   * @param subjectRightIndex The End Index Of Suject Header
+   * @param subject The subject parts
+   * @param subjectPadding The subject prefix padding
+   * @param isSubBase64 Is base64 encoded for subject parts
+   * @param dkimHeaderIndex The start Index of Dkim Header
+   * @param sdidIndex The Start Index Of Sdid
+   * @param sdidRightIndex The End Index Of Sdid
+   * @param selectorIndex The Start Index Of Selector
+   * @param selectorRightIndex The End Index Of Selector
+   */
   constructor(
     _emailHeader: string | Uint8Array,
     public dkimSig: Uint8Array,
@@ -53,6 +71,10 @@ export class DkimParamsBase {
     }
   }
 
+  /**
+   * @desc Serialize For Signature Generator
+   * @returns Serialized Bytes
+   */
   public serialize(): string {
     let sig = solidityPack(
       ["uint32", "bytes"],

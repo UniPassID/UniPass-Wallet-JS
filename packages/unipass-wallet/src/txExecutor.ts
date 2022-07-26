@@ -29,6 +29,10 @@ export class TxExcutor {
     public signature: string | undefined = undefined
   ) {}
 
+  /**
+   *
+   * @returns The Original Message For Signing
+   */
   public digestMessage(): string {
     return keccak256(
       solidityPack(

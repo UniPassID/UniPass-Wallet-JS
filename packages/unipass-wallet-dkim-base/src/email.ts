@@ -29,6 +29,11 @@ export function emailHash(inputEmailAddress: string): string {
   return pureEmailHash(emailAddress);
 }
 
+/**
+ *
+ * @param emailAddress The Email Address
+ * @returns ZK Hash For Email Address
+ */
 export function pureEmailHash(emailAddress: string): string {
   if (!emailAddress) {
     throw new Error("Email Address is None");

@@ -77,6 +77,10 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
     return this;
   }
 
+  /**
+   *
+   * @returns The Original Message For Signing
+   */
   public digestMessage(): string {
     return keccak256(
       solidityPack(

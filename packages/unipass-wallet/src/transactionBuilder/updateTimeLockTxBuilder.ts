@@ -16,6 +16,10 @@ export class UpdateTimeLockTxBuilder extends BaseTxBuilder {
     super();
   }
 
+  /**
+   *
+   * @returns The Original Message For Signing
+   */
   public digestMessage(): string {
     return keccak256(
       solidityPack(
