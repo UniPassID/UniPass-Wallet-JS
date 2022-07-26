@@ -10,7 +10,6 @@
     "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "preversion": "pnpm i",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
