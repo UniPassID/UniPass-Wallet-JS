@@ -1,4 +1,4 @@
-import { BigNumber, BytesLike, Contract } from "ethers";
+import { BigNumber, BytesLike, Contract, Overrides } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { DkimParamsBase } from "unipass-wallet-dkim-base";
 import {
@@ -9,6 +9,16 @@ import {
 import { GenerateSigType, Transaction } from "./transaction";
 
 export class TxExcutor {
+  /**
+   *
+   * @param chainId The Chain ID Of Blockchain
+   * @param nonce The Nonce of Transaction
+   * @param txs  Transactions To executed
+   * @param feeToken Token Address For Fee
+   * @param feeAmount Fee Amount
+   * @param feeReceiver The Address of fee receiver
+   * @param signature Signature From U
+   */
   constructor(
     public chainId: number,
     public nonce: number,
@@ -99,7 +109,13 @@ export class TxExcutor {
     return this;
   }
 
-  public async execute(contract: Contract, gasLimit: BigNumber) {
+  /**
+   *
+   * @param contract The Contract Of Proxy ModuleMain
+   * @param executeOpt Transaction Options
+   * @returns Eth Transaction Info
+   */
+  public async execute(contract: Contract, executeOpt: Overrides | undefined) {
     if (this.signature === undefined) {
       throw new Error(`expected generating signature`);
     }
@@ -110,7 +126,7 @@ export class TxExcutor {
       this.feeReceiver,
       this.feeAmount,
       this.signature,
-      { gasLimit }
+      executeOpt
     );
   }
 }

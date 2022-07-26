@@ -156,7 +156,7 @@ describe("Test ModuleMain", () => {
       ethers.constants.AddressZero
     ).generateSigByMasterKey(masterKeySigGenerator, SignType.EthSign);
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, optimalGasLimit)
+      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(
@@ -196,7 +196,7 @@ describe("Test ModuleMain", () => {
       ethers.constants.AddressZero
     ).generateSigBySigNone();
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, optimalGasLimit)
+      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(
@@ -234,7 +234,7 @@ describe("Test ModuleMain", () => {
     ).generateSigBySessionKey(sessionKeySigGenerator, SignType.EthSign);
 
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, optimalGasLimit)
+      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await testERC20Token.balanceOf(dkimKeysAdmin.address)).toEqual(
@@ -269,7 +269,7 @@ describe("Test ModuleMain", () => {
     ).generateSigBySessionKey(sessionKeySigGenerator, SignType.EthSign);
 
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, optimalGasLimit)
+      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(

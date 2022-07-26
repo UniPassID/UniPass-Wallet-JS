@@ -11,6 +11,13 @@ import { Transaction, CallType, GenerateSigType } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
+  /**
+   *
+   * @param userAddr The Address Of User's Smart Contract Address
+   * @param metaNonce The meta nonce of Account Layer
+   * @param newKeysetHash New KeysetHash to Update
+   * @param signature Signature, default undefined
+   */
   constructor(
     public userAddr: BytesLike,
     public metaNonce: number,

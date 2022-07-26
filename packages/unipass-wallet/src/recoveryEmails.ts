@@ -10,8 +10,13 @@ export enum GenSigFlag {
 export class RecoveryEmails {
   constructor(public threshold: number, public recoveryEmails: string[]) {}
 
-  public serializeWithSignature(signature: BytesLike): string {
-    let sig = solidityPack(["bytes", "uint16"], [signature, this.threshold]);
+  /**
+   *
+   * @param signature The prefix bytes of Serialized Bytes
+   * @returns The Serialized Bytes
+   */
+  public serializeWithSignature(prefix: BytesLike): string {
+    let sig = solidityPack(["bytes", "uint16"], [prefix, this.threshold]);
     this.recoveryEmails.forEach((recoveryEmail) => {
       sig = solidityPack(
         ["bytes", "bytes32"],
@@ -21,6 +26,12 @@ export class RecoveryEmails {
     return sig;
   }
 
+  /**
+   *
+   * @param input The prefix bytes of signature.
+   * @param dkimParams The Map of Recovery Email and Dkim Params
+   * @returns signature
+   */
   public generateSignature(
     input: BytesLike,
     dkimParams: Map<string, DkimParamsBase>
