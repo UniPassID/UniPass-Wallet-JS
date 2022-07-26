@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { DkimParamsBase, Signature } from "unipass-wallet-dkim-base";
 import * as Dkim from "dkim";
 

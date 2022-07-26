@@ -1,6 +1,6 @@
 import { BytesLike, constants } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
-import { DkimParams } from "unipass-wallet-dkim";
+import { DkimParamsBase } from "unipass-wallet-dkim-base";
 import { AccountLayerActionType } from ".";
 import { MasterKeySigGenerator, SignType } from "../sigGenerator";
 import { CallType, Transaction } from "../transaction";
@@ -28,7 +28,7 @@ export class UpdateTimeLockTxBuilder extends BaseTxBuilder {
   public generateSigByMasterKeyWithDkimParams(
     sigGenerator: MasterKeySigGenerator,
     signType: SignType,
-    dkimParams: Map<string, DkimParams>
+    dkimParams: Map<string, DkimParamsBase>
   ): UpdateTimeLockTxBuilder {
     this.signature = solidityPack(
       ["bytes", "bytes"],
@@ -52,6 +52,9 @@ export class UpdateTimeLockTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
+    if (this.signature === undefined) {
+      throw new Error("expected signature not undefined");
+    }
     return new Transaction(
       CallType.CallAccountLayer,
       constants.Zero,
