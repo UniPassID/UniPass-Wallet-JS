@@ -17,6 +17,7 @@
   "devDependencies": {
     "@nighttrax/eslint-config-tsx": "~10.0.0-beta.0",
     "@openzeppelin/contracts": "^4.7.0",
+    "@types/node": "^18.0.5",
     "doctoc": "~2.2.0",
     "eslint": "~8.20.0",
     "eslint-plugin-import": "~2.26.0",

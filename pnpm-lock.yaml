@@ -6,6 +6,7 @@ importers:
     specifiers:
       '@nighttrax/eslint-config-tsx': ~10.0.0-beta.0
       '@openzeppelin/contracts': ^4.7.0
+      '@types/node': ^18.0.5
       concurrently: ^7.3.0
       doctoc: ~2.2.0
       eslint: ~8.20.0
@@ -21,13 +22,14 @@ importers:
     devDependencies:
       '@nighttrax/eslint-config-tsx': 10.0.0-beta.2_he2ccbldppg44uulnyq4rwocfa
       '@openzeppelin/contracts': 4.7.1
+      '@types/node': 18.0.6
       doctoc: 2.2.0
       eslint: 8.20.0
       eslint-plugin-import: 2.26.0_eslint@8.20.0
       hardhat: 2.10.1_6oasmw356qmm23djlsjgkwvrtm
       hardhat-dependency-compiler: 1.1.3_hardhat@2.10.1
       lerna: 4.0.0
-      ts-node: 10.9.1_typescript@4.7.4
+      ts-node: 10.9.1_tdn3ypgnfy6bmey2q4hu5jonwi
       typescript: 4.7.4
       unipass-wallet-contracts: github.com/UniPassID/Unipass-Wallet-Contract/3c5038bcb7675f7d46b9203104c71769883c8825
 
@@ -104,15 +106,23 @@ importers:
 
   packages/unipass-wallet-dkim-base:
     specifiers:
+      '@jest/types': ~28.1.0
+      '@types/jest': ~27.5.0
       '@types/node': ^18.0.5
       ethers: ^5.6.9
+      jest: ~28.0.0
       rimraf: ~3.0.2
+      ts-jest: ~28.0.0
       typescript: ~4.7.0
     dependencies:
       ethers: 5.6.9
     devDependencies:
+      '@jest/types': 28.1.3
+      '@types/jest': 27.5.2
       '@types/node': 18.0.6
+      jest: 28.0.3_@types+node@18.0.6
       rimraf: 3.0.2
+      ts-jest: 28.0.7_xed4xoypqwqyivasxqbnzaeaxm
       typescript: 4.7.4
 
 packages:
@@ -5089,7 +5099,7 @@ packages:
       source-map-support: 0.5.21
       stacktrace-parser: 0.1.10
       true-case-path: 2.2.1
-      ts-node: 10.9.1_typescript@4.7.4
+      ts-node: 10.9.1_tdn3ypgnfy6bmey2q4hu5jonwi
       tsort: 0.0.1
       typescript: 4.7.4
       undici: 5.8.0
@@ -6161,6 +6171,25 @@ packages:
       '@types/node': 18.0.6
       merge-stream: 2.0.0
       supports-color: 8.1.1
+    dev: true
+
+  /jest/28.0.3_@types+node@18.0.6:
+    resolution: {integrity: sha512-uS+T5J3w5xyzd1KSJCGKhCo8WTJXbNl86f5SW11wgssbandJOVLRKKUxmhdFfmKxhPeksl1hHZ0HaA8VBzp7xA==}
+    engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+    hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/core': 28.1.3
+      import-local: 3.1.0
+      jest-cli: 28.1.3_@types+node@18.0.6
+    transitivePeerDependencies:
+      - '@types/node'
+      - supports-color
+      - ts-node
     dev: true
 
   /jest/28.1.3_@types+node@18.0.6:
@@ -9019,7 +9048,41 @@ packages:
       yargs-parser: 21.0.1
     dev: true
 
-  /ts-node/10.9.1_typescript@4.7.4:
+  /ts-jest/28.0.7_xed4xoypqwqyivasxqbnzaeaxm:
+    resolution: {integrity: sha512-wWXCSmTwBVmdvWrOpYhal79bDpioDy4rTT+0vyUnE3ZzM7LOAAGG9NXwzkEL/a516rQEgnMmS/WKP9jBPCVJyA==}
+    engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
+    hasBin: true
+    peerDependencies:
+      '@babel/core': '>=7.0.0-beta.0 <8'
+      '@jest/types': ^28.0.0
+      babel-jest: ^28.0.0
+      esbuild: '*'
+      jest: ^28.0.0
+      typescript: '>=4.3'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@jest/types':
+        optional: true
+      babel-jest:
+        optional: true
+      esbuild:
+        optional: true
+    dependencies:
+      '@jest/types': 28.1.3
+      bs-logger: 0.2.6
+      fast-json-stable-stringify: 2.1.0
+      jest: 28.0.3_@types+node@18.0.6
+      jest-util: 28.1.3
+      json5: 2.2.1
+      lodash.memoize: 4.1.2
+      make-error: 1.3.6
+      semver: 7.3.7
+      typescript: 4.7.4
+      yargs-parser: 21.0.1
+    dev: true
+
+  /ts-node/10.9.1_tdn3ypgnfy6bmey2q4hu5jonwi:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -9038,6 +9101,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
+      '@types/node': 18.0.6
       acorn: 8.8.0
       acorn-walk: 8.2.0
       arg: 4.1.3

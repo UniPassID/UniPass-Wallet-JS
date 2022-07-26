@@ -8,11 +8,29 @@ export interface Signature {
   selector: string;
 }
 
+export interface IDkimParamsBaseSerMiddler {
+  emailHeader: string;
+  dkimSig: string;
+  fromIndex: number;
+  fromLeftIndex: number;
+  fromRightIndex: number;
+  subjectIndex: number;
+  subjectRightIndex: number;
+  subject: string[];
+  subjectPadding: string;
+  isSubBase64: boolean[];
+  dkimHeaderIndex: number;
+  sdidIndex: number;
+  sdidRightIndex: number;
+  selectorIndex: number;
+  selectorRightIndex: number;
+}
+
 export class DkimParamsBase {
   public emailHeader: Uint8Array;
 
   constructor(
-    _emailHeader: string,
+    _emailHeader: string | Uint8Array,
     public dkimSig: Uint8Array,
     public fromIndex: number,
     public fromLeftIndex: number,
@@ -28,7 +46,11 @@ export class DkimParamsBase {
     public selectorIndex: number,
     public selectorRightIndex: number
   ) {
-    this.emailHeader = Buffer.from(_emailHeader, "utf-8");
+    if (typeof _emailHeader === "string") {
+      this.emailHeader = Buffer.from(_emailHeader, "utf-8");
+    } else {
+      this.emailHeader = _emailHeader;
+    }
   }
 
   public serialize(): string {
@@ -78,6 +100,58 @@ export class DkimParamsBase {
       ]
     );
     return sig;
+  }
+
+  public toDkimParamsBaseSerMiddler(): IDkimParamsBaseSerMiddler {
+    return {
+      emailHeader: Buffer.from(this.emailHeader).toString("base64"),
+      dkimSig: Buffer.from(this.dkimSig).toString("base64"),
+      fromIndex: this.fromIndex,
+      fromLeftIndex: this.fromLeftIndex,
+      fromRightIndex: this.fromRightIndex,
+      subjectIndex: this.subjectIndex,
+      subjectRightIndex: this.subjectRightIndex,
+      subject: this.subject.map((v) => Buffer.from(v).toString("base64")),
+      subjectPadding: Buffer.from(this.subjectPadding).toString("base64"),
+      isSubBase64: this.isSubBase64,
+      dkimHeaderIndex: this.dkimHeaderIndex,
+      sdidIndex: this.sdidIndex,
+      sdidRightIndex: this.sdidRightIndex,
+      selectorIndex: this.selectorIndex,
+      selectorRightIndex: this.selectorRightIndex,
+    };
+  }
+
+  public toString(): string {
+    return JSON.stringify(this.toDkimParamsBaseSerMiddler());
+  }
+
+  public static fromDkimParamsBaseSerMiddler(
+    input: IDkimParamsBaseSerMiddler
+  ): DkimParamsBase {
+    return new DkimParamsBase(
+      Buffer.from(input.emailHeader, "base64"),
+      Buffer.from(input.dkimSig, "base64"),
+      input.fromIndex,
+      input.fromLeftIndex,
+      input.fromRightIndex,
+      input.subjectIndex,
+      input.subjectRightIndex,
+      input.subject.map((v) => Buffer.from(v, "base64")),
+      Buffer.from(input.subjectPadding, "base64"),
+      input.isSubBase64,
+      input.dkimHeaderIndex,
+      input.sdidIndex,
+      input.sdidRightIndex,
+      input.selectorIndex,
+      input.selectorRightIndex
+    );
+  }
+
+  public static fromString(input: string): DkimParamsBase {
+    const iDkimParamsBaseSerMiddler: IDkimParamsBaseSerMiddler =
+      JSON.parse(input);
+    return this.fromDkimParamsBaseSerMiddler(iDkimParamsBaseSerMiddler);
   }
 
   static dealSubPart(
