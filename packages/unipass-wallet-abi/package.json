@@ -11,6 +11,7 @@
     "prebuild": "ts-node ./build.ts",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
+    "preversion": "pnpm i",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
