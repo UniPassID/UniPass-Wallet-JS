@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import { Contract } from "ethers";
 import { solidityPack } from "ethers/lib/utils";
 
 export interface Signature {
@@ -8,8 +9,10 @@ export interface Signature {
 }
 
 export class DkimParamsBase {
+  public emailHeader: Uint8Array;
+
   constructor(
-    public emailHeader: string,
+    _emailHeader: string,
     public dkimSig: Uint8Array,
     public fromIndex: number,
     public fromLeftIndex: number,
@@ -24,7 +27,9 @@ export class DkimParamsBase {
     public sdidRightIndex: number,
     public selectorIndex: number,
     public selectorRightIndex: number
-  ) {}
+  ) {
+    this.emailHeader = Buffer.from(_emailHeader, "utf-8");
+  }
 
   public serialize(): string {
     let sig = solidityPack(
@@ -146,5 +151,9 @@ export class DkimParamsBase {
       ret.subsAllLen += len;
       ret.subIsBase64.push(false);
     }
+  }
+
+  public async dkimVerify(contract: Contract, oriEmailFrom: string) {
+    return contract.dkimVerify(this, Buffer.from(oriEmailFrom));
   }
 }

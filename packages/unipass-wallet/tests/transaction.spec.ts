@@ -27,6 +27,7 @@ import {
 } from "../src/sigGenerator";
 import { RecoveryEmails } from "../src/recoveryEmails";
 import { TxExcutor } from "../src/txExecutor";
+import { pureEmailHash } from "unipass-wallet-dkim-base";
 
 describe("Test ModuleMain", () => {
   let moduleMain: Contract;
@@ -277,5 +278,20 @@ describe("Test ModuleMain", () => {
         10
       )
     ).toEqual(10);
+  });
+  it("Dkim Verify Should Success", async function () {
+    const subject = ethers.constants.HashZero;
+    const emails = await generateDkimParams(
+      recoveryEmails,
+      subject,
+      [1, 2, 3, 4, 5],
+      UnipassPrivateKey
+    );
+    const ret = await emails
+      .get(recoveryEmails[1])
+      .dkimVerify(proxyModuleMain, recoveryEmails[1]);
+    expect(ret[0]).toBe(true);
+    expect(ret[1]).toBe(pureEmailHash(recoveryEmails[1]));
+    expect(ret[2]).toBe(`0x${Buffer.from(subject).toString("hex")}`);
   });
 });
