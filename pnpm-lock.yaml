@@ -48,8 +48,8 @@ importers:
       rimraf: ~3.0.2
       ts-jest: ~28.0.0
       typescript: ~4.7.0
-      unipass-wallet-dkim: ^0.0.8
-      unipass-wallet-dkim-base: ^0.0.8
+      unipass-wallet-dkim: ^0.0.9
+      unipass-wallet-dkim-base: ^0.0.9
     dependencies:
       '@ethereumjs/tx': 3.5.2
       ethers: 5.6.9
@@ -93,7 +93,7 @@ importers:
       mailparser: github:zzhengzhuo/mailparser
       rimraf: ~3.0.2
       typescript: ~4.7.0
-      unipass-wallet-dkim-base: ^0.0.8
+      unipass-wallet-dkim-base: ^0.0.9
     dependencies:
       dkim: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
       ethers: 5.6.9
