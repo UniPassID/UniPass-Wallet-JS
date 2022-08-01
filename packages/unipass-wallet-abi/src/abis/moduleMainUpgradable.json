@@ -3,16 +3,6 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_factory",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_moduleMainUpgradable",
-          "type": "address"
-        },
-        {
           "internalType": "contract IDkimKeys",
           "name": "_dkimKeys",
           "type": "address"
@@ -317,51 +307,12 @@
     },
     {
       "inputs": [],
-      "name": "FACTORY",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "INIT_CODE_HASH",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "INIT_LOCK_DURING",
       "outputs": [
         {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MODULE_MAIN_UPGRADABLE",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
         }
       ],
       "stateMutability": "view",
