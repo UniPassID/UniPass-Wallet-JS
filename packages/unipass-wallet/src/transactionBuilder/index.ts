@@ -1,9 +1,15 @@
 export enum AccountLayerActionType {
   UpdateKeysetHash = 0,
-  UpdateTimeLock = 1,
+  UnlockKeysetHash = 1,
+  CancelLockKeysetHash = 2,
+  UpdateTimeLockDuring = 3,
+  UpdateImplementation = 4,
 }
 
 export * from "./updateKeysetHashTxBuilder";
-export * from "./updateTimeLockTxBuilder";
+export * from "./updateTimeLockDuringTxBuilder";
+export * from "./cancelLockKeysetHsahTxBuilder";
+export * from "./unlockKeysetHashTxBuilder";
+export * from "./updateImplementationTxBuilder";
 export * from "./callTxBuilder";
 export * from "./baseTxBuilder";

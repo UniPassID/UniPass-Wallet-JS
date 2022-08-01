@@ -13,17 +13,17 @@ fs.writeFileSync(
   JSON.stringify({ abi: erc20.abi }, null, 2)
 );
 
-const factory = JSON.parse(
+const moduleMainUpgradable = JSON.parse(
   fs
     .readFileSync(
-      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/Factory.sol/Factory.json`
+      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMainUpgradable.sol/ModuleMainUpgradable.json`
     )
     .toString("utf-8")
 );
 
 fs.writeFileSync(
-  "./src/abis/factory.json",
-  JSON.stringify({ abi: factory.abi }, null, 2)
+  "./src/abis/moduleMainUpgradable.json",
+  JSON.stringify({ abi: moduleMainUpgradable.abi }, null, 2)
 );
 
 const moduleMain = JSON.parse(
