@@ -11,11 +11,44 @@ npm i unipass-wallet
 ```text
  --- packages
 |
-|------ abi
+|------ unipass-wallet-abi
+|
+|------ unipass-wallet-dkim-base
 |
 |------ unipass-wallet-dkim
 |
  ------ unipass-wallet
+```
+
+## Transaction Builder
+
+```typescript
+// Update KeysetHash
+const txBuilder = new UpdateKeysetHashTxBuilder(
+  userAddr,
+  metaNonce,
+  newKeysetHash
+);
+
+// Unlock KeysetHash TimeLock
+const txBuilder = new UnlockKeysetHashTxBuilder(userAddr, metaNonce);
+
+// Cancel KeysetHash TimeLock
+const txBuilder = new CancelLockKeysetHashTxBuilder(userAddr, metaNonce);
+
+// Update TimeLock During
+const txBuilder = new UpdateTimeLockDuringTxBuilder(
+  userAddr,
+  metaNonce,
+  newTimeLockDuring
+);
+
+// Update Implemenation
+const txBuilder = new UpdateImplementationTxBuilder(
+  userAddr,
+  metaNonce,
+  newImplemenation
+);
 ```
 
 ## Build Transaction

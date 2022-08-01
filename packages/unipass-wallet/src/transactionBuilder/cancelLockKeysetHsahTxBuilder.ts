@@ -12,6 +12,12 @@ import { CallType, GenerateSigType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
+  /**
+   *
+   * @param userAddr The Address Of User Wallet
+   * @param metaNonce MetaNonce
+   * @param signature The Signature Of Transaction
+   */
   constructor(
     public userAddr: BytesLike,
     public metaNonce: number,

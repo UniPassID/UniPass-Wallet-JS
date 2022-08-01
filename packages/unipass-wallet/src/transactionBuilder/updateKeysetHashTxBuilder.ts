@@ -27,6 +27,13 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
     super();
   }
 
+  /**
+   *
+   * @dev In this way, may need to unlock newKeysetHash
+   * @param sigGenerator MasterKey Signature Generator
+   * @param signType Sign Type
+   * @returns UpdateKeysetHashTxBuilder
+   */
   public async generateSigByMasterKey(
     sigGenerator: MasterKeySigGenerator,
     signType: SignType
@@ -42,6 +49,12 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
     return this;
   }
 
+  /**
+   * @dev In this way, may need to unlock newKeysetHash.
+   * @param sigGenerator RecoveryEmails Signature Generator
+   * @param dkimParams The Map Of Recovery Email Address And DkimParamsBase
+   * @returns UpdateKeysetHashTxBuilder
+   */
   public generateSigByRecoveryEmails(
     sigGenerator: RecoveryEmailsSigGenerator,
     dkimParams: Map<string, DkimParamsBase>
@@ -57,6 +70,14 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
     return this;
   }
 
+  /**
+   *
+   * @dev In this way, Not need to unlock newKeysetHash
+   * @param sigGenerator Both MasterKey And RecoveryEmails Signature Generator
+   * @param signType Sign Type
+   * @param dkimParams The Map Of Recovery Email Address And DkimParamsBase
+   * @returns UpdateKeysetHashTxBuilder
+   */
   public async generateSigByMasterKeyWithDkimParams(
     sigGenerator: MasterKeySigGenerator,
     signType: SignType,

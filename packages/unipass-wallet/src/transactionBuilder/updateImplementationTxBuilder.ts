@@ -11,6 +11,7 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
    *
    * @param userAddr The Address Of User's Smart Contract Address
    * @param metaNonce The meta nonce of Account Layer
+   * @param implemenation The New Implemenation
    * @param signature Signature, default undefined
    */
   constructor(
