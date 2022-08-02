@@ -1,5 +1,11 @@
 # unipass-wallet-dkim-base
 
+## 0.0.10
+
+### Patch Changes
+
+- Add Error Implementation
+
 ## 0.0.9
 
 ### Patch Changes
