@@ -12,7 +12,9 @@
     "test:concurrently": "pnpm concurrently -k --success first 'pnpm run hardhat:start > /dev/null'",
     "lint": "eslint --ext js,ts,tsx .",
     "hardhat:start": "pnpm hardhat node --port 7547",
-    "hardhat:compile": "pnpm hardhat compile"
+    "hardhat:compile": "pnpm hardhat compile",
+    "ci:publish": "changeset publish",
+    "ci:version": "changeset version"
   },
   "devDependencies": {
     "@changesets/cli": "^2.24.1",
