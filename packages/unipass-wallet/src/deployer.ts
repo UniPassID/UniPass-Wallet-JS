@@ -11,6 +11,7 @@ import {
 } from "ethers";
 import { getCreate2Address, Interface, keccak256 } from "ethers/lib/utils";
 import { Transaction } from "@ethereumjs/tx";
+import { DeployError } from "./error";
 
 const CreationCode: string =
   "0x603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3";
@@ -84,7 +85,7 @@ export class Deployer {
         })
       ).wait();
       if (ret.status !== 1) {
-        throw new Error(`Transfer Eth Failed With Result: ${ret}`);
+        throw new DeployError("Transfer Eth Failed", ret);
       }
     }
     const tx = new Transaction({
@@ -101,10 +102,11 @@ export class Deployer {
       await this.provider.sendTransaction(`0x${tx.serialize().toString("hex")}`)
     ).wait();
     if (ret.status !== 1) {
-      throw new Error(`Deploy Contract Failed With Result: ${ret}`);
+      const error = new DeployError("Deploy Contract Failed", ret);
+      throw error;
     }
     if (!(await this.isDeployed(this.singleFactoryContract.address))) {
-      throw new Error("Contract Deployed Failed");
+      throw new DeployError("Contract Deployed Failed", ret);
     }
   }
 
@@ -165,10 +167,10 @@ export class Deployer {
       await this.singleFactoryContract.deploy(deployTx.data, salt, txParams)
     ).wait();
     if (ret.status !== 1) {
-      throw new Error(`Deploy Contract Failed With Result: ${ret}`);
+      throw new DeployError(`Deploy Contract Failed`, ret);
     }
     if (!(await this.isDeployed(deployedContractAddr))) {
-      throw new Error("Contract Deployed Failed");
+      throw new DeployError("Contract Deployed Failed", ret);
     }
     return new Contract(
       deployedContractAddr,
@@ -195,10 +197,10 @@ export class Deployer {
       await this.singleFactoryContract.deploy(initCode, salt, txParams)
     ).wait();
     if (ret.status !== 1) {
-      throw new Error(`Deploy Contract Failed With Result: ${ret}`);
+      throw new DeployError("Deploy Contract Failed", ret);
     }
     if (!(await this.isDeployed(deployedContractAddr))) {
-      throw new Error("Contract Deployed Failed");
+      throw new DeployError("Contract Deployed Failed", ret);
     }
     return new Contract(deployedContractAddr, contractInterface, this.signer);
   }

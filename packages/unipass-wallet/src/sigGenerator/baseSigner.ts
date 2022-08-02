@@ -1,5 +1,6 @@
 import { Bytes } from "ethers";
 import { BytesLike, solidityPack } from "ethers/lib/utils";
+import { SignError } from "../error";
 
 export enum SignType {
   EIP712Sign = 1,
@@ -23,7 +24,7 @@ export abstract class BaseSigner {
         break;
       }
       default: {
-        throw new Error(`Invalid SignType: ${signType}`);
+        throw new SignError("Invalid SignType", signType);
       }
     }
     return solidityPack(["bytes", "uint8"], [sig, signType]);
