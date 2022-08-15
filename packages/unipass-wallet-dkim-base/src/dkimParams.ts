@@ -78,7 +78,7 @@ export class DkimParamsBase {
   public serialize(): string {
     let sig = solidityPack(
       ["uint32", "bytes"],
-      [this.emailHeader.length, Buffer.from(this.emailHeader)]
+      [this.emailHeader.length, this.emailHeader]
     );
     sig = solidityPack(
       ["bytes", "uint32", "bytes"],
@@ -250,6 +250,6 @@ export class DkimParamsBase {
   }
 
   public async dkimVerify(contract: Contract, oriEmailFrom: string) {
-    return contract.dkimVerify(this, Buffer.from(oriEmailFrom));
+    return contract.dkimVerifyParams(this, Buffer.from(oriEmailFrom));
   }
 }

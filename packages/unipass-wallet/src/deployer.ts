@@ -11,7 +11,6 @@ import {
 } from "ethers";
 import { getCreate2Address, Interface, keccak256 } from "ethers/lib/utils";
 import { Transaction } from "@ethereumjs/tx";
-import { DeployError } from "./error";
 
 const CreationCode: string =
   "0x603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3";
@@ -85,7 +84,9 @@ export class Deployer {
         })
       ).wait();
       if (ret.status !== 1) {
-        throw new DeployError("Transfer Eth Failed", ret);
+        const error: any = new Error("Transfer Eth Failed");
+        error.ret = ret;
+        throw error;
       }
     }
     const tx = new Transaction({
@@ -102,11 +103,14 @@ export class Deployer {
       await this.provider.sendTransaction(`0x${tx.serialize().toString("hex")}`)
     ).wait();
     if (ret.status !== 1) {
-      const error = new DeployError("Deploy Contract Failed", ret);
+      const error: any = new Error("Deploy Contract Failed");
+      error.ret = ret;
       throw error;
     }
     if (!(await this.isDeployed(this.singleFactoryContract.address))) {
-      throw new DeployError("Contract Deployed Failed", ret);
+      const error: any = new Error("Contract Deployed Failed");
+      error.ret = ret;
+      throw error;
     }
   }
 
@@ -167,10 +171,16 @@ export class Deployer {
       await this.singleFactoryContract.deploy(deployTx.data, salt, txParams)
     ).wait();
     if (ret.status !== 1) {
-      throw new DeployError(`Deploy Contract Failed`, ret);
+      const error: any = new Error("Deploy Contract Failed");
+      error.ret = ret;
+      throw error;
     }
     if (!(await this.isDeployed(deployedContractAddr))) {
-      throw new DeployError("Contract Deployed Failed", ret);
+      const error: any = new Error(
+        `Contract Deployed Failed: ${JSON.stringify(ret)}`
+      );
+      error.ret = ret;
+      throw error;
     }
     return new Contract(
       deployedContractAddr,
@@ -197,10 +207,14 @@ export class Deployer {
       await this.singleFactoryContract.deploy(initCode, salt, txParams)
     ).wait();
     if (ret.status !== 1) {
-      throw new DeployError("Deploy Contract Failed", ret);
+      const error: any = new Error("Deploy Contract Failed");
+      error.ret = ret;
+      throw error;
     }
     if (!(await this.isDeployed(deployedContractAddr))) {
-      throw new DeployError("Contract Deployed Failed", ret);
+      const error: any = new Error("Contract Deployed Failed");
+      error.ret = ret;
+      throw error;
     }
     return new Contract(deployedContractAddr, contractInterface, this.signer);
   }

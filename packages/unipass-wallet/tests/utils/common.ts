@@ -4,39 +4,140 @@ import {
   randomBytes,
   solidityPack,
 } from "ethers/lib/utils";
-import { DkimParams, pureEmailHash } from "unipass-wallet-dkim";
+import { DkimParams } from "unipass-wallet-dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, ethers, Wallet } from "ethers";
+import {
+  KeyBase,
+  KeyEmailDkim,
+  KeySecp256k1,
+  RoleWeight,
+  SignType,
+} from "../../src/key";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
 
-export function generateRecoveryEmails(length: number): string[] {
-  return [...Array(length)].map(() => {
-    const recoveryEmail = `${Buffer.from(randomBytes(16)).toString(
-      "hex"
-    )}@unipass.com`;
-    return recoveryEmail;
-  });
+export enum Role {
+  Owner,
+  AssetsOp,
+  Guardian,
 }
 
-export function getKeysetHash(
-  masterKeyAddress: string,
-  threshold: number,
-  recoveryEmails: string[]
-): string {
-  let keysetHash = keccak256(
-    ethers.utils.solidityPack(
-      ["address", "uint16"],
-      [masterKeyAddress, threshold]
-    )
+function randomInt(max: number) {
+  return Math.ceil(Math.random() * (max + 1));
+}
+
+export function randomKeys(len: number): KeyBase[] {
+  const ret: KeyBase[] = [];
+  for (let i = 0; i < len; i++) {
+    [Role.Owner, Role.AssetsOp, Role.Guardian].forEach((role) => {
+      const random = randomInt(1);
+      if (random === 0) {
+        ret.push(
+          new KeySecp256k1(
+            Wallet.createRandom(),
+            SignType.EthSign,
+            randomRoleWeight(role, len)
+          )
+        );
+      } else {
+        ret.push(
+          new KeyEmailDkim(
+            `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`,
+            randomRoleWeight(role, len)
+          )
+        );
+      }
+    });
+  }
+  return ret;
+}
+
+export function randomRoleWeight(role: Role, len: number): RoleWeight {
+  const v = Math.ceil(100 / len);
+  switch (role) {
+    case Role.Owner: {
+      return {
+        ownerWeight: randomInt(50 - v) + v,
+        assetsOpWeight: 0,
+        guardianWeight: 0,
+      };
+    }
+    case Role.AssetsOp: {
+      return {
+        ownerWeight: 0,
+        assetsOpWeight: randomInt(50 - v) + v,
+        guardianWeight: 0,
+      };
+    }
+    case Role.Guardian: {
+      return {
+        ownerWeight: 0,
+        assetsOpWeight: 0,
+        guardianWeight: randomInt(50 - v) + v,
+      };
+    }
+    default: {
+      throw new Error(`Invalid Role: ${role}`);
+    }
+  }
+}
+
+export async function selectKeys(
+  keys: KeyBase[],
+  subject: string,
+  unipassPrivateKey: string,
+  role: Role,
+  threshold: number
+): Promise<[KeyBase, boolean][]> {
+  const indexes: number[] = [];
+  let sum = 0;
+  keys
+    .map((v, i) => {
+      let value;
+      if (role === Role.Owner) {
+        value = v.roleWeight.ownerWeight;
+      } else if (role === Role.AssetsOp) {
+        value = v.roleWeight.assetsOpWeight;
+      } else if (role === Role.Guardian) {
+        value = v.roleWeight.guardianWeight;
+      } else {
+        throw new Error(`Invalid Role: ${role}`);
+      }
+      return { index: i, value };
+    })
+    .sort((a, b) => b.value - a.value)
+    .forEach((v) => {
+      if (sum < threshold) {
+        indexes.push(v.index);
+        sum += v.value;
+      }
+    });
+  const ret: [KeyBase, boolean][] = await Promise.all(
+    keys.map(async (key, i) => {
+      if (indexes.includes(i)) {
+        if (key instanceof KeyEmailDkim) {
+          const dkimParams = await generateDkimParams(
+            key.emailFrom,
+            subject,
+            unipassPrivateKey
+          );
+          key.updateDkimParams(dkimParams);
+        }
+        return [key, true];
+      }
+      return [key, false];
+    })
   );
-  recoveryEmails.forEach((recoveryEmail) => {
+  return ret;
+}
+
+export function getKeysetHash(keys: KeyBase[]): string {
+  let keysetHash = "0x";
+  keys.forEach((key) => {
     keysetHash = keccak256(
-      ethers.utils.solidityPack(
-        ["bytes32", "bytes32"],
-        [keysetHash, pureEmailHash(recoveryEmail)]
-      )
+      solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()])
     );
   });
   return keysetHash;
@@ -98,30 +199,18 @@ export async function signEmailWithDkim(mail: MailComposer, dkim: DKIM) {
 }
 
 export async function generateDkimParams(
-  emailFrom: string[],
+  emailFrom: string,
   subject: string,
-  indexes: number[],
   unipassPrivateKey: string
-): Promise<Map<string, DkimParams>> {
-  const ret: Map<string, DkimParams> = new Map();
-
-  const emails = await Promise.all(
-    indexes.map((i) =>
-      getSignEmailWithDkim(
-        subject,
-        emailFrom[i],
-        "test@unipass.id.com",
-        unipassPrivateKey
-      )
-    )
+): Promise<DkimParams> {
+  const email = await getSignEmailWithDkim(
+    subject,
+    emailFrom,
+    "test@unipass.id.com",
+    unipassPrivateKey
   );
-  const dkims = await Promise.all(
-    emails.map((email) => DkimParams.parseEmailParams(email, []))
-  );
-  indexes.forEach((index, i) => {
-    ret.set(emailFrom[index], dkims[i]);
-  });
-  return ret;
+  const dkims = await DkimParams.parseEmailParams(email, []);
+  return dkims;
 }
 
 export async function transferEth(from: Wallet, to: string, amount: BigNumber) {

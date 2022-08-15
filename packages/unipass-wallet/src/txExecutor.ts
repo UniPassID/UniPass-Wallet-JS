@@ -1,12 +1,8 @@
 import { BigNumber, BytesLike, Contract, Overrides } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
-import { DkimParamsBase } from "unipass-wallet-dkim-base";
-import {
-  MasterKeySigGenerator,
-  SessionKeySigGenerator,
-  SignType,
-} from "./sigGenerator";
-import { GenerateSigType, Transaction } from "./transaction";
+import { KeyBase } from "./key";
+import { KeySession } from "./key/keySession";
+import { Transaction } from "./transaction";
 
 export class TxExcutor {
   /**
@@ -26,7 +22,7 @@ export class TxExcutor {
     public feeToken: BytesLike,
     public feeAmount: BigNumber,
     public feeReceiver: BytesLike,
-    public signature: string | undefined = undefined
+    public signature?: string
   ) {}
 
   /**
@@ -55,61 +51,39 @@ export class TxExcutor {
     );
   }
 
-  public async generateSigByMasterKey(
-    masterKeySigGenerator: MasterKeySigGenerator,
-    signType: SignType
+  public async generateSignature(
+    keys: [KeyBase, boolean][],
+    sessionKey?: KeySession
   ): Promise<TxExcutor> {
-    this.signature = solidityPack(
-      ["uint8", "bytes"],
-      [
-        GenerateSigType.SignByMasterKey,
-        await masterKeySigGenerator.generateSignature(
-          this.digestMessage(),
-          signType
-        ),
-      ]
-    );
-    return this;
-  }
+    if (keys.length === 0) {
+      this.signature = "0x";
+      return this;
+    }
+    let sig: string;
+    const digestHash = this.digestMessage();
 
-  public async generateSigBySessionKey(
-    sessionKeySigGenerator: SessionKeySigGenerator,
-    signType: SignType
-  ): Promise<TxExcutor> {
-    this.signature = solidityPack(
-      ["uint8", "bytes"],
-      [
-        GenerateSigType.SignBySessionKey,
-        await sessionKeySigGenerator.generateSignature(
-          this.digestMessage(),
-          signType
-        ),
-      ]
-    );
-    return this;
-  }
+    if (sessionKey === undefined) {
+      sig = solidityPack(["uint8"], [0]);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [key, isSig] of keys) {
+        if (isSig) {
+          sig = solidityPack(
+            ["bytes", "bytes"],
+            // eslint-disable-next-line no-await-in-loop
+            [sig, await key.generateSignature(digestHash)]
+          );
+        } else {
+          sig = solidityPack(["bytes", "bytes"], [sig, key.generateKey()]);
+        }
+      }
+    } else {
+      sig = solidityPack(
+        ["uint8", "bytes"],
+        [1, await sessionKey.generateSignature(digestHash, keys)]
+      );
+    }
 
-  public async generateSigByMasterKeyWithDkimParams(
-    masterKeySigGenerator: MasterKeySigGenerator,
-    signType: SignType,
-    dkimParams: Map<string, DkimParamsBase>
-  ): Promise<TxExcutor> {
-    this.signature = solidityPack(
-      ["uint8", "bytes"],
-      [
-        GenerateSigType.SignBySessionKey,
-        await masterKeySigGenerator.generateSignatureWithDkimParams(
-          this.digestMessage(),
-          signType,
-          dkimParams
-        ),
-      ]
-    );
-    return this;
-  }
-
-  public generateSigBySigNone(): TxExcutor {
-    this.signature = solidityPack(["uint8"], [GenerateSigType.SignNone]);
+    this.signature = sig;
     return this;
   }
 

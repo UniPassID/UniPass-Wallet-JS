@@ -5,10 +5,8 @@ import { RoleWeight } from "../key";
 import { Transaction, CallType } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
-export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
-  public readonly OWNER_THRESHOLD = 100;
-
-  public readonly GUARDIAN_THRESHOLD = 100;
+export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
+  public readonly GUARDIAN_THRESHOLD = 50;
 
   /**
    *
@@ -45,18 +43,14 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
   }
 
   validateRoleWeight(roleWeight: RoleWeight): boolean {
-    return (
-      roleWeight.ownerWeight >= this.OWNER_THRESHOLD ||
-      roleWeight.guardianWeight >= this.GUARDIAN_THRESHOLD
-    );
+    return roleWeight.guardianWeight >= this.GUARDIAN_THRESHOLD;
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData("updateKeysetHash", [
-      this.metaNonce,
-      this.keysetHash,
-      this.signature,
-    ]);
+    const data = this.contractInterface.encodeFunctionData(
+      "updateKeysetHashWithTimeLock",
+      [this.metaNonce, this.keysetHash, this.signature]
+    );
     return {
       callType: CallType.Call,
       gasLimit: constants.Zero,
