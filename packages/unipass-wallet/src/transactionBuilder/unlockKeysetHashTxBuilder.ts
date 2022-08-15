@@ -1,60 +1,38 @@
-import { BytesLike, constants } from "ethers";
-import { keccak256, solidityPack } from "ethers/lib/utils";
-import { AccountLayerActionType } from ".";
-
-import { CallType, GenerateSigType, Transaction } from "../transaction";
+import { constants } from "ethers";
+import { RoleWeight } from "../key";
+import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
   /**
    *
-   * @param userAddr The Address Of User Wallet
+   * @param userAddr Wallet Address
    * @param metaNonce MetaNonce
-   * @param signature The Signature Of Transaction
    */
-  constructor(
-    public userAddr: BytesLike,
-    public metaNonce: number,
-    public signature: string | undefined = undefined
-  ) {
+  constructor(public userAddr: string, public metaNonce: number) {
     super();
   }
 
-  /**
-   *
-   * @returns The Original Message For Signing
-   */
-  public digestMessage(): string {
-    return keccak256(
-      solidityPack(
-        ["uint32", "address", "uint8"],
-        [this.metaNonce, this.userAddr, AccountLayerActionType.UnlockKeysetHash]
-      )
-    );
+  // eslint-disable-next-line class-methods-use-this
+  digestMessage(): string {
+    throw new Error("Not Need Digest Message");
   }
 
-  public generateSigBySignNone(): UnlockKeysetHashTxBuilder {
-    this.signature = solidityPack(
-      ["bytes", "uint8"],
-      [this.getSigPrefix(), GenerateSigType.SignNone]
-    );
-    return this;
-  }
-
-  getSigPrefix(): string {
-    return solidityPack(
-      ["uint8", "uint32"],
-      [AccountLayerActionType.UnlockKeysetHash, this.metaNonce]
-    );
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
+  validateRoleWeight(_roleWeight: RoleWeight): boolean {
+    return true;
   }
 
   public build(): Transaction {
-    return new Transaction(
-      CallType.CallAccountLayer,
-      constants.Zero,
-      constants.AddressZero,
-      constants.Zero,
-      this.signature
-    );
+    const data = this.contractInterface.encodeFunctionData("unlockKeysetHash", [
+      this.metaNonce,
+    ]);
+    return {
+      callType: CallType.Call,
+      gasLimit: constants.Zero,
+      target: this.userAddr,
+      value: constants.Zero,
+      data,
+    };
   }
 }

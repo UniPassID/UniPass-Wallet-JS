@@ -5,10 +5,8 @@ import { RoleWeight } from "../key";
 import { Transaction, CallType } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
-export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
+export class SyncAccountTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 100;
-
-  public readonly GUARDIAN_THRESHOLD = 100;
 
   /**
    *
@@ -21,6 +19,7 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
     public userAddr: BytesLike,
     public metaNonce: number,
     public keysetHash: BytesLike,
+    public timeLockDuring: number,
     public signature: string | undefined = undefined
   ) {
     super();
@@ -33,28 +32,27 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
   public digestMessage(): string {
     return keccak256(
       solidityPack(
-        ["uint32", "address", "uint8", "bytes32"],
+        ["uint32", "address", "uint8", "bytes32", "uint32"],
         [
           this.metaNonce,
           this.userAddr,
-          AccountLayerActionType.UpdateKeysetHash,
+          AccountLayerActionType.SyncAccount,
           this.keysetHash,
+          this.timeLockDuring,
         ]
       )
     );
   }
 
   validateRoleWeight(roleWeight: RoleWeight): boolean {
-    return (
-      roleWeight.ownerWeight >= this.OWNER_THRESHOLD ||
-      roleWeight.guardianWeight >= this.GUARDIAN_THRESHOLD
-    );
+    return roleWeight.ownerWeight >= this.OWNER_THRESHOLD;
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData("updateKeysetHash", [
+    const data = this.contractInterface.encodeFunctionData("syncAccount", [
       this.metaNonce,
       this.keysetHash,
+      this.timeLockDuring,
       this.signature,
     ]);
     return {

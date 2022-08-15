@@ -1,24 +1,22 @@
 import { BytesLike, constants } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
-import { RoleWeight } from "../key";
-import { Transaction, CallType } from "../transaction";
+import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
+import { RoleWeight } from "../key";
 
-export class UpdateImplementationTxBuilder extends BaseTxBuilder {
-  readonly OWNER_THRESHOLD = 100;
+export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
+  readonly OWNER_THRESHOLD = 1;
 
   /**
    *
-   * @param userAddr The Address Of User's Smart Contract Address
-   * @param metaNonce The meta nonce of Account Layer
-   * @param implemenation The New Implemenation
-   * @param signature Signature, default undefined
+   * @param userAddr The Address Of User Wallet
+   * @param metaNonce MetaNonce
+   * @param signature The Signature Of Transaction
    */
   constructor(
     public userAddr: BytesLike,
     public metaNonce: number,
-    public implemenation: BytesLike,
     signature?: string
   ) {
     super(signature);
@@ -31,12 +29,11 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
   public digestMessage(): string {
     return keccak256(
       solidityPack(
-        ["uint32", "address", "uint8", "address"],
+        ["uint32", "address", "uint8"],
         [
           this.metaNonce,
           this.userAddr,
-          AccountLayerActionType.UpdateImplementation,
-          this.implemenation,
+          AccountLayerActionType.CancelLockKeysetHash,
         ]
       )
     );
@@ -48,8 +45,8 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
 
   public build(): Transaction {
     const data = this.contractInterface.encodeFunctionData(
-      "updateImplementation",
-      [this.metaNonce, this.implemenation, this.signature]
+      "cancelLockKeysetHsah",
+      [this.metaNonce, this.signature]
     );
     return {
       callType: CallType.Call,

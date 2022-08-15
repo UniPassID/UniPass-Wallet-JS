@@ -9,7 +9,6 @@ import {
   Wallet,
 } from "ethers";
 import { hexlify, Interface, randomBytes } from "ethers/lib/utils";
-import NodeRsa from "node-rsa";
 import * as dotenv from "dotenv";
 
 import ModuleMainArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json";
@@ -20,28 +19,28 @@ import GreeterArtifact from "../../../artifacts/contracts/tests/Greeter.sol/Gree
 import {
   CallTxBuilder,
   UpdateKeysetHashTxBuilder,
+  UpdateKeysetHashWithTimeLockTxBuilder,
   UpdateTimeLockDuringTxBuilder,
 } from "../src/transactionBuilder";
 import {
   generateDkimParams,
-  generateRecoveryEmails,
   getKeysetHash,
   optimalGasLimit,
+  randomKeys,
+  Role,
+  selectKeys,
   transferEth,
 } from "./utils/common";
-import {
-  MasterKeySigGenerator,
-  RecoveryEmailsSigGenerator,
-  SessionKeySigGenerator,
-  SignType,
-} from "../src/sigGenerator";
-import { RecoveryEmails } from "../src/recoveryEmails";
+import { KeyBase, KeySession, SignType } from "../src/key";
 import { TxExcutor } from "../src/txExecutor";
 import { pureEmailHash } from "unipass-wallet-dkim-base";
 import { Deployer } from "../src/deployer";
 import { UnlockKeysetHashTxBuilder } from "../src/transactionBuilder/unlockKeysetHashTxBuilder";
-import { CancelLockKeysetHashTxBuilder } from "../src/transactionBuilder/cancelLockKeysetHsahTxBuilder";
+import { CancelLockKeysetHashTxBuilder } from "../src/transactionBuilder/cancelLockKeysetHashTxBuilder";
 import { UpdateImplementationTxBuilder } from "../src/transactionBuilder/updateImplementationTxBuilder";
+import NodeRSA from "node-rsa";
+import { SyncAccountTxBuilder } from "../src/transactionBuilder/syncAccountTxBuilder";
+import { randomInt } from "crypto";
 
 describe("Test ModuleMain", () => {
   let moduleMainUpgradable: Contract;
@@ -53,22 +52,21 @@ describe("Test ModuleMain", () => {
   let txParams: Overrides;
   let proxyModuleMain: Contract;
   let dkimKeys: Contract;
-  let masterKey: Wallet;
   let keysetHash: string;
-  let threshold: number;
-  let recoveryEmails: string[];
+  let keys: KeyBase[];
   let dkimKeysAdmin: Wallet;
   let chainId: number;
   let TestERC20Token: ContractFactory;
   let testERC20Token: Contract;
   let JsonRpcNode;
-  let UnipassPrivateKey;
+  let unipassPrivateKey;
   let nonce: number;
   let metaNonce: number;
   beforeAll(async () => {
     dotenv.config({ path: `${__dirname}/../../../.env` });
     JsonRpcNode = process.env.JSON_RPC_NODE;
-    UnipassPrivateKey = process.env.UNIPASS_PRIVATE_KEY;
+    const privateKey = new NodeRSA({ b: 2048 });
+    unipassPrivateKey = privateKey.exportKey("pkcs1");
     provider = new providers.JsonRpcProvider(JsonRpcNode);
     chainId = (await provider.getNetwork()).chainId;
     const signer = provider.getSigner();
@@ -80,7 +78,7 @@ describe("Test ModuleMain", () => {
       provider.getSigner()
     );
     txParams = {
-      gasLimit: 6000000,
+      gasLimit: 10000000,
       gasPrice: (await signer.getGasPrice()).mul(12).div(10),
     };
     const instance = 0;
@@ -93,7 +91,6 @@ describe("Test ModuleMain", () => {
       dkimKeysAdmin.address
     );
 
-    const nodeRsa = new NodeRsa(UnipassPrivateKey);
     const keyServer = utils.solidityPack(
       ["bytes", "bytes"],
       [Buffer.from("s2055"), Buffer.from("unipass.com")]
@@ -104,14 +101,15 @@ describe("Test ModuleMain", () => {
       dkimKeysAdmin.address,
       utils.parseEther("10")
     );
-    (
+    const ret = await (
       await dkimKeys
         .connect(dkimKeysAdmin)
         .updateDKIMKey(
           keyServer,
-          nodeRsa.exportKey("components-public").n.subarray(1)
+          privateKey.exportKey("components-public").n.subarray(1)
         )
     ).wait();
+    expect(ret.status).toEqual(1);
     ModuleMainUpgradable = new ContractFactory(
       new Interface(ModuleMainUpgradableArtifact.abi),
       ModuleMainUpgradableArtifact.bytecode,
@@ -144,11 +142,9 @@ describe("Test ModuleMain", () => {
   });
   beforeEach(async () => {
     testERC20Token = await TestERC20Token.deploy();
-    threshold = 4;
-    masterKey = Wallet.createRandom();
 
-    recoveryEmails = generateRecoveryEmails(10);
-    keysetHash = getKeysetHash(masterKey.address, threshold, recoveryEmails);
+    keys = randomKeys(10);
+    keysetHash = getKeysetHash(keys);
 
     proxyModuleMain = await deployer.deployProxyContract(
       moduleMain.interface,
@@ -171,65 +167,22 @@ describe("Test ModuleMain", () => {
     nonce = 1;
     metaNonce = 1;
   });
-  it("Updating KeysetHash By Master Key Should Success", async () => {
+  it("Updating KeysetHash Wighout TimeLock Should Success", async () => {
     const newKeysetHash = Buffer.from(randomBytes(32));
-    const txBuilder = new UpdateKeysetHashTxBuilder(
+    const txBuilder = await new UpdateKeysetHashTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       newKeysetHash
     );
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
+    const selectedKeys = await selectKeys(
+      keys,
+      txBuilder.digestMessage(),
+      unipassPrivateKey,
+      Role.Owner,
+      100
     );
-    const tx = (
-      await txBuilder.generateSigByMasterKey(
-        masterKeySigGenerator,
-        SignType.EthSign
-      )
-    ).build();
-    const txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSigByMasterKey(masterKeySigGenerator, SignType.EthSign);
-    const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
-    ).wait();
-    expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.lockedKeysetHash()).toEqual(
-      `0x${newKeysetHash.toString("hex")}`
-    );
-    metaNonce++;
-    nonce++;
-  });
+    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
 
-  it("Updating KeysetHash By Recovery Emails Should Success", async () => {
-    const newKeysetHash = Buffer.from(randomBytes(32));
-    const txBuilder = new UpdateKeysetHashTxBuilder(
-      proxyModuleMain.address,
-      metaNonce,
-      newKeysetHash
-    );
-    const recoveryEmailsSigGeneraror = new RecoveryEmailsSigGenerator(
-      masterKey.address,
-      new RecoveryEmails(threshold, recoveryEmails)
-    );
-    const subject = txBuilder.digestMessage();
-    const tx = (
-      await txBuilder.generateSigByRecoveryEmails(
-        recoveryEmailsSigGeneraror,
-        await generateDkimParams(
-          recoveryEmails,
-          subject,
-          [1, 2, 3, 4, 5],
-          UnipassPrivateKey
-        )
-      )
-    ).build();
     const txExecutor = await new TxExcutor(
       chainId,
       nonce,
@@ -237,60 +190,55 @@ describe("Test ModuleMain", () => {
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigBySigNone();
-    const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
-    ).wait();
-    expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.lockedKeysetHash()).toEqual(
-      `0x${newKeysetHash.toString("hex")}`
-    );
-    metaNonce++;
-    nonce++;
-  });
-
-  it("Updating KeysetHash By MasterKey And Recovery Emails Should Success", async () => {
-    const newKeysetHash = Buffer.from(randomBytes(32));
-    const txBuilder = new UpdateKeysetHashTxBuilder(
-      proxyModuleMain.address,
-      metaNonce,
-      newKeysetHash
-    );
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
-    );
-    const subject = txBuilder.digestMessage();
-    const tx = (
-      await txBuilder.generateSigByMasterKeyWithDkimParams(
-        masterKeySigGenerator,
-        SignType.EthSign,
-        await generateDkimParams(
-          recoveryEmails,
-          subject,
-          [1, 2, 3, 4, 5],
-          UnipassPrivateKey
-        )
-      )
-    ).build();
-    const txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSigBySigNone();
+    ).generateSignature([]);
     const ret = await (
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(
-      hexlify(newKeysetHash)
+      `0x${newKeysetHash.toString("hex")}`
     );
     metaNonce++;
     nonce++;
   });
+
+  it("Updating KeysetHash With TimeLock Should Success", async () => {
+    const newKeysetHash = Buffer.from(randomBytes(32));
+
+    const txBuilder = await new UpdateKeysetHashWithTimeLockTxBuilder(
+      proxyModuleMain.address,
+      metaNonce,
+      newKeysetHash
+    );
+
+    const subject = txBuilder.digestMessage();
+    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Guardian,
+      50
+    );
+    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const txExecutor = await new TxExcutor(
+      chainId,
+      nonce,
+      [tx],
+      constants.AddressZero,
+      constants.Zero,
+      constants.AddressZero
+    ).generateSignature([]);
+    const ret = await (
+      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+    ).wait();
+    expect(ret.status).toEqual(1);
+    expect(await proxyModuleMain.lockedKeysetHash()).toEqual(
+      `0x${newKeysetHash.toString("hex")}`
+    );
+    metaNonce++;
+    nonce++;
+  });
+
   it("Transfer ERC20 Should Success", async () => {
     const data = testERC20Token.interface.encodeFunctionData("transfer", [
       dkimKeysAdmin.address,
@@ -302,27 +250,35 @@ describe("Test ModuleMain", () => {
       constants.Zero,
       data
     ).build();
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
+
+    const sessionKey = new KeySession(
+      Wallet.createRandom(),
+      Math.ceil(Date.now() / 1000) + 500,
+      100,
+      SignType.EthSign
     );
-    const sessoinKey = Wallet.createRandom();
-    const sessionKeySigGenerator = await new SessionKeySigGenerator(
-      sessoinKey,
-      Math.ceil(Date.now() / 1000) + 1000,
-      new RecoveryEmails(threshold, recoveryEmails)
-    ).init(masterKeySigGenerator, SignType.EthSign);
-    const txExecutor = await new TxExcutor(
+
+    const txExecutor = new TxExcutor(
       chainId,
       nonce,
       [tx],
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigBySessionKey(sessionKeySigGenerator, SignType.EthSign);
+    );
+    const subject = sessionKey.digestMessage();
+    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.AssetsOp,
+      100
+    );
 
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await (
+        await txExecutor.generateSignature(selectedKeys, sessionKey)
+      ).execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await testERC20Token.balanceOf(dkimKeysAdmin.address)).toEqual(
@@ -338,27 +294,34 @@ describe("Test ModuleMain", () => {
       utils.parseEther("10"),
       "0x"
     ).build();
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
+    const sessionKey = new KeySession(
+      Wallet.createRandom(),
+      Math.ceil(Date.now() / 1000) + 500,
+      100,
+      SignType.EthSign
     );
-    const sessoinKey = Wallet.createRandom();
-    const sessionKeySigGenerator = await new SessionKeySigGenerator(
-      sessoinKey,
-      Math.ceil(Date.now() / 1000) + 1000,
-      new RecoveryEmails(threshold, recoveryEmails)
-    ).init(masterKeySigGenerator, SignType.EthSign);
-    const txExecutor = await new TxExcutor(
+
+    const txExecutor = new TxExcutor(
       chainId,
       nonce,
       [tx],
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigBySessionKey(sessionKeySigGenerator, SignType.EthSign);
+    );
+    const subject = sessionKey.digestMessage();
+    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.AssetsOp,
+      100
+    );
 
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await (
+        await txExecutor.generateSignature(selectedKeys, sessionKey)
+      ).execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(
@@ -371,54 +334,46 @@ describe("Test ModuleMain", () => {
   });
   it("Dkim Verify Should Success", async function () {
     const subject = constants.HashZero;
-    const emails = await generateDkimParams(
-      recoveryEmails,
+    const emailFrom = `${Buffer.from(randomBytes(10)).toString(
+      "hex"
+    )}@unipass.com`;
+    const email = await generateDkimParams(
+      emailFrom,
       subject,
-      [1, 2, 3, 4, 5],
-      UnipassPrivateKey
+      unipassPrivateKey
     );
-    const ret = await emails
-      .get(recoveryEmails[1])
-      .dkimVerify(proxyModuleMain, recoveryEmails[1]);
+    const ret = await email.dkimVerify(dkimKeys, emailFrom);
     expect(ret[0]).toBe(true);
-    expect(ret[1]).toBe(pureEmailHash(recoveryEmails[1]));
+    expect(ret[1]).toBe(pureEmailHash(emailFrom));
     expect(ret[2]).toBe(`0x${Buffer.from(subject).toString("hex")}`);
   });
   it("Update TimeLock During Should Success", async () => {
     const newDelay = 3600;
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
-    );
     const txBuilder = new UpdateTimeLockDuringTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       newDelay
     );
     const subject = txBuilder.digestMessage();
-    const tx = (
-      await txBuilder.generateSigByMasterKeyWithDkimParams(
-        masterKeySigGenerator,
-        SignType.EthSign,
-        await generateDkimParams(
-          recoveryEmails,
-          subject,
-          [1, 2, 3, 4, 5],
-          UnipassPrivateKey
-        )
-      )
-    ).build();
+    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Owner,
+      100
+    );
+    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
     const ret = await (
-      await new TxExcutor(
-        chainId,
-        nonce,
-        [tx],
-        constants.AddressZero,
-        constants.Zero,
-        constants.AddressZero
-      )
-        .generateSigBySigNone()
-        .execute(proxyModuleMain, txParams)
+      await (
+        await new TxExcutor(
+          chainId,
+          nonce,
+          [tx],
+          constants.AddressZero,
+          constants.Zero,
+          constants.AddressZero
+        ).generateSignature([])
+      ).execute(proxyModuleMain, txParams)
     ).wait();
 
     expect(ret.status).toBe(1);
@@ -429,39 +384,31 @@ describe("Test ModuleMain", () => {
   it("Unlock KeysetHash TimeLock Should Success", async () => {
     // Step 1: Update TimeLock During
     const newTimelockDuring = 3;
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
-    );
     const txBuilder1 = new UpdateTimeLockDuringTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       newTimelockDuring
     );
-    const subject = txBuilder1.digestMessage();
-    let tx = (
-      await txBuilder1.generateSigByMasterKeyWithDkimParams(
-        masterKeySigGenerator,
-        SignType.EthSign,
-        await generateDkimParams(
-          recoveryEmails,
-          subject,
-          [1, 2, 3, 4, 5],
-          UnipassPrivateKey
-        )
-      )
-    ).build();
-    let ret = await (
-      await new TxExcutor(
-        chainId,
-        nonce,
-        [tx],
-        constants.AddressZero,
-        constants.Zero,
-        constants.AddressZero
-      )
-        .generateSigBySigNone()
-        .execute(proxyModuleMain, txParams)
+    let subject = txBuilder1.digestMessage();
+    let selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Owner,
+      100
+    );
+    let tx = (await txBuilder1.generateSignature(selectedKeys)).build();
+    let ret = await await (
+      await (
+        await new TxExcutor(
+          chainId,
+          nonce,
+          [tx],
+          constants.AddressZero,
+          constants.Zero,
+          constants.AddressZero
+        ).generateSignature([])
+      ).execute(proxyModuleMain, txParams)
     ).wait();
 
     expect(ret.status).toBe(1);
@@ -473,17 +420,20 @@ describe("Test ModuleMain", () => {
 
     // Step 2: Update KeysetHash
     const newKeysetHash = Buffer.from(randomBytes(32));
-    const txBuilder2 = new UpdateKeysetHashTxBuilder(
+    const txBuilder2 = new UpdateKeysetHashWithTimeLockTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       newKeysetHash
     );
-    tx = (
-      await txBuilder2.generateSigByMasterKey(
-        masterKeySigGenerator,
-        SignType.EthSign
-      )
-    ).build();
+    subject = txBuilder2.digestMessage();
+    selectedKeys = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Guardian,
+      50
+    );
+    tx = (await txBuilder2.generateSignature(selectedKeys)).build();
     let txExecutor = await new TxExcutor(
       chainId,
       nonce,
@@ -491,7 +441,7 @@ describe("Test ModuleMain", () => {
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigByMasterKey(masterKeySigGenerator, SignType.EthSign);
+    ).generateSignature([]);
     ret = await (
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
@@ -503,9 +453,10 @@ describe("Test ModuleMain", () => {
     nonce++;
 
     // Step3 Unlock TimeLock
-    tx = new UnlockKeysetHashTxBuilder(proxyModuleMain.address, metaNonce)
-      .generateSigBySignNone()
-      .build();
+    tx = new UnlockKeysetHashTxBuilder(
+      proxyModuleMain.address,
+      metaNonce
+    ).build();
     txExecutor = await new TxExcutor(
       chainId,
       nonce,
@@ -513,12 +464,12 @@ describe("Test ModuleMain", () => {
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigBySigNone();
+    ).generateSignature([]);
     try {
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit });
     } catch (error) {
       expect(JSON.parse(error.body).error.message).toEqual(
-        "Error: VM Exception while processing transaction: reverted with reason string 'ModuleTimeLock#requireUnLocked: UNLOCK_AFTER'"
+        `Error: VM Exception while processing transaction: reverted with custom error 'TxFailed("${txExecutor.digestMessage()}", "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001e5f72657175697265546f556e4c6f636b3a20554e4c4f434b5f41465445520000")'`
       );
     }
 
@@ -537,24 +488,23 @@ describe("Test ModuleMain", () => {
     );
   });
 
-  it("Unlock KeysetHash TimeLock Should Success", async () => {
+  it("Cancel KeysetHash TimeLock Should Success", async () => {
     // Step 1: Update KeysetHash
     const newKeysetHash = Buffer.from(randomBytes(32));
-    const txBuilder2 = new UpdateKeysetHashTxBuilder(
+    const txBuilder1 = new UpdateKeysetHashWithTimeLockTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       newKeysetHash
     );
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
+    let subject = txBuilder1.digestMessage();
+    let selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Guardian,
+      50
     );
-    let tx = (
-      await txBuilder2.generateSigByMasterKey(
-        masterKeySigGenerator,
-        SignType.EthSign
-      )
-    ).build();
+    let tx = (await txBuilder1.generateSignature(selectedKeys)).build();
     let txExecutor = await new TxExcutor(
       chainId,
       nonce,
@@ -562,7 +512,7 @@ describe("Test ModuleMain", () => {
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigByMasterKey(masterKeySigGenerator, SignType.EthSign);
+    ).generateSignature([]);
     let ret = await (
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
@@ -573,13 +523,21 @@ describe("Test ModuleMain", () => {
     metaNonce++;
     nonce++;
 
-    // Step 2: Unlock TimeLock
-    tx = (
-      await new CancelLockKeysetHashTxBuilder(
-        proxyModuleMain.address,
-        metaNonce
-      ).generateSigByMasterKey(masterKeySigGenerator, SignType.EthSign)
-    ).build();
+    // Step 2: Cancel TimeLock
+    const txBuilder2 = await new CancelLockKeysetHashTxBuilder(
+      proxyModuleMain.address,
+      metaNonce
+    );
+    subject = txBuilder2.digestMessage();
+    selectedKeys = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Owner,
+      1
+    );
+    tx = (await txBuilder2.generateSignature(selectedKeys)).build();
+
     txExecutor = await new TxExcutor(
       chainId,
       nonce,
@@ -587,7 +545,7 @@ describe("Test ModuleMain", () => {
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigBySigNone();
+    ).generateSignature([]);
 
     ret = await (
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
@@ -604,29 +562,21 @@ describe("Test ModuleMain", () => {
     );
     const greeter = await deployer.deployContract(Greeter, 0, txParams);
 
-    const masterKeySigGenerator = new MasterKeySigGenerator(
-      masterKey,
-      new RecoveryEmails(threshold, recoveryEmails)
-    );
-
     const txBuilder = new UpdateImplementationTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       greeter.address
     );
+    const subject = txBuilder.digestMessage();
+    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Owner,
+      100
+    );
 
-    const tx = (
-      await txBuilder.generateSigByMasterKeyWithDkimParams(
-        masterKeySigGenerator,
-        SignType.EthSign,
-        await generateDkimParams(
-          recoveryEmails,
-          txBuilder.digestMessage(),
-          [1, 2, 3, 4, 5],
-          UnipassPrivateKey
-        )
-      )
-    ).build();
+    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
     const txExecutor = await new TxExcutor(
       chainId,
       nonce,
@@ -634,13 +584,57 @@ describe("Test ModuleMain", () => {
       constants.AddressZero,
       constants.Zero,
       constants.AddressZero
-    ).generateSigByMasterKey(masterKeySigGenerator, SignType.EthSign);
+    ).generateSignature([]);
     const ret = await (
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     proxyModuleMain = greeter.attach(proxyModuleMain.address);
     expect(await proxyModuleMain.ret1()).toEqual(BigNumber.from(1));
+    metaNonce++;
+    nonce++;
+  });
+
+  it("Sync Account Should Success", async () => {
+    const newKeysetHash = Buffer.from(randomBytes(32));
+    const newTimelockDuring = randomInt(100);
+    metaNonce = 10;
+    const txBuilder = new SyncAccountTxBuilder(
+      proxyModuleMain.address,
+      metaNonce,
+      newKeysetHash,
+      newTimelockDuring
+    );
+    const subject = txBuilder.digestMessage();
+    const selectedKeys = await selectKeys(
+      keys,
+      subject,
+      unipassPrivateKey,
+      Role.Owner,
+      100
+    );
+    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const txExecutor = await new TxExcutor(
+      chainId,
+      nonce,
+      [tx],
+      constants.AddressZero,
+      constants.Zero,
+      constants.AddressZero
+    ).generateSignature([]);
+    const ret = await (
+      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+    ).wait();
+    expect(ret.status).toEqual(1);
+    expect(await proxyModuleMain.getKeysetHash()).toEqual(
+      `0x${newKeysetHash.toString("hex")}`
+    );
+    expect(await proxyModuleMain.getMetaNonce()).toEqual(
+      BigNumber.from(metaNonce)
+    );
+    expect(await proxyModuleMain.getLockDuring()).toEqual(
+      BigNumber.from(newTimelockDuring)
+    );
     metaNonce++;
     nonce++;
   });
