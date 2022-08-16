@@ -33,7 +33,7 @@ importers:
       hardhat-dependency-compiler: 1.1.3_hardhat@2.10.1
       ts-node: 10.9.1_7se4izhtmlozvpvgaax5rnuwve
       typescript: 4.7.4
-      unipass-wallet-contracts: github.com/UniPassID/Unipass-Wallet-Contract/c74350eb5353ac9a9a90ae7f0e848219881d438b_hardhat@2.10.1
+      unipass-wallet-contracts: github.com/UniPassID/Unipass-Wallet-Contract/502ff0df22c1eceafd55d65ef37564713b0b17c1_hardhat@2.10.1
 
   packages/unipass-wallet:
     specifiers:
@@ -51,9 +51,9 @@ importers:
       rimraf: ~3.0.2
       ts-jest: ~28.0.0
       typescript: ~4.7.0
-      unipass-wallet-abi: ^0.0.10
-      unipass-wallet-dkim: ^0.0.10
-      unipass-wallet-dkim-base: ^0.0.10
+      unipass-wallet-abi: ^0.0.11
+      unipass-wallet-dkim: ^0.0.11
+      unipass-wallet-dkim-base: ^0.0.11
     dependencies:
       '@ethereumjs/tx': 3.5.2
       ethers: 5.6.9
@@ -77,15 +77,8 @@ importers:
   packages/unipass-wallet-abi:
     specifiers:
       '@types/node': ^18.0.5
-      dkim: github:zzhengzhuo/node-dkim#next
-      ethers: ^5.6.9
-      mailparser: github:zzhengzhuo/mailparser
       rimraf: ~3.0.2
       typescript: ~4.7.0
-    dependencies:
-      dkim: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
-      ethers: 5.6.9
-      mailparser: github.com/zzhengzhuo/mailparser/a9bfccd72ccc89499e313b085c6b81972b785c0f
     devDependencies:
       '@types/node': 18.0.6
       rimraf: 3.0.2
@@ -99,7 +92,7 @@ importers:
       mailparser: github:zzhengzhuo/mailparser
       rimraf: ~3.0.2
       typescript: ~4.7.0
-      unipass-wallet-dkim-base: ^0.0.10
+      unipass-wallet-dkim-base: ^0.0.11
     dependencies:
       dkim: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
       ethers: 5.6.9
@@ -7317,9 +7310,9 @@ packages:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
     dev: true
 
-  github.com/UniPassID/Unipass-Wallet-Contract/c74350eb5353ac9a9a90ae7f0e848219881d438b_hardhat@2.10.1:
-    resolution: {commit: c74350eb5353ac9a9a90ae7f0e848219881d438b, repo: git+ssh://git@github.com/UniPassID/Unipass-Wallet-Contract.git, type: git}
-    id: github.com/UniPassID/Unipass-Wallet-Contract/c74350eb5353ac9a9a90ae7f0e848219881d438b
+  github.com/UniPassID/Unipass-Wallet-Contract/502ff0df22c1eceafd55d65ef37564713b0b17c1_hardhat@2.10.1:
+    resolution: {commit: 502ff0df22c1eceafd55d65ef37564713b0b17c1, repo: git+ssh://git@github.com/UniPassID/Unipass-Wallet-Contract.git, type: git}
+    id: github.com/UniPassID/Unipass-Wallet-Contract/502ff0df22c1eceafd55d65ef37564713b0b17c1
     name: unipass-wallet-contracts
     version: 0.0.8
     dependencies:
