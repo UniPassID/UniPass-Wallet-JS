@@ -1,7 +1,7 @@
 import { utils, Wallet } from "ethers";
-import { KeyBase, sign, SignType } from ".";
+import { KeyBase, sign, SignType } from "./key";
 
-export class KeySession {
+export class SessionKey {
   constructor(
     public key: Wallet,
     public timestamp: number,

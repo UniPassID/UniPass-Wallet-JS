@@ -31,7 +31,8 @@ import {
   selectKeys,
   transferEth,
 } from "./utils/common";
-import { KeyBase, KeySession, SignType } from "../src/key";
+import { KeyBase, SignType } from "../src/key";
+import { SessionKey } from "../src";
 import { TxExcutor } from "../src/txExecutor";
 import { pureEmailHash } from "unipass-wallet-dkim-base";
 import { Deployer } from "../src/deployer";
@@ -251,7 +252,7 @@ describe("Test ModuleMain", () => {
       data
     ).build();
 
-    const sessionKey = new KeySession(
+    const sessionKey = new SessionKey(
       Wallet.createRandom(),
       Math.ceil(Date.now() / 1000) + 500,
       100,
@@ -294,7 +295,7 @@ describe("Test ModuleMain", () => {
       utils.parseEther("10"),
       "0x"
     ).build();
-    const sessionKey = new KeySession(
+    const sessionKey = new SessionKey(
       Wallet.createRandom(),
       Math.ceil(Date.now() / 1000) + 500,
       100,
