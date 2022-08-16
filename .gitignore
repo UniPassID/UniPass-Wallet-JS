@@ -7,3 +7,5 @@ artifacts
 cache
 .env
 config.ts
+./.pnpm-store
+.npmrc

@@ -1,5 +1,13 @@
 # unipass-wallet-dkim
 
+## 0.0.11
+
+### Patch Changes
+
+- 8d33be4: bump to v0.0.11
+- Updated dependencies [8d33be4]
+  - unipass-wallet-dkim-base@0.0.11
+
 ## 0.0.10
 
 ### Patch Changes
