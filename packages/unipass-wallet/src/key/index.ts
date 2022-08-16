@@ -3,7 +3,6 @@ import { BytesLike, utils, Wallet } from "ethers";
 export * from "./keyBase";
 export * from "./keySecp256k1";
 export * from "./keyEmailDkim";
-export * from "./keySession";
 
 export enum KeyType {
   Secp256k1,

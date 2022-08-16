@@ -1,7 +1,7 @@
 import { BigNumber, BytesLike, Contract, Overrides } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { KeyBase } from "./key";
-import { KeySession } from "./key/keySession";
+import { SessionKey } from "./SessionKey";
 import { Transaction } from "./transaction";
 
 export class TxExcutor {
@@ -53,7 +53,7 @@ export class TxExcutor {
 
   public async generateSignature(
     keys: [KeyBase, boolean][],
-    sessionKey?: KeySession
+    sessionKey?: SessionKey
   ): Promise<TxExcutor> {
     if (keys.length === 0) {
       this.signature = "0x";
