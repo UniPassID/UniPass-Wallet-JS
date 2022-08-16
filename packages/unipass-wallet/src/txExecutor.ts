@@ -1,7 +1,7 @@
 import { BigNumber, BytesLike, Contract, Overrides } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { KeyBase } from "./key";
-import { SessionKey } from "./SessionKey";
+import { SessionKey } from "./sessionKey";
 import { Transaction } from "./transaction";
 
 export class TxExcutor {
