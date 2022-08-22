@@ -22,6 +22,7 @@ module.exports = {
     paths: [
       "unipass-wallet-contracts/contracts/modules/ModuleMain.sol",
       "unipass-wallet-contracts/contracts/modules/ModuleMainUpgradable.sol",
+      "unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol",
       "unipass-wallet-contracts/contracts/DkimKeys.sol",
     ],
   },
