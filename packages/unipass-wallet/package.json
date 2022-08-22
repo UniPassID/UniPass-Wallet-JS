@@ -1,7 +1,7 @@
 {
   "name": "unipass-wallet",
   "description": "Example of using ts-node in a TS monorepo",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "main": "dist/index",
   "types": "dist/index",
   "scripts": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "ethers": "^5.6.9",
     "@ethereumjs/tx": "^3.5.2",
-    "unipass-wallet-abi": "^0.0.11",
+    "unipass-wallet-abi": "^0.0.12",
     "unipass-wallet-dkim-base": "^0.0.11"
   },
   "devDependencies": {
