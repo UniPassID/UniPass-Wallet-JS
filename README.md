@@ -54,31 +54,7 @@ const txBuilder = new UpdateImplementationTxBuilder(
 ## Build Transaction
 
 ```typescript
-
-# Build Tx With Master Key
-const tx = (
-  await txBuilder.generateSigByMasterKey(
-    masterKeySigGenerator,
-    SignType.EthSign
-  )
-).build();
-
-# Build Tx With Master Key And Recovery Email
-const tx = (
-  await txBuilder.generateSigByMasterKeyWithDkimParams(
-    masterKeySigGenerator,
-    SignType.EthSign,
-    dkimParams
-  )
-).build();
-
-# Build Tx With Reocovery Email
-const tx = (
-  await txBuilder.generateSigByRecoveryEmails(
-    recoveryEmailsSigGenerator,
-    dkimParams
-  )
-).build();
+const tx = (await txBuilder.generateSignature(toSignedKeys)).build();
 ```
 
 ## Tx Executor
