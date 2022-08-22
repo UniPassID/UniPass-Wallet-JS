@@ -1,5 +1,11 @@
 # unipass-wallet-abi
 
+## 0.0.12
+
+### Patch Changes
+
+- d5660b5: Bump Unipass-Wallet to v0.0.9
+
 ## 0.0.11
 
 ### Patch Changes
