@@ -1,5 +1,11 @@
 # unipass-wallet
 
+## 0.0.13
+
+### Patch Changes
+
+- 50e8145: unipass-wallet: bump to v0.0.12
+
 ## 0.0.12
 
 ### Patch Changes
