@@ -1,22 +1,22 @@
 import { DkimParamsBase, pureEmailHash } from "unipass-wallet-dkim-base";
-import { KeyType, RoleWeight } from ".";
+import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
 import { utils } from "ethers";
 
 export class KeyEmailDkim extends KeyBase {
   constructor(
-    public emailFrom: string,
+    private _emailFrom: string,
     roleWeight: RoleWeight,
-    public dkimParams?: DkimParamsBase
+    private _dkimParams?: DkimParamsBase
   ) {
     super(roleWeight);
     if (
-      dkimParams !== undefined &&
-      this.emailFrom !==
+      _dkimParams !== undefined &&
+      this._emailFrom !==
         Buffer.from(
-          dkimParams.emailHeader.slice(
-            dkimParams.fromLeftIndex,
-            dkimParams.fromRightIndex + 1
+          _dkimParams.emailHeader.slice(
+            _dkimParams.fromLeftIndex,
+            _dkimParams.fromRightIndex + 1
           )
         ).toString()
     ) {
@@ -24,18 +24,29 @@ export class KeyEmailDkim extends KeyBase {
     }
   }
 
-  public updateDkimParams(newDkimParams: DkimParamsBase): KeyEmailDkim {
+  public get emailFrom(): string {
+    return this._emailFrom;
+  }
+
+  public set emailFrom(v: string) {
+    if (this._emailFrom !== v) {
+      this._dkimParams = undefined;
+    }
+    this.emailFrom = v;
+  }
+
+  public get dkimParams(): DkimParamsBase | undefined {
+    return this._dkimParams;
+  }
+
+  public set dkimParams(v: DkimParamsBase) {
     const emailFrom = Buffer.from(
-      newDkimParams.emailHeader.slice(
-        newDkimParams.fromLeftIndex,
-        newDkimParams.fromRightIndex + 1
-      )
+      v.emailHeader.slice(v.fromLeftIndex, v.fromRightIndex + 1)
     ).toString();
     if (this.emailFrom !== emailFrom) {
       throw new Error("Not Matched EmailFrom And DkimParams");
     }
-    this.dkimParams = newDkimParams;
-    return this;
+    this._dkimParams = v;
   }
 
   public async generateSignature(digestHash: string): Promise<string> {
@@ -55,7 +66,7 @@ export class KeyEmailDkim extends KeyBase {
       ["uint8", "uint8", "uint32", "bytes", "bytes", "bytes"],
       [
         KeyType.EmailDkim,
-        1,
+        SignFlag.Sign,
         this.emailFrom.length,
         Buffer.from(this.emailFrom, "utf-8"),
         this.dkimParams.serialize(),
@@ -69,7 +80,7 @@ export class KeyEmailDkim extends KeyBase {
       ["uint8", "uint8", "uint32", "bytes", "bytes"],
       [
         KeyType.EmailDkim,
-        0,
+        SignFlag.NotSign,
         this.emailFrom.length,
         Buffer.from(this.emailFrom, "utf-8"),
         this.serializeRoleWeight(),

@@ -11,7 +11,7 @@ import { BigNumber, ethers, Wallet } from "ethers";
 import {
   KeyBase,
   KeyEmailDkim,
-  KeySecp256k1,
+  KeySecp256k1Wallet,
   RoleWeight,
   SignType,
 } from "../../src/key";
@@ -35,10 +35,10 @@ export function randomKeys(len: number): KeyBase[] {
       const random = randomInt(1);
       if (random === 0) {
         ret.push(
-          new KeySecp256k1(
+          new KeySecp256k1Wallet(
             Wallet.createRandom(),
-            SignType.EthSign,
-            randomRoleWeight(role, len)
+            randomRoleWeight(role, len),
+            SignType.EthSign
           )
         );
       } else {
@@ -123,7 +123,8 @@ export async function selectKeys(
             subject,
             unipassPrivateKey
           );
-          key.updateDkimParams(dkimParams);
+          // eslint-disable-next-line no-param-reassign
+          key.dkimParams = dkimParams;
         }
         return [key, true];
       }

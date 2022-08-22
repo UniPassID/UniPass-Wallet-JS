@@ -2,6 +2,7 @@ import { BytesLike, utils, Wallet } from "ethers";
 
 export * from "./keyBase";
 export * from "./keySecp256k1";
+export * from "./keySecp256k1Wallet";
 export * from "./keyEmailDkim";
 
 export enum KeyType {
@@ -15,10 +16,26 @@ export enum SignType {
   EthSign = 2,
 }
 
+export enum SignFlag {
+  NotSign = 0,
+  Sign = 1,
+}
+
 export interface RoleWeight {
   ownerWeight: number;
   assetsOpWeight: number;
   guardianWeight: number;
+}
+
+export function serializeRoleWeight(roleWeight: RoleWeight): string {
+  return utils.solidityPack(
+    ["uint32", "uint32", "uint32"],
+    [
+      roleWeight.ownerWeight,
+      roleWeight.assetsOpWeight,
+      roleWeight.guardianWeight,
+    ]
+  );
 }
 
 export async function ethSign(

@@ -6,7 +6,7 @@ import { Transaction, CallType } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UpdateImplementationTxBuilder extends BaseTxBuilder {
-  readonly OWNER_THRESHOLD = 100;
+  public readonly OWNER_THRESHOLD = 100;
 
   /**
    *
@@ -16,10 +16,10 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
    * @param signature Signature, default undefined
    */
   constructor(
-    public userAddr: BytesLike,
-    public metaNonce: number,
-    public implemenation: BytesLike,
-    signature?: string
+    public readonly userAddr: BytesLike,
+    public readonly metaNonce: number,
+    public readonly implemenation: BytesLike,
+    signature?: BytesLike
   ) {
     super(signature);
   }

@@ -1,13 +1,21 @@
 import { KeyBase, RoleWeight } from "../key";
 import { Transaction } from "../transaction";
-import { utils } from "ethers";
+import { BytesLike, utils } from "ethers";
 import { moduleMain } from "unipass-wallet-abi";
 
 export abstract class BaseTxBuilder implements ITxBuilder {
-  protected readonly contractInterface: utils.Interface;
+  public readonly contractInterface: utils.Interface;
 
-  constructor(public signature?: string) {
+  constructor(private _signature?: BytesLike) {
     this.contractInterface = new utils.Interface(moduleMain.abi);
+  }
+
+  public get signature(): BytesLike | undefined {
+    return this._signature;
+  }
+
+  public set signature(v: BytesLike) {
+    this._signature = v;
   }
 
   abstract build(): Transaction;

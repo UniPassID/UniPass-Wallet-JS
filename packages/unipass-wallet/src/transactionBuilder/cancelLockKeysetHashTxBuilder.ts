@@ -6,7 +6,7 @@ import { BaseTxBuilder } from "./baseTxBuilder";
 import { RoleWeight } from "../key";
 
 export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
-  readonly OWNER_THRESHOLD = 1;
+  public readonly OWNER_THRESHOLD = 1;
 
   /**
    *
@@ -15,8 +15,8 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
    * @param signature The Signature Of Transaction
    */
   constructor(
-    public userAddr: BytesLike,
-    public metaNonce: number,
+    public readonly userAddr: BytesLike,
+    public readonly metaNonce: number,
     signature?: string
   ) {
     super(signature);

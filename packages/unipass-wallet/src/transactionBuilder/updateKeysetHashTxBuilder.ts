@@ -18,12 +18,12 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
    * @param signature Signature, default undefined
    */
   constructor(
-    public userAddr: BytesLike,
-    public metaNonce: number,
-    public keysetHash: BytesLike,
-    public signature: string | undefined = undefined
+    public readonly userAddr: BytesLike,
+    public readonly metaNonce: number,
+    public readonly keysetHash: BytesLike,
+    signature?: BytesLike
   ) {
-    super();
+    super(signature);
   }
 
   /**

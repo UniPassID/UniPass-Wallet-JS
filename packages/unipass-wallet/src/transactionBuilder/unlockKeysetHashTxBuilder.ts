@@ -9,7 +9,10 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
    * @param userAddr Wallet Address
    * @param metaNonce MetaNonce
    */
-  constructor(public userAddr: string, public metaNonce: number) {
+  constructor(
+    public readonly userAddr: string,
+    public readonly metaNonce: number
+  ) {
     super();
   }
 
