@@ -5,7 +5,6 @@ import {
   ContractFactory,
   ContractInterface,
   Overrides,
-  providers,
   Signer,
   utils,
 } from "ethers";
@@ -46,20 +45,25 @@ const SingleFactoryInterface = new Interface(`[
 ]`);
 
 export class Deployer {
-  readonly singleFactoryContract: Contract;
+  public readonly singleFactoryContract: Contract;
 
-  readonly provider: providers.Provider;
-
-  constructor(readonly signer: Signer) {
+  constructor(private _signer: Signer) {
     this.singleFactoryContract = new Contract(
       SingleFactoryAddress,
       SingleFactoryInterface,
-      signer
+      _signer
     );
-    if (this.signer.provider === undefined) {
+    if (this._signer.provider === undefined) {
       throw new Error("Expected Provider");
     }
-    this.provider = this.signer.provider;
+  }
+
+  public get signer(): Signer {
+    return this._signer;
+  }
+
+  public set signer(v: Signer) {
+    this._signer = v;
   }
 
   public async init(): Promise<Deployer> {
@@ -72,7 +76,7 @@ export class Deployer {
     if (await this.isDeployed(this.singleFactoryContract.address)) {
       return;
     }
-    const balance = await this.provider.getBalance(
+    const balance = await this._signer.provider.getBalance(
       "0xBb6e024b9cFFACB947A71991E386681B1Cd1477D"
     );
     if (balance < utils.parseEther("0.0247")) {
@@ -100,7 +104,9 @@ export class Deployer {
       s: "0x2470",
     });
     ret = await (
-      await this.provider.sendTransaction(`0x${tx.serialize().toString("hex")}`)
+      await this._signer.provider.sendTransaction(
+        `0x${tx.serialize().toString("hex")}`
+      )
     ).wait();
     if (ret.status !== 1) {
       const error: any = new Error("Deploy Contract Failed");
@@ -130,7 +136,7 @@ export class Deployer {
   }
 
   public async isDeployed(addr: string): Promise<boolean> {
-    return (await this.provider.getCode(addr)) !== "0x";
+    return (await this._signer.provider.getCode(addr)) !== "0x";
   }
 
   public getProxyContractAddress(

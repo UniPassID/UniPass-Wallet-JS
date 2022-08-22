@@ -9,12 +9,12 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 100;
 
   constructor(
-    public userAddr: BytesLike,
-    public metaNonce: number,
-    public timeLockDuring: number,
-    public signature: string | undefined = undefined
+    public readonly userAddr: BytesLike,
+    public readonly metaNonce: number,
+    public readonly timeLockDuring: number,
+    signature?: BytesLike
   ) {
-    super();
+    super(signature);
   }
 
   /**

@@ -16,14 +16,14 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
    * @param signature Signature, default undefined
    */
   constructor(
-    public userAddr: BytesLike,
-    public metaNonce: number,
-    public keysetHash: BytesLike,
-    public timeLockDuring: number,
-    public implementation: BytesLike,
-    public signature: string | undefined = undefined
+    public readonly userAddr: BytesLike,
+    public readonly metaNonce: number,
+    public readonly keysetHash: BytesLike,
+    public readonly timeLockDuring: number,
+    public readonly implementation: BytesLike,
+    signature?: BytesLike
   ) {
-    super();
+    super(signature);
   }
 
   /**

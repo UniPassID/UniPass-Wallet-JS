@@ -1,8 +1,16 @@
-import { RoleWeight } from ".";
-import { BytesLike, utils } from "ethers";
+import { RoleWeight, serializeRoleWeight } from ".";
+import { BytesLike } from "ethers";
 
 export abstract class KeyBase {
-  constructor(readonly roleWeight: RoleWeight) {}
+  constructor(private _roleWeight: RoleWeight) {}
+
+  public get roleWeight(): RoleWeight {
+    return this._roleWeight;
+  }
+
+  public set roleWeight(v: RoleWeight) {
+    this._roleWeight = v;
+  }
 
   public abstract generateSignature(digestHash: BytesLike): Promise<string>;
 
@@ -11,13 +19,6 @@ export abstract class KeyBase {
   public abstract serialize(): string;
 
   public serializeRoleWeight(): string {
-    return utils.solidityPack(
-      ["uint32", "uint32", "uint32"],
-      [
-        this.roleWeight.ownerWeight,
-        this.roleWeight.assetsOpWeight,
-        this.roleWeight.guardianWeight,
-      ]
-    );
+    return serializeRoleWeight(this._roleWeight);
   }
 }

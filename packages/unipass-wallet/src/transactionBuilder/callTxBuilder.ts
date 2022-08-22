@@ -5,10 +5,10 @@ import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class CallTxBuilder extends BaseTxBuilder {
   constructor(
-    public gasLimit: BigNumber,
-    public target: BytesLike,
-    public value: BigNumber,
-    public data: BytesLike
+    public readonly gasLimit: BigNumber,
+    public readonly target: BytesLike,
+    public readonly value: BigNumber,
+    public readonly data: BytesLike
   ) {
     super();
   }
