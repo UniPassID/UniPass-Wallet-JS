@@ -6,6 +6,11 @@
           "internalType": "contract IDkimKeys",
           "name": "_dkimKeys",
           "type": "address"
+        },
+        {
+          "internalType": "contract IModuleWhiteList",
+          "name": "_whiteList",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
@@ -167,6 +172,28 @@
     {
       "inputs": [
         {
+          "internalType": "bytes",
+          "name": "reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "IsHooksWhiteListRevert",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "IsImplementationWhiteListRevert",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes4",
           "name": "_selector",
           "type": "bytes4"
@@ -239,12 +266,113 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "bytes32",
-          "name": "newKeysetHash",
-          "type": "bytes32"
+          "internalType": "bytes4",
+          "name": "_signature",
+          "type": "bytes4"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_hook",
+          "type": "address"
         }
       ],
-      "name": "KeysetHashUpdated",
+      "name": "AddHook",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "enum ModuleRole.Role",
+          "name": "_role",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes4",
+          "name": "_permission",
+          "type": "bytes4"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "_threshold",
+          "type": "uint32"
+        }
+      ],
+      "name": "AddPermission",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_metaNonce",
+          "type": "uint256"
+        }
+      ],
+      "name": "CancelLockKeysetHsah",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes4",
+          "name": "_signature",
+          "type": "bytes4"
+        }
+      ],
+      "name": "RemoveHook",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes4",
+          "name": "_permission",
+          "type": "bytes4"
+        }
+      ],
+      "name": "RemovePermission",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_metaNonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "_newKeysetHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "_newTimeLockDuring",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        }
+      ],
+      "name": "SyncAccount",
       "type": "event"
     },
     {
@@ -261,21 +389,97 @@
       "type": "event"
     },
     {
-      "stateMutability": "payable",
-      "type": "fallback"
-    },
-    {
-      "inputs": [],
-      "name": "INIT_LOCK_DURING",
-      "outputs": [
+      "anonymous": false,
+      "inputs": [
         {
+          "indexed": false,
           "internalType": "uint256",
-          "name": "",
+          "name": "_metaNonce",
           "type": "uint256"
         }
       ],
-      "stateMutability": "view",
-      "type": "function"
+      "name": "UnlockKeysetHash",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_metaNonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_newImplementation",
+          "type": "address"
+        }
+      ],
+      "name": "UpdateImplementation",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_metaNonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "newKeysetHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateKeysetHash",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_metaNonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "newKeysetHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "UpdateKeysetHashWithTimeLock",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_metaNonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "_newTimeLockDuring",
+          "type": "uint32"
+        }
+      ],
+      "name": "UpdateTimeLockDuring",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
     },
     {
       "inputs": [
@@ -286,7 +490,7 @@
         },
         {
           "internalType": "address",
-          "name": "_implementation",
+          "name": "_hook",
           "type": "address"
         }
       ],
@@ -442,11 +646,26 @@
     },
     {
       "inputs": [],
-      "name": "getLockDuring",
+      "name": "getLockInfo",
       "outputs": [
         {
+          "internalType": "bool",
+          "name": "isLockedRet",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint32",
+          "name": "lockDuringRet",
+          "type": "uint32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "lockedKeysetHashRet",
+          "type": "bytes32"
+        },
+        {
           "internalType": "uint256",
-          "name": "",
+          "name": "unlockAfterRet",
           "type": "uint256"
         }
       ],
@@ -480,29 +699,6 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "getPendingStatus",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "_isLocked",
-          "type": "bool"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "_lockedKeysetHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_unLockAfter",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "bytes4",
@@ -521,19 +717,6 @@
           "internalType": "uint32",
           "name": "threshold",
           "type": "uint32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "isLocked",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -606,19 +789,6 @@
           "internalType": "bytes4",
           "name": "magicValue",
           "type": "bytes4"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "lockedKeysetHash",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -837,6 +1007,11 @@
           "type": "uint32"
         },
         {
+          "internalType": "address",
+          "name": "_newImplementation",
+          "type": "address"
+        },
+        {
           "internalType": "bytes",
           "name": "_signature",
           "type": "bytes"
@@ -845,19 +1020,6 @@
       "name": "syncAccount",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "unLockAfter",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {

@@ -14,6 +14,7 @@ import * as dotenv from "dotenv";
 import ModuleMainArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json";
 import ModuleMainUpgradableArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMainUpgradable.sol/ModuleMainUpgradable.json";
 import DkimKeysArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/DkimKeys.sol/DkimKeys.json";
+import WhiteListArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol/ModuleWhiteList.json";
 import TestERC20Artifact from "../../../artifacts/contracts/tests/TestERC20.sol/TestERC20.json";
 import GreeterArtifact from "../../../artifacts/contracts/tests/Greeter.sol/Greeter.json";
 import {
@@ -56,6 +57,8 @@ describe("Test ModuleMain", () => {
   let keysetHash: string;
   let keys: KeyBase[];
   let dkimKeysAdmin: Wallet;
+  let whiteListAdmin: Wallet;
+  let whiteList: Contract;
   let chainId: number;
   let TestERC20Token: ContractFactory;
   let testERC20Token: Contract;
@@ -92,6 +95,19 @@ describe("Test ModuleMain", () => {
       dkimKeysAdmin.address
     );
 
+    const WhiteList = new ContractFactory(
+      new Interface(WhiteListArtifact.abi),
+      WhiteListArtifact.bytecode,
+      provider.getSigner()
+    );
+    whiteListAdmin = Wallet.createRandom().connect(provider);
+    whiteList = await deployer.deployContract(
+      WhiteList,
+      instance,
+      txParams,
+      whiteListAdmin.address
+    );
+
     const keyServer = utils.solidityPack(
       ["bytes", "bytes"],
       [Buffer.from("s2055"), Buffer.from("unipass.com")]
@@ -102,7 +118,7 @@ describe("Test ModuleMain", () => {
       dkimKeysAdmin.address,
       utils.parseEther("10")
     );
-    const ret = await (
+    let ret = await (
       await dkimKeys
         .connect(dkimKeysAdmin)
         .updateDKIMKey(
@@ -111,6 +127,11 @@ describe("Test ModuleMain", () => {
         )
     ).wait();
     expect(ret.status).toEqual(1);
+    await transferEth(
+      new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
+      whiteListAdmin.address,
+      utils.parseEther("10")
+    );
     ModuleMainUpgradable = new ContractFactory(
       new Interface(ModuleMainUpgradableArtifact.abi),
       ModuleMainUpgradableArtifact.bytecode,
@@ -120,8 +141,16 @@ describe("Test ModuleMain", () => {
       ModuleMainUpgradable,
       instance,
       txParams,
-      dkimKeys.address
+      dkimKeys.address,
+      whiteList.address
     );
+    ret = await (
+      await whiteList
+        .connect(whiteListAdmin)
+        .updateImplementationWhiteList(moduleMainUpgradable.address, true)
+    ).wait();
+
+    expect(ret.status).toEqual(1);
     ModuleMain = new ContractFactory(
       new Interface(ModuleMainArtifact.abi),
       ModuleMainArtifact.bytecode,
@@ -133,7 +162,8 @@ describe("Test ModuleMain", () => {
       txParams,
       deployer.singleFactoryContract.address,
       moduleMainUpgradable.address,
-      dkimKeys.address
+      dkimKeys.address,
+      whiteList.address
     );
     TestERC20Token = new ContractFactory(
       new Interface(TestERC20Artifact.abi),
@@ -233,7 +263,8 @@ describe("Test ModuleMain", () => {
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.lockedKeysetHash()).toEqual(
+    const lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.lockedKeysetHashRet).toEqual(
       `0x${newKeysetHash.toString("hex")}`
     );
     metaNonce++;
@@ -378,9 +409,8 @@ describe("Test ModuleMain", () => {
     ).wait();
 
     expect(ret.status).toBe(1);
-    expect(await proxyModuleMain.getLockDuring()).toEqual(
-      BigNumber.from(newDelay)
-    );
+    const lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.lockDuringRet).toEqual(newDelay);
   });
   it("Unlock KeysetHash TimeLock Should Success", async () => {
     // Step 1: Update TimeLock During
@@ -413,9 +443,8 @@ describe("Test ModuleMain", () => {
     ).wait();
 
     expect(ret.status).toBe(1);
-    expect(await proxyModuleMain.getLockDuring()).toEqual(
-      BigNumber.from(newTimelockDuring)
-    );
+    let lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.lockDuringRet).toEqual(newTimelockDuring);
     metaNonce++;
     nonce++;
 
@@ -447,7 +476,8 @@ describe("Test ModuleMain", () => {
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.lockedKeysetHash()).toEqual(
+    lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.lockedKeysetHashRet).toEqual(
       `0x${newKeysetHash.toString("hex")}`
     );
     metaNonce++;
@@ -483,7 +513,8 @@ describe("Test ModuleMain", () => {
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.isLocked()).toBe(false);
+    lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.isLockedRet).toBe(false);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(
       hexlify(newKeysetHash)
     );
@@ -518,7 +549,8 @@ describe("Test ModuleMain", () => {
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.lockedKeysetHash()).toEqual(
+    let lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.lockedKeysetHashRet).toEqual(
       `0x${newKeysetHash.toString("hex")}`
     );
     metaNonce++;
@@ -552,7 +584,8 @@ describe("Test ModuleMain", () => {
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
-    expect(await proxyModuleMain.isLocked()).toBe(false);
+    lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.isLockedRet).toBe(false);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(constants.HashZero);
   });
 
@@ -562,6 +595,14 @@ describe("Test ModuleMain", () => {
       GreeterArtifact.bytecode
     );
     const greeter = await deployer.deployContract(Greeter, 0, txParams);
+
+    let ret = await (
+      await whiteList
+        .connect(whiteListAdmin)
+        .updateImplementationWhiteList(greeter.address, true)
+    ).wait();
+
+    expect(ret.status).toEqual(1);
 
     const txBuilder = new UpdateImplementationTxBuilder(
       proxyModuleMain.address,
@@ -586,7 +627,7 @@ describe("Test ModuleMain", () => {
       constants.Zero,
       constants.AddressZero
     ).generateSignature([]);
-    const ret = await (
+    ret = await (
       await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
@@ -599,12 +640,14 @@ describe("Test ModuleMain", () => {
   it("Sync Account Should Success", async () => {
     const newKeysetHash = Buffer.from(randomBytes(32));
     const newTimelockDuring = randomInt(100);
+    const newImplementation = moduleMainUpgradable.address;
     metaNonce = 10;
     const txBuilder = new SyncAccountTxBuilder(
       proxyModuleMain.address,
       metaNonce,
       newKeysetHash,
-      newTimelockDuring
+      newTimelockDuring,
+      newImplementation
     );
     const subject = txBuilder.digestMessage();
     const selectedKeys = await selectKeys(
@@ -633,9 +676,11 @@ describe("Test ModuleMain", () => {
     expect(await proxyModuleMain.getMetaNonce()).toEqual(
       BigNumber.from(metaNonce)
     );
-    expect(await proxyModuleMain.getLockDuring()).toEqual(
-      BigNumber.from(newTimelockDuring)
+    expect(await proxyModuleMain.getImplementation()).toEqual(
+      newImplementation
     );
+    const lockInfo = await proxyModuleMain.getLockInfo();
+    expect(lockInfo.lockDuringRet).toEqual(newTimelockDuring);
     metaNonce++;
     nonce++;
   });

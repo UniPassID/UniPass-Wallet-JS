@@ -20,6 +20,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
     public metaNonce: number,
     public keysetHash: BytesLike,
     public timeLockDuring: number,
+    public implementation: BytesLike,
     public signature: string | undefined = undefined
   ) {
     super();
@@ -32,13 +33,14 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
   public digestMessage(): string {
     return keccak256(
       solidityPack(
-        ["uint32", "address", "uint8", "bytes32", "uint32"],
+        ["uint32", "address", "uint8", "bytes32", "uint32", "address"],
         [
           this.metaNonce,
           this.userAddr,
           AccountLayerActionType.SyncAccount,
           this.keysetHash,
           this.timeLockDuring,
+          this.implementation,
         ]
       )
     );
@@ -53,6 +55,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
       this.metaNonce,
       this.keysetHash,
       this.timeLockDuring,
+      this.implementation,
       this.signature,
     ]);
     return {
