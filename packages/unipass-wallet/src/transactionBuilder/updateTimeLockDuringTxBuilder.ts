@@ -1,4 +1,4 @@
-import { BytesLike, constants } from "ethers";
+import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
 import { RoleWeight } from "../key";
@@ -8,13 +8,16 @@ import { BaseTxBuilder } from "./baseTxBuilder";
 export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 100;
 
+  public readonly userAddr: string;
+
   constructor(
-    public readonly userAddr: BytesLike,
+    userAddr: BytesLike,
     public readonly metaNonce: number,
     public readonly timeLockDuring: number,
     signature?: BytesLike
   ) {
     super(signature);
+    this.userAddr = utils.hexlify(userAddr);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { BytesLike, constants } from "ethers";
+import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
 import { RoleWeight } from "../key";
@@ -8,6 +8,12 @@ import { BaseTxBuilder } from "./baseTxBuilder";
 export class SyncAccountTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 100;
 
+  public readonly userAddr: string;
+
+  public readonly keysetHash: string;
+
+  public readonly implementation: string;
+
   /**
    *
    * @param userAddr The Address Of User's Smart Contract Address
@@ -16,14 +22,17 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
    * @param signature Signature, default undefined
    */
   constructor(
-    public readonly userAddr: BytesLike,
+    userAddr: BytesLike,
     public readonly metaNonce: number,
-    public readonly keysetHash: BytesLike,
+    keysetHash: BytesLike,
     public readonly timeLockDuring: number,
-    public readonly implementation: BytesLike,
+    implementation: BytesLike,
     signature?: BytesLike
   ) {
     super(signature);
+    this.userAddr = utils.hexlify(userAddr);
+    this.keysetHash = utils.hexlify(keysetHash);
+    this.implementation = utils.hexlify(implementation);
   }
 
   /**

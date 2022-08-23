@@ -3,24 +3,39 @@ import { BytesLike, utils } from "ethers";
 import { KeyType, RoleWeight, SignFlag, SignType } from ".";
 
 export class KeySecp256k1 extends KeyBase {
+  public readonly address: string;
+
   constructor(
-    public readonly address: BytesLike,
+    _address: BytesLike,
     roleWeight: RoleWeight,
-    private _signType: SignType,
-    public readonly signFunc: (
+    private signType: SignType,
+    public signFunc?: (
       digestHash: BytesLike,
       signType: SignType
     ) => Promise<string>
   ) {
     super(roleWeight);
+    this.address = utils.hexlify(_address);
   }
 
-  public get signType(): SignType {
-    return this._signType;
+  public toJson() {
+    return JSON.stringify({
+      address: this.address,
+      roleWeight: this.roleWeight,
+      signType: this.signType,
+    });
   }
 
-  public set signType(v: SignType) {
-    this._signType = v;
+  static fromJsonObj(obj: any): KeySecp256k1 {
+    return new KeySecp256k1(obj.address, obj.roleWeight, obj.signType);
+  }
+
+  public getSignType(): SignType {
+    return this.signType;
+  }
+
+  public setSignType(v: SignType) {
+    this.signType = v;
   }
 
   public async generateSignature(digestHash: string): Promise<string> {
@@ -29,7 +44,7 @@ export class KeySecp256k1 extends KeyBase {
       [
         KeyType.Secp256k1,
         SignFlag.Sign,
-        await this.signFunc(digestHash, this.signType),
+        await this.signFunc!(digestHash, this.signType),
         this.serializeRoleWeight(),
       ]
     );

@@ -5,18 +5,18 @@ import { utils } from "ethers";
 
 export class KeyEmailDkim extends KeyBase {
   constructor(
-    private _emailFrom: string,
+    public readonly emailFrom: string,
     roleWeight: RoleWeight,
-    private _dkimParams?: DkimParamsBase
+    private dkimParams?: DkimParamsBase
   ) {
     super(roleWeight);
     if (
-      _dkimParams !== undefined &&
-      this._emailFrom !==
+      this.dkimParams !== undefined &&
+      this.emailFrom !==
         Buffer.from(
-          _dkimParams.emailHeader.slice(
-            _dkimParams.fromLeftIndex,
-            _dkimParams.fromRightIndex + 1
+          this.dkimParams.emailHeader.slice(
+            this.dkimParams.fromLeftIndex,
+            this.dkimParams.fromRightIndex + 1
           )
         ).toString()
     ) {
@@ -24,29 +24,38 @@ export class KeyEmailDkim extends KeyBase {
     }
   }
 
-  public get emailFrom(): string {
-    return this._emailFrom;
+  public toJson() {
+    return JSON.stringify({
+      emailFrom: this.emailFrom,
+      roleWeight: this.roleWeight,
+      dkimParams: this.dkimParams
+        ? this.dkimParams.toDkimParamsBaseSerMiddler()
+        : this.dkimParams,
+    });
   }
 
-  public set emailFrom(v: string) {
-    if (this._emailFrom !== v) {
-      this._dkimParams = undefined;
-    }
-    this.emailFrom = v;
+  static fromJsonObj(obj: any): KeyEmailDkim {
+    return new KeyEmailDkim(
+      obj.emailFrom,
+      obj.roleWeight,
+      obj.dkimParams
+        ? DkimParamsBase.fromDkimParamsBaseSerMiddler(obj.dkimParams)
+        : obj.dkimParams
+    );
   }
 
-  public get dkimParams(): DkimParamsBase | undefined {
-    return this._dkimParams;
+  public getDkimParams(): DkimParamsBase | undefined {
+    return this.dkimParams;
   }
 
-  public set dkimParams(v: DkimParamsBase) {
+  public setDkimParams(v: DkimParamsBase) {
     const emailFrom = Buffer.from(
       v.emailHeader.slice(v.fromLeftIndex, v.fromRightIndex + 1)
     ).toString();
     if (this.emailFrom !== emailFrom) {
       throw new Error("Not Matched EmailFrom And DkimParams");
     }
-    this._dkimParams = v;
+    this.dkimParams = v;
   }
 
   public async generateSignature(digestHash: string): Promise<string> {

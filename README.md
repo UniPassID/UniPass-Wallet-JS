@@ -74,3 +74,10 @@ const ret = await (
   await txExecutor.execute(proxyModuleMain, optimalGasLimit)
 ).wait();
 ```
+
+## Publish
+
+```shell
+pnpm changeset
+pnpm changeset version
+```
