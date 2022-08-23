@@ -1,4 +1,11 @@
-import { KeySecp256k1, KeyEmailDkim, RoleWeight, KeyBase } from "./key";
+import {
+  KeySecp256k1,
+  KeyEmailDkim,
+  RoleWeight,
+  KeyBase,
+  KeySecp256k1Wallet,
+} from "./key";
+import { KeyERC1271 } from "./key/keyERC1271";
 import { getKeysetHash } from "./utils";
 
 export class Keyset {
@@ -33,5 +40,45 @@ export class Keyset {
 
   public hash(): string {
     return getKeysetHash(this.keys);
+  }
+
+  public toJson(): string {
+    return `[${this.keys
+      .map((v) => {
+        if (v instanceof KeyEmailDkim) {
+          return `{"KeyEmailDkim":${v.toJson()}}`;
+        }
+        if (v instanceof KeyERC1271) {
+          return `{"KeyERC1271":${v.toJson()}}`;
+        }
+        if (v instanceof KeySecp256k1) {
+          return `{"KeySecp256k1":${v.toJson()}}`;
+        }
+        if (v instanceof KeySecp256k1Wallet) {
+          return `{"KeySecp256k1Wallet":${v.toJson()}}`;
+        }
+        throw new Error("Not Valid KeyBase");
+      })
+      .join(",")}]`;
+  }
+
+  public static fromJson(json: string): Keyset {
+    return new Keyset(
+      (JSON.parse(json) as any[]).map((v) => {
+        if (v.KeyEmailDkim) {
+          return KeyEmailDkim.fromJsonObj(v.KeyEmailDkim);
+        }
+        if (v.KeyERC1271) {
+          return KeyERC1271.fromJsonObj(v.KeyERC1271);
+        }
+        if (v.KeySecp256k1) {
+          return KeySecp256k1.fromJsonObj(v.KeySecp256k1);
+        }
+        if (v.KeySecp256k1Wallet) {
+          return KeySecp256k1Wallet.fromJsonObj(v.KeySecp256k1Wallet);
+        }
+        throw new Error("Invalid KeyBase");
+      })
+    );
   }
 }

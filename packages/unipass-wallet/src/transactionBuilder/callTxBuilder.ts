@@ -1,16 +1,22 @@
-import { BigNumber, BytesLike } from "ethers";
+import { BigNumber, BytesLike, utils } from "ethers";
 import { RoleWeight } from "../key";
 import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class CallTxBuilder extends BaseTxBuilder {
+  public readonly target: string;
+
+  public readonly data: string;
+
   constructor(
     public readonly gasLimit: BigNumber,
-    public readonly target: BytesLike,
+    _target: BytesLike,
     public readonly value: BigNumber,
-    public readonly data: BytesLike
+    _data: BytesLike
   ) {
     super();
+    this.target = utils.hexlify(_target);
+    this.data = utils.hexlify(_data);
   }
 
   // eslint-disable-next-line class-methods-use-this

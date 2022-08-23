@@ -6,16 +6,21 @@ import { moduleMain } from "unipass-wallet-abi";
 export abstract class BaseTxBuilder implements ITxBuilder {
   public readonly contractInterface: utils.Interface;
 
-  constructor(private _signature?: BytesLike) {
+  private _signature: string;
+
+  constructor(signature?: BytesLike) {
     this.contractInterface = new utils.Interface(moduleMain.abi);
+    if (signature) {
+      this._signature = utils.hexlify(signature);
+    }
   }
 
-  public get signature(): BytesLike | undefined {
+  public get signature(): string {
     return this._signature;
   }
 
   public set signature(v: BytesLike) {
-    this._signature = v;
+    this._signature = utils.hexlify(v);
   }
 
   abstract build(): Transaction;

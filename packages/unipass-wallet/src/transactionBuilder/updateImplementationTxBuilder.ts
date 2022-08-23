@@ -1,4 +1,4 @@
-import { BytesLike, constants } from "ethers";
+import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
 import { RoleWeight } from "../key";
@@ -8,6 +8,10 @@ import { BaseTxBuilder } from "./baseTxBuilder";
 export class UpdateImplementationTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 100;
 
+  public readonly userAddr: string;
+
+  public readonly implementation: string;
+
   /**
    *
    * @param userAddr The Address Of User's Smart Contract Address
@@ -16,12 +20,14 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
    * @param signature Signature, default undefined
    */
   constructor(
-    public readonly userAddr: BytesLike,
+    userAddr: BytesLike,
     public readonly metaNonce: number,
-    public readonly implemenation: BytesLike,
+    implemenation: BytesLike,
     signature?: BytesLike
   ) {
     super(signature);
+    this.userAddr = utils.hexlify(userAddr);
+    this.implementation = utils.hexlify(implemenation);
   }
 
   /**
@@ -36,7 +42,7 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
           this.metaNonce,
           this.userAddr,
           AccountLayerActionType.UpdateImplementation,
-          this.implemenation,
+          this.implementation,
         ]
       )
     );
@@ -49,7 +55,7 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
   public build(): Transaction {
     const data = this.contractInterface.encodeFunctionData(
       "updateImplementation",
-      [this.metaNonce, this.implemenation, this.signature]
+      [this.metaNonce, this.implementation, this.signature]
     );
     return {
       callType: CallType.Call,

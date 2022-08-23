@@ -1,4 +1,4 @@
-import { BytesLike, constants } from "ethers";
+import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
 import { CallType, Transaction } from "../transaction";
@@ -8,6 +8,8 @@ import { RoleWeight } from "../key";
 export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 1;
 
+  public readonly userAddr: string;
+
   /**
    *
    * @param userAddr The Address Of User Wallet
@@ -15,11 +17,12 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
    * @param signature The Signature Of Transaction
    */
   constructor(
-    public readonly userAddr: BytesLike,
+    _userAddr: BytesLike,
     public readonly metaNonce: number,
     signature?: string
   ) {
     super(signature);
+    this.userAddr = utils.hexlify(_userAddr);
   }
 
   /**

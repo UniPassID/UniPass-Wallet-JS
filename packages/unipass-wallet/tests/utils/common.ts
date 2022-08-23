@@ -124,7 +124,7 @@ export async function selectKeys(
             unipassPrivateKey
           );
           // eslint-disable-next-line no-param-reassign
-          key.dkimParams = dkimParams;
+          key.setDkimParams(dkimParams);
         }
         return [key, true];
       }

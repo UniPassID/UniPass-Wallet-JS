@@ -4,27 +4,35 @@ import { KeyType, RoleWeight, sign, SignFlag, SignType } from ".";
 
 export class KeySecp256k1Wallet extends KeyBase {
   constructor(
-    private _secp256k1Wallet: Wallet,
+    public wallet: Wallet,
     roleWeight: RoleWeight,
-    private _signType: SignType
+    private signType: SignType
   ) {
     super(roleWeight);
   }
 
-  public get secp256k1Wallet(): Wallet {
-    return this._secp256k1Wallet;
+  public toJson() {
+    return JSON.stringify({
+      wallet: this.wallet.privateKey,
+      roleWeight: this.roleWeight,
+      signType: this.signType,
+    });
   }
 
-  public set secp256k1Wallet(v: Wallet) {
-    this._secp256k1Wallet = v;
+  static fromJsonObj(obj: any): KeySecp256k1Wallet {
+    return new KeySecp256k1Wallet(
+      new Wallet(obj.wallet),
+      obj.roleWeight,
+      obj.signType
+    );
   }
 
-  public get signType(): SignType {
-    return this._signType;
+  public getSignType(): SignType {
+    return this.signType;
   }
 
-  public set signType(v: SignType) {
-    this._signType = v;
+  public setSignType(v: SignType) {
+    this.signType = v;
   }
 
   public async generateSignature(digestHash: string): Promise<string> {
@@ -33,7 +41,7 @@ export class KeySecp256k1Wallet extends KeyBase {
       [
         KeyType.Secp256k1,
         SignFlag.Sign,
-        await sign(digestHash, this._secp256k1Wallet, this.signType),
+        await sign(digestHash, this.wallet, this.signType),
         this.serializeRoleWeight(),
       ]
     );
@@ -45,7 +53,7 @@ export class KeySecp256k1Wallet extends KeyBase {
       [
         KeyType.Secp256k1,
         SignFlag.NotSign,
-        this._secp256k1Wallet.address,
+        this.wallet.address,
         this.serializeRoleWeight(),
       ]
     );
@@ -54,11 +62,7 @@ export class KeySecp256k1Wallet extends KeyBase {
   public serialize(): string {
     return utils.solidityPack(
       ["uint8", "address", "bytes"],
-      [
-        KeyType.Secp256k1,
-        this._secp256k1Wallet.address,
-        this.serializeRoleWeight(),
-      ]
+      [KeyType.Secp256k1, this.wallet.address, this.serializeRoleWeight()]
     );
   }
 }
