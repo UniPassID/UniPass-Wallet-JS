@@ -14,6 +14,7 @@
     "hardhat:start": "pnpm hardhat node --port 7547",
     "hardhat:compile": "pnpm hardhat compile",
     "publish": "pnpm run hardhat:compile && pnpm publish -r",
+    "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile && git add .",
     "ci:publish": "pnpm run hardhat:compile && pnpm publish -r && pnpm changeset tag"
   },
   "devDependencies": {
