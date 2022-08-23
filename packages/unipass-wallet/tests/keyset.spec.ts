@@ -11,7 +11,6 @@ import {
 import { Keyset } from "../src/keyset";
 import { BytesLike, utils, Wallet } from "ethers";
 import { KeyERC1271 } from "../src/key/keyERC1271";
-import { randomRoleWeight } from "./utils/common";
 
 describe("Test Keyset", () => {
   it("Create Keyset Should Success", async () => {
