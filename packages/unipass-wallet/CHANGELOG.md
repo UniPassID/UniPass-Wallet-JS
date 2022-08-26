@@ -1,5 +1,13 @@
 # unipass-wallet
 
+## 0.0.15
+
+### Patch Changes
+
+- unipass-wallet@0.0.14 unipass-wallet-abi@0.0.12
+- Updated dependencies
+  - unipass-wallet-abi@0.0.13
+
 ## 0.0.14
 
 ### Patch Changes
