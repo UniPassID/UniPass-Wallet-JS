@@ -31,6 +31,7 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
       this.metaNonce,
     ]);
     return {
+      revertOnError: true,
       callType: CallType.Call,
       gasLimit: constants.Zero,
       target: this.userAddr,

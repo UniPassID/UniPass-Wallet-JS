@@ -45,6 +45,7 @@ export function randomKeys(len: number): KeyBase[] {
         ret.push(
           new KeyEmailDkim(
             `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`,
+            randomBytes(32),
             randomRoleWeight(role, len)
           )
         );

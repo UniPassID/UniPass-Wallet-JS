@@ -7,6 +7,7 @@ import {
 } from "./key";
 import { KeyERC1271 } from "./key/keyERC1271";
 import { getKeysetHash } from "./utils";
+import { BytesLike } from "ethers";
 
 export class Keyset {
   /**
@@ -18,6 +19,7 @@ export class Keyset {
 
   static new(
     registerEmail: string,
+    registerEmailPepper: BytesLike,
     masterKey: KeySecp256k1,
     guardians: KeyBase[],
     policy?: KeyBase,
@@ -25,10 +27,11 @@ export class Keyset {
   ): Keyset {
     const registerEmailKey = new KeyEmailDkim(
       registerEmail,
+      registerEmailPepper,
       registerEmailRoleWeight || {
-        ownerWeight: 40,
-        assetsOpWeight: 100,
-        guardianWeight: 0,
+        ownerWeight: 60,
+        assetsOpWeight: 0,
+        guardianWeight: 60,
       }
     );
     const keys = [masterKey as KeyBase, registerEmailKey].concat(guardians);

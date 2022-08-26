@@ -3,6 +3,7 @@ import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { KeyBase } from "./key";
 import { SessionKey } from "./sessionKey";
 import { Transaction } from "./transaction";
+import { subdigest } from "./utils";
 
 export class TxExcutor {
   /**
@@ -10,18 +11,13 @@ export class TxExcutor {
    * @param chainId The Chain ID Of Blockchain
    * @param nonce The Nonce of Transaction
    * @param txs  Transactions To executed
-   * @param feeToken Token Address For Fee
-   * @param feeAmount Fee Amount
-   * @param feeReceiver The Address of fee receiver
    * @param signature Signature From U
    */
   constructor(
     public chainId: number,
+    public contract: Contract,
     public nonce: number,
     public txs: Transaction[],
-    public feeToken: BytesLike,
-    public feeAmount: BigNumber,
-    public feeReceiver: BytesLike,
     public signature?: string
   ) {}
 
@@ -30,23 +26,17 @@ export class TxExcutor {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return keccak256(
-      solidityPack(
-        ["uint256", "bytes32", "address", "uint256"],
-        [
-          this.chainId,
-          keccak256(
-            defaultAbiCoder.encode(
-              [
-                "uint256",
-                "tuple(uint8 callType,uint256 gasLimit,address target,uint256 value,bytes data)[]",
-              ],
-              [this.nonce, this.txs]
-            )
-          ),
-          this.feeToken,
-          this.feeAmount,
-        ]
+    return subdigest(
+      this.chainId,
+      this.contract.address,
+      keccak256(
+        defaultAbiCoder.encode(
+          [
+            "uint256",
+            "tuple(uint8 callType,bool revertOnError,address target,uint256 gasLimit,uint256 value,bytes data)[]",
+          ],
+          [this.nonce, this.txs]
+        )
       )
     );
   }
@@ -95,16 +85,13 @@ export class TxExcutor {
    * @param executeOpt Transaction Options
    * @returns Eth Transaction Info
    */
-  public async execute(contract: Contract, executeOpt: Overrides | undefined) {
+  public async execute(executeOpt: Overrides | undefined) {
     if (this.signature === undefined) {
       throw new Error(`expected generating signature`);
     }
-    return contract.execute(
+    return this.contract.execute(
       this.txs,
       this.nonce,
-      this.feeToken,
-      this.feeReceiver,
-      this.feeAmount,
       this.signature,
       executeOpt
     );

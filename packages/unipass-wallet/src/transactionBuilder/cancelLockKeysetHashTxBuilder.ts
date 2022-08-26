@@ -4,6 +4,7 @@ import { AccountLayerActionType } from ".";
 import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 import { RoleWeight } from "../key";
+import { subdigest } from "../utils";
 
 export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 1;
@@ -30,14 +31,14 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return keccak256(
-      solidityPack(
-        ["uint32", "address", "uint8"],
-        [
-          this.metaNonce,
-          this.userAddr,
-          AccountLayerActionType.CancelLockKeysetHash,
-        ]
+    return subdigest(
+      0,
+      this.userAddr,
+      keccak256(
+        solidityPack(
+          ["uint8", "uint32"],
+          [AccountLayerActionType.CancelLockKeysetHash, this.metaNonce]
+        )
       )
     );
   }
@@ -53,6 +54,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
     );
     return {
       callType: CallType.Call,
+      revertOnError: true,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,

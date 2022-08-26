@@ -42,8 +42,8 @@ export class DkimParams extends DkimParamsBase {
     fromRightIndex: number,
     subjectIndex: number,
     subjectRightIndex: number,
-    subject: Uint8Array[],
-    subjectPadding: Uint8Array,
+    subject: string[],
+    subjectPadding: string,
     isSubBase64: boolean[],
     dkimHeaderIndex: number,
     sdidIndex: number,
@@ -72,7 +72,7 @@ export class DkimParams extends DkimParamsBase {
 
   public static getDkimParams(
     results: Dkim.VerifyResult[],
-    subs: Buffer[],
+    subs: string[],
     isSubBase64: boolean[],
     subjectPadding: string,
     fromHeader: string,
@@ -124,7 +124,7 @@ export class DkimParams extends DkimParamsBase {
           subjectIndex,
           processedHeader.indexOf("\r\n", subjectIndex),
           subs,
-          Buffer.from(subjectPadding, "utf-8"),
+          subjectPadding,
           isSubBase64,
           dkimHeaderIndex,
           sdidIndex,

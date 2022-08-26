@@ -8,7 +8,13 @@ import {
   utils,
   Wallet,
 } from "ethers";
-import { hexlify, Interface, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
+import {
+  formatBytes32String,
+  hexlify,
+  Interface,
+  randomBytes,
+  toUtf8Bytes,
+} from "ethers/lib/utils";
 import * as dotenv from "dotenv";
 
 import ModuleMainArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json";
@@ -109,8 +115,8 @@ describe("Test ModuleMain", () => {
     );
 
     const keyServer = utils.solidityPack(
-      ["bytes", "bytes"],
-      [Buffer.from("s2055"), Buffer.from("unipass.com")]
+      ["bytes32", "bytes32"],
+      [formatBytes32String("s2055"), formatBytes32String("unipass.com")]
     );
 
     await transferEth(
@@ -199,7 +205,7 @@ describe("Test ModuleMain", () => {
     metaNonce = 1;
   });
   it("Updating KeysetHash Wighout TimeLock Should Success", async () => {
-    const newKeysetHash = Buffer.from(randomBytes(32));
+    const newKeysetHash = randomBytes(32);
     const txBuilder = await new UpdateKeysetHashTxBuilder(
       proxyModuleMain.address,
       metaNonce,
@@ -214,20 +220,15 @@ describe("Test ModuleMain", () => {
     );
     const tx = (await txBuilder.generateSignature(selectedKeys)).build();
 
-    const txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(
-      `0x${newKeysetHash.toString("hex")}`
+      hexlify(newKeysetHash)
     );
     metaNonce++;
     nonce++;
@@ -251,16 +252,11 @@ describe("Test ModuleMain", () => {
       50
     );
     const tx = (await txBuilder.generateSignature(selectedKeys)).build();
-    const txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     const lockInfo = await proxyModuleMain.getLockInfo();
@@ -283,7 +279,12 @@ describe("Test ModuleMain", () => {
       data
     ).build();
 
-    let sessionKey = new SessionKey(Wallet.createRandom(), SignType.EthSign);
+    let sessionKey = new SessionKey(
+      Wallet.createRandom(),
+      SignType.EthSign,
+      chainId,
+      proxyModuleMain.address
+    );
     const timestamp = Math.ceil(Date.now() / 1000) + 5000;
     const weight = 100;
 
@@ -301,19 +302,12 @@ describe("Test ModuleMain", () => {
       selectedKeys
     );
 
-    const txExecutor = new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    );
+    const txExecutor = new TxExcutor(chainId, proxyModuleMain, nonce, [tx]);
 
     const ret = await (
       await (
         await txExecutor.generateSignature(sessionKey)
-      ).execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      ).execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await testERC20Token.balanceOf(dkimKeysAdmin.address)).toEqual(
@@ -329,19 +323,17 @@ describe("Test ModuleMain", () => {
       utils.parseEther("10"),
       "0x"
     ).build();
-    let sessionKey = new SessionKey(Wallet.createRandom(), SignType.EthSign);
+    let sessionKey = new SessionKey(
+      Wallet.createRandom(),
+      SignType.EthSign,
+      chainId,
+      proxyModuleMain.address
+    );
 
     const timestamp = Math.ceil(Date.now() / 1000) + 5000;
     const weight = 100;
 
-    const txExecutor = new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    );
+    const txExecutor = new TxExcutor(chainId, proxyModuleMain, nonce, [tx]);
     const subject = sessionKey.digestPermitMessage(timestamp, weight);
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
@@ -359,7 +351,7 @@ describe("Test ModuleMain", () => {
     const ret = await (
       await (
         await txExecutor.generateSignature(sessionKey)
-      ).execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      ).execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(
@@ -380,10 +372,11 @@ describe("Test ModuleMain", () => {
       subject,
       unipassPrivateKey
     );
-    const ret = await dkimKeys.dkimVerifyParams(email, toUtf8Bytes(emailFrom));
+    const pepper = hexlify(randomBytes(32));
+    const ret = await dkimKeys.dkimVerify(email.serialize(), 0, pepper);
     expect(ret[0]).toBe(true);
-    expect(ret[1]).toBe(pureEmailHash(emailFrom));
-    expect(ret[2]).toBe(`0x${Buffer.from(subject).toString("hex")}`);
+    expect(ret[1]).toBe(pureEmailHash(emailFrom, pepper));
+    expect(ret[2]).toBe(hexlify(toUtf8Bytes(subject)));
   });
   it("Update TimeLock During Should Success", async () => {
     const newDelay = 3600;
@@ -403,15 +396,10 @@ describe("Test ModuleMain", () => {
     const tx = (await txBuilder.generateSignature(selectedKeys)).build();
     const ret = await (
       await (
-        await new TxExcutor(
-          chainId,
-          nonce,
-          [tx],
-          constants.AddressZero,
-          constants.Zero,
-          constants.AddressZero
-        ).generateSignature([])
-      ).execute(proxyModuleMain, txParams)
+        await new TxExcutor(chainId, proxyModuleMain, nonce, [
+          tx,
+        ]).generateSignature([])
+      ).execute(txParams)
     ).wait();
 
     expect(ret.status).toBe(1);
@@ -437,15 +425,10 @@ describe("Test ModuleMain", () => {
     let tx = (await txBuilder1.generateSignature(selectedKeys)).build();
     let ret = await await (
       await (
-        await new TxExcutor(
-          chainId,
-          nonce,
-          [tx],
-          constants.AddressZero,
-          constants.Zero,
-          constants.AddressZero
-        ).generateSignature([])
-      ).execute(proxyModuleMain, txParams)
+        await new TxExcutor(chainId, proxyModuleMain, nonce, [
+          tx,
+        ]).generateSignature([])
+      ).execute(txParams)
     ).wait();
 
     expect(ret.status).toBe(1);
@@ -470,16 +453,11 @@ describe("Test ModuleMain", () => {
       50
     );
     tx = (await txBuilder2.generateSignature(selectedKeys)).build();
-    let txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    let txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await proxyModuleMain.getLockInfo();
@@ -494,16 +472,11 @@ describe("Test ModuleMain", () => {
       proxyModuleMain.address,
       metaNonce
     ).build();
-    txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     try {
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit });
+      await txExecutor.execute({ gasLimit: optimalGasLimit });
     } catch (error) {
       expect(JSON.parse(error.body).error.message).toEqual(
         `Error: VM Exception while processing transaction: reverted with custom error 'TxFailed("${txExecutor.digestMessage()}", "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001e5f72657175697265546f556e4c6f636b3a20554e4c4f434b5f41465445520000")'`
@@ -516,7 +489,7 @@ describe("Test ModuleMain", () => {
     );
 
     ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await proxyModuleMain.getLockInfo();
@@ -543,16 +516,11 @@ describe("Test ModuleMain", () => {
       50
     );
     let tx = (await txBuilder1.generateSignature(selectedKeys)).build();
-    let txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    let txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     let ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     let lockInfo = await proxyModuleMain.getLockInfo();
@@ -577,17 +545,12 @@ describe("Test ModuleMain", () => {
     );
     tx = (await txBuilder2.generateSignature(selectedKeys)).build();
 
-    txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
 
     ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await proxyModuleMain.getLockInfo();
@@ -625,16 +588,11 @@ describe("Test ModuleMain", () => {
     );
 
     const tx = (await txBuilder.generateSignature(selectedKeys)).build();
-    const txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     proxyModuleMain = greeter.attach(proxyModuleMain.address);
@@ -664,16 +622,11 @@ describe("Test ModuleMain", () => {
       100
     );
     const tx = (await txBuilder.generateSignature(selectedKeys)).build();
-    const txExecutor = await new TxExcutor(
-      chainId,
-      nonce,
-      [tx],
-      constants.AddressZero,
-      constants.Zero,
-      constants.AddressZero
-    ).generateSignature([]);
+    const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
+      tx,
+    ]).generateSignature([]);
     const ret = await (
-      await txExecutor.execute(proxyModuleMain, { gasLimit: optimalGasLimit })
+      await txExecutor.execute({ gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await proxyModuleMain.getKeysetHash()).toEqual(

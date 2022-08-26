@@ -3,6 +3,7 @@ import { hexlify, keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
 import { RoleWeight } from "../key";
 import { Transaction, CallType } from "../transaction";
+import { subdigest } from "../utils";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
@@ -37,15 +38,18 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return keccak256(
-      solidityPack(
-        ["uint32", "address", "uint8", "bytes32"],
-        [
-          this.metaNonce,
-          this.userAddr,
-          AccountLayerActionType.UpdateKeysetHash,
-          this.keysetHash,
-        ]
+    return subdigest(
+      0,
+      this.userAddr,
+      keccak256(
+        solidityPack(
+          ["uint8", "uint32", "bytes32"],
+          [
+            AccountLayerActionType.UpdateKeysetHash,
+            this.metaNonce,
+            this.keysetHash,
+          ]
+        )
       )
     );
   }
@@ -64,6 +68,7 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
       this.signature,
     ]);
     return {
+      revertOnError: true,
       callType: CallType.Call,
       gasLimit: constants.Zero,
       target: this.userAddr,

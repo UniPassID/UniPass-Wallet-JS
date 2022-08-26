@@ -32,6 +32,7 @@ export class CallTxBuilder extends BaseTxBuilder {
   public build(): Transaction {
     return {
       callType: CallType.Call,
+      revertOnError: true,
       gasLimit: this.gasLimit,
       target: this.target,
       value: this.value,
