@@ -8,7 +8,7 @@ import {
   utils,
   Wallet,
 } from "ethers";
-import { hexlify, Interface, randomBytes } from "ethers/lib/utils";
+import { hexlify, Interface, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
 import * as dotenv from "dotenv";
 
 import ModuleMainArtifact from "../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json";
@@ -283,11 +283,22 @@ describe("Test ModuleMain", () => {
       data
     ).build();
 
-    const sessionKey = new SessionKey(
-      Wallet.createRandom(),
-      Math.ceil(Date.now() / 1000) + 500,
-      100,
-      SignType.EthSign
+    let sessionKey = new SessionKey(Wallet.createRandom(), SignType.EthSign);
+    const timestamp = Math.ceil(Date.now() / 1000) + 5000;
+    const weight = 100;
+
+    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
+      keys,
+      sessionKey.digestPermitMessage(timestamp, weight),
+      unipassPrivateKey,
+      Role.AssetsOp,
+      100
+    );
+
+    sessionKey = await sessionKey.generatePermit(
+      timestamp,
+      weight,
+      selectedKeys
     );
 
     const txExecutor = new TxExcutor(
@@ -298,18 +309,10 @@ describe("Test ModuleMain", () => {
       constants.Zero,
       constants.AddressZero
     );
-    const subject = sessionKey.digestMessage();
-    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
-      subject,
-      unipassPrivateKey,
-      Role.AssetsOp,
-      100
-    );
 
     const ret = await (
       await (
-        await txExecutor.generateSignature(selectedKeys, sessionKey)
+        await txExecutor.generateSignature(sessionKey)
       ).execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
@@ -326,12 +329,10 @@ describe("Test ModuleMain", () => {
       utils.parseEther("10"),
       "0x"
     ).build();
-    const sessionKey = new SessionKey(
-      Wallet.createRandom(),
-      Math.ceil(Date.now() / 1000) + 500,
-      100,
-      SignType.EthSign
-    );
+    let sessionKey = new SessionKey(Wallet.createRandom(), SignType.EthSign);
+
+    const timestamp = Math.ceil(Date.now() / 1000) + 5000;
+    const weight = 100;
 
     const txExecutor = new TxExcutor(
       chainId,
@@ -341,7 +342,7 @@ describe("Test ModuleMain", () => {
       constants.Zero,
       constants.AddressZero
     );
-    const subject = sessionKey.digestMessage();
+    const subject = sessionKey.digestPermitMessage(timestamp, weight);
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
       subject,
@@ -350,9 +351,14 @@ describe("Test ModuleMain", () => {
       100
     );
 
+    sessionKey = await sessionKey.generatePermit(
+      timestamp,
+      weight,
+      selectedKeys
+    );
     const ret = await (
       await (
-        await txExecutor.generateSignature(selectedKeys, sessionKey)
+        await txExecutor.generateSignature(sessionKey)
       ).execute(proxyModuleMain, { gasLimit: optimalGasLimit })
     ).wait();
     expect(ret.status).toEqual(1);
@@ -374,7 +380,7 @@ describe("Test ModuleMain", () => {
       subject,
       unipassPrivateKey
     );
-    const ret = await email.dkimVerify(dkimKeys, emailFrom);
+    const ret = await dkimKeys.dkimVerifyParams(email, toUtf8Bytes(emailFrom));
     expect(ret[0]).toBe(true);
     expect(ret[1]).toBe(pureEmailHash(emailFrom));
     expect(ret[2]).toBe(`0x${Buffer.from(subject).toString("hex")}`);

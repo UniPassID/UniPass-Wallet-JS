@@ -1,4 +1,4 @@
-import { BigNumber, BytesLike, Contract, Overrides } from "ethers";
+import { BigNumber, BytesLike, Contract, Overrides, utils } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { KeyBase } from "./key";
 import { SessionKey } from "./sessionKey";
@@ -52,34 +52,36 @@ export class TxExcutor {
   }
 
   public async generateSignature(
-    keys: [KeyBase, boolean][],
-    sessionKey?: SessionKey
+    keyOrSessionKey: [KeyBase, boolean][] | SessionKey
   ): Promise<TxExcutor> {
-    if (keys.length === 0) {
-      this.signature = "0x";
-      return this;
-    }
-    let sig: string;
     const digestHash = this.digestMessage();
-
-    if (sessionKey === undefined) {
-      sig = solidityPack(["uint8"], [0]);
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [key, isSig] of keys) {
-        if (isSig) {
-          sig = solidityPack(
-            ["bytes", "bytes"],
-            // eslint-disable-next-line no-await-in-loop
-            [sig, await key.generateSignature(digestHash)]
-          );
-        } else {
-          sig = solidityPack(["bytes", "bytes"], [sig, key.generateKey()]);
-        }
-      }
-    } else {
+    let sig;
+    if (keyOrSessionKey instanceof SessionKey) {
+      const isSessionKey = 1;
       sig = solidityPack(
         ["uint8", "bytes"],
-        [1, await sessionKey.generateSignature(digestHash, keys)]
+        [isSessionKey, await keyOrSessionKey.generateSignature(digestHash)]
+      );
+    } else if (keyOrSessionKey.length === 0) {
+      sig = "0x";
+    } else {
+      const isSessionKey = 0;
+      sig = solidityPack(
+        ["uint8", "bytes"],
+        [
+          isSessionKey,
+          utils.concat(
+            await Promise.all(
+              keyOrSessionKey.map(async ([key, isSig]) => {
+                if (isSig) {
+                  const ret = await key.generateSignature(digestHash);
+                  return ret;
+                }
+                return key.generateKey();
+              })
+            )
+          ),
+        ]
       );
     }
 
