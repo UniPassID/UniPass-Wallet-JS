@@ -9,3 +9,4 @@ cache
 config.ts
 .npmrc
 .pnpm-store
+.secret

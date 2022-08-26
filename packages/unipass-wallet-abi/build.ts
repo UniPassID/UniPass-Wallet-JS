@@ -38,3 +38,16 @@ fs.writeFileSync(
   "./src/abis/moduleMain.json",
   JSON.stringify({ abi: moduleMain.abi }, null, 2)
 );
+
+const dkimKeys = JSON.parse(
+  fs
+    .readFileSync(
+      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/DkimKeys.sol/DkimKeys.json`
+    )
+    .toString("utf-8")
+);
+
+fs.writeFileSync(
+  "./src/abis/dkimKeys.json",
+  JSON.stringify({ abi: dkimKeys.abi }, null, 2)
+);

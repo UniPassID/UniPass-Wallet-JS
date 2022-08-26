@@ -1,62 +1,70 @@
 import { utils, Wallet } from "ethers";
 import { KeyBase, sign, SignType } from "./key";
+import { IPermit } from "./permit";
 
 export class SessionKey {
   constructor(
-    public key: Wallet,
-    public timestamp: number,
-    public weight: number,
-    public signType: SignType
+    public readonly wallet: Wallet,
+    public signType: SignType,
+    public permit?: IPermit
   ) {}
 
-  public digestMessage(): string {
+  public digestPermitMessage(timestamp: number, weight: number): string {
     return utils.keccak256(
       utils.solidityPack(
         ["address", "uint32", "uint32"],
-        [this.key.address, this.timestamp, this.weight]
+        [this.wallet.address, timestamp, weight]
       )
     );
   }
 
-  public async generateSignature(
-    digestHash: string,
+  public async generatePermit(
+    timestamp: number,
+    weight: number,
     selectedKeys: [KeyBase, boolean][]
-  ): Promise<string> {
-    let sig = utils.solidityPack(
-      ["uint32", "uint32", "bytes"],
-      [
-        this.timestamp,
-        this.weight,
-        await sign(digestHash, this.key, this.signType),
-      ]
+  ): Promise<SessionKey> {
+    const permitDigestHash = this.digestPermitMessage(timestamp, weight);
+
+    const permitParts: [number, string][] = await Promise.all(
+      selectedKeys.map(async ([key, isSig]) => {
+        if (isSig) {
+          return [
+            key.roleWeight.assetsOpWeight,
+            await key.generateSignature(permitDigestHash),
+          ];
+        }
+        return [0, key.generateKey()];
+      })
     );
 
-    const sessionKeyDigestHash = this.digestMessage();
-    let selectedWeight = 0;
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [key, isSig] of selectedKeys) {
-      if (isSig) {
-        selectedWeight += key.roleWeight.assetsOpWeight;
-        sig = utils.solidityPack(
-          ["bytes", "bytes"],
-          // eslint-disable-next-line no-await-in-loop
-          [sig, await key.generateSignature(sessionKeyDigestHash)]
-        );
-      } else {
-        sig = utils.solidityPack(["bytes", "bytes"], [sig, key.generateKey()]);
-      }
-    }
+    const selectedWeight = permitParts
+      .map((v) => v[0])
+      .reduce((previous, current) => previous + current);
 
-    if (selectedWeight < this.weight) {
+    if (selectedWeight < weight) {
       throw new Error(
-        `Expected Key Weight[${this.weight}], Less than ${selectedWeight}`
+        `Expected Key Weight[${weight}], Less than ${selectedWeight}`
       );
     }
-    return sig;
+
+    const permit = utils.hexlify(utils.concat(permitParts.map((v) => v[1])));
+    this.permit = {
+      timestamp,
+      weight,
+      permit,
+    };
+    return this;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  public serialize(): string {
-    throw new Error("Not Need Serialize");
+  public async generateSignature(digestHash: string): Promise<string> {
+    return utils.solidityPack(
+      ["uint32", "uint32", "bytes", "bytes"],
+      [
+        this.permit!.timestamp,
+        this.permit!.weight,
+        await sign(digestHash, this.wallet, this.signType),
+        this.permit!.permit,
+      ]
+    );
   }
 }
