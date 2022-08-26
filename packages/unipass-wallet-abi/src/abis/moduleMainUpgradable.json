@@ -85,7 +85,7 @@
     {
       "inputs": [
         {
-          "internalType": "enum ITransaction.CallType",
+          "internalType": "enum ModuleTransaction.CallType",
           "name": "",
           "type": "uint8"
         }
@@ -217,12 +217,12 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "",
+          "name": "_txHash",
           "type": "bytes32"
         },
         {
           "internalType": "bytes",
-          "name": "",
+          "name": "_reason",
           "type": "bytes"
         }
       ],
@@ -381,11 +381,49 @@
         {
           "indexed": false,
           "internalType": "bytes32",
-          "name": "txHash",
+          "name": "_txHash",
           "type": "bytes32"
         }
       ],
       "name": "TxExecuted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "_txHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "TxFailedEvent",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "_txHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "_reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "TxPayFeeFailed",
       "type": "event"
     },
     {
@@ -558,19 +596,24 @@
         {
           "components": [
             {
-              "internalType": "enum ITransaction.CallType",
+              "internalType": "enum ModuleTransaction.CallType",
               "name": "callType",
               "type": "uint8"
             },
             {
-              "internalType": "uint256",
-              "name": "gasLimit",
-              "type": "uint256"
+              "internalType": "bool",
+              "name": "revertOnError",
+              "type": "bool"
             },
             {
               "internalType": "address",
               "name": "target",
               "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gasLimit",
+              "type": "uint256"
             },
             {
               "internalType": "uint256",
@@ -583,28 +626,13 @@
               "type": "bytes"
             }
           ],
-          "internalType": "struct ITransaction.Transaction[]",
+          "internalType": "struct ModuleTransaction.Transaction[]",
           "name": "_txs",
           "type": "tuple[]"
         },
         {
           "internalType": "uint256",
           "name": "_nonce",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "feeToken",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "feeReceiver",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "feeAmount",
           "type": "uint256"
         },
         {

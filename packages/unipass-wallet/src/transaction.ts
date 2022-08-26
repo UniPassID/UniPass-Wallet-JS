@@ -7,6 +7,7 @@ export enum CallType {
 
 export interface Transaction {
   callType: CallType;
+  revertOnError: boolean;
   gasLimit: BigNumber;
   target: BytesLike;
   value: BigNumber;

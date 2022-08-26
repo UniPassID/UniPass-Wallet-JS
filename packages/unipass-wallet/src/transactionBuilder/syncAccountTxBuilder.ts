@@ -3,6 +3,7 @@ import { keccak256, solidityPack } from "ethers/lib/utils";
 import { AccountLayerActionType } from ".";
 import { RoleWeight } from "../key";
 import { Transaction, CallType } from "../transaction";
+import { subdigest } from "../utils";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class SyncAccountTxBuilder extends BaseTxBuilder {
@@ -40,17 +41,20 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return keccak256(
-      solidityPack(
-        ["uint32", "address", "uint8", "bytes32", "uint32", "address"],
-        [
-          this.metaNonce,
-          this.userAddr,
-          AccountLayerActionType.SyncAccount,
-          this.keysetHash,
-          this.timeLockDuring,
-          this.implementation,
-        ]
+    return subdigest(
+      0,
+      this.userAddr,
+      keccak256(
+        solidityPack(
+          ["uint8", "uint32", "bytes32", "uint32", "address"],
+          [
+            AccountLayerActionType.SyncAccount,
+            this.metaNonce,
+            this.keysetHash,
+            this.timeLockDuring,
+            this.implementation,
+          ]
+        )
       )
     );
   }
@@ -69,6 +73,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
     ]);
     return {
       callType: CallType.Call,
+      revertOnError: true,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,

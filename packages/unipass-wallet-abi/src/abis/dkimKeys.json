@@ -28,24 +28,8 @@
       "type": "error"
     },
     {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "_datam",
-          "type": "bytes"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_index",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_length",
-          "type": "uint256"
-        }
-      ],
-      "name": "ReadBytesOutOfBounds",
+      "inputs": [],
+      "name": "SplitInvalidNeedle",
       "type": "error"
     },
     {
@@ -208,9 +192,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "bytes",
-          "name": "_inputEmailFrom",
-          "type": "bytes"
+          "internalType": "bytes32",
+          "name": "_pepper",
+          "type": "bytes32"
         }
       ],
       "name": "dkimVerify",
@@ -234,117 +218,6 @@
           "internalType": "uint256",
           "name": "index",
           "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "bytes",
-              "name": "emailHeader",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes",
-              "name": "dkimSig",
-              "type": "bytes"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fromIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fromLeftIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "fromRightIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "subjectIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "subjectRightIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool[]",
-              "name": "isSubBase64",
-              "type": "bool[]"
-            },
-            {
-              "internalType": "bytes",
-              "name": "subjectPadding",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes[]",
-              "name": "subject",
-              "type": "bytes[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "dkimHeaderIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "selectorIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "selectorRightIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "sdidIndex",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "sdidRightIndex",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct DkimParams",
-          "name": "params",
-          "type": "tuple"
-        },
-        {
-          "internalType": "bytes",
-          "name": "inputEmailFrom",
-          "type": "bytes"
-        }
-      ],
-      "name": "dkimVerifyParams",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "ret",
-          "type": "bool"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "emailHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes",
-          "name": "sigHashHex",
-          "type": "bytes"
         }
       ],
       "stateMutability": "view",

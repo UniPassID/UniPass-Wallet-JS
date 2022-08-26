@@ -1,19 +1,29 @@
-import { utils, Wallet } from "ethers";
+import { BytesLike, utils, Wallet } from "ethers";
 import { KeyBase, sign, SignType } from "./key";
 import { IPermit } from "./permit";
+import { subdigest } from "./utils";
 
 export class SessionKey {
+  public userAddr: string;
   constructor(
     public readonly wallet: Wallet,
     public signType: SignType,
+    public chainId: number,
+    _userAddr: BytesLike,
     public permit?: IPermit
-  ) {}
+  ) {
+    this.userAddr = utils.hexlify(_userAddr);
+  }
 
   public digestPermitMessage(timestamp: number, weight: number): string {
-    return utils.keccak256(
-      utils.solidityPack(
-        ["address", "uint32", "uint32"],
-        [this.wallet.address, timestamp, weight]
+    return subdigest(
+      this.chainId,
+      this.userAddr,
+      utils.keccak256(
+        utils.solidityPack(
+          ["address", "uint32", "uint32"],
+          [this.wallet.address, timestamp, weight]
+        )
       )
     );
   }

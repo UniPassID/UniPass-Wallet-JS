@@ -1,19 +1,19 @@
 import { randomInt } from "crypto";
-import { randomBytes } from "ethers/lib/utils";
+import { hexlify, randomBytes } from "ethers/lib/utils";
 import { DkimParamsBase } from "../src/dkimParams";
 
 describe("Test DkimParamsBase", () => {
   it("ToString And FromString Should Success", () => {
     const dkimParamsBase = new DkimParamsBase(
+      hexlify(randomBytes(32)),
       randomBytes(32),
-      randomBytes(32),
       randomInt(100),
       randomInt(100),
       randomInt(100),
       randomInt(100),
       randomInt(100),
-      [randomBytes(32)],
-      randomBytes(32),
+      [hexlify(randomBytes(32))],
+      hexlify(randomBytes(32)),
       [],
       randomInt(100),
       randomInt(100),
@@ -24,8 +24,8 @@ describe("Test DkimParamsBase", () => {
     const parsedDkimParamsBase = DkimParamsBase.fromString(
       dkimParamsBase.toString()
     );
-    expect(Buffer.from(dkimParamsBase.emailHeader).toString("hex")).toEqual(
-      Buffer.from(parsedDkimParamsBase.emailHeader).toString("hex")
+    expect(dkimParamsBase.emailHeader).toEqual(
+      parsedDkimParamsBase.emailHeader
     );
     expect(Buffer.from(dkimParamsBase.dkimSig).toString("hex")).toEqual(
       Buffer.from(parsedDkimParamsBase.dkimSig).toString("hex")
@@ -43,13 +43,11 @@ describe("Test DkimParamsBase", () => {
     expect(dkimParamsBase.subjectRightIndex).toEqual(
       parsedDkimParamsBase.subjectRightIndex
     );
-    dkimParamsBase.subject.forEach((subject, i) => {
-      expect(Buffer.from(subject).toString("hex")).toEqual(
-        Buffer.from(parsedDkimParamsBase.subject[i]).toString("hex")
-      );
+    dkimParamsBase.subjects.forEach((subject, i) => {
+      expect(subject).toEqual(parsedDkimParamsBase.subjects[i]);
     });
-    expect(Buffer.from(dkimParamsBase.subjectPadding).toString("hex")).toEqual(
-      Buffer.from(parsedDkimParamsBase.subjectPadding).toString("hex")
+    expect(dkimParamsBase.subjectPadding).toEqual(
+      parsedDkimParamsBase.subjectPadding
     );
     expect(dkimParamsBase.isSubBase64).toEqual(
       parsedDkimParamsBase.isSubBase64
