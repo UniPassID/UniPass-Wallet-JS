@@ -1,5 +1,11 @@
 # unipass-wallet-abi
 
+## 0.0.13
+
+### Patch Changes
+
+- unipass-wallet@0.0.14 unipass-wallet-abi@0.0.12
+
 ## 0.0.12
 
 ### Patch Changes
