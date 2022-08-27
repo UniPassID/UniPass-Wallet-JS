@@ -55,6 +55,7 @@ export async function encryptKeystore(
     // eslint-disable-next-line no-param-reassign
     options = {};
   }
+
   if (!options) {
     // eslint-disable-next-line no-param-reassign
     options = {};
@@ -65,6 +66,7 @@ export async function encryptKeystore(
 
   // Check/generate the salt
   let salt: Uint8Array = null;
+
   if (options.salt) {
     salt = arrayify(options.salt);
   } else {
@@ -73,8 +75,10 @@ export async function encryptKeystore(
 
   // Override initialization vector
   let iv: Uint8Array = null;
+
   if (options.iv) {
     iv = arrayify(options.iv);
+
     if (iv.length !== 16) {
       throw new Error("invalid iv");
     }
@@ -84,8 +88,10 @@ export async function encryptKeystore(
 
   // Override the uuid
   let uuidRandom: Uint8Array = null;
+
   if (options.uuid) {
     uuidRandom = arrayify(options.uuid);
+
     if (uuidRandom.length !== 16) {
       throw new Error("invalid uuid");
     }
@@ -98,17 +104,21 @@ export async function encryptKeystore(
   let N = 1 << 17,
     r = 8,
     p = 1;
+
   if (options.scrypt) {
     if (options.scrypt.N) {
       N = options.scrypt.N;
     }
+
     if (options.scrypt.r) {
       r = options.scrypt.r;
     }
+
     if (options.scrypt.p) {
       p = options.scrypt.p;
     }
   }
+
   // We take 64 bytes:
   //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
   //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
@@ -193,17 +203,20 @@ function _computeKdfKey<T>(
       }
 
       const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"), 10);
+
       if (dkLen !== 32) {
         throwError("dklen", dkLen);
       }
 
       return scryptFunc(passwordBytes, salt, N, r, p, 64, progressCallback);
     }
+
     if (kdf.toLowerCase() === "pbkdf2") {
       const salt = looseArrayify(searchPath(data, "crypto/kdfparams/salt"));
 
       let prfFunc: string = null;
       const prf = searchPath(data, "crypto/kdfparams/prf");
+
       if (prf === "hmac-sha256") {
         prfFunc = "sha256";
       } else if (prf === "hmac-sha512") {
@@ -215,6 +228,7 @@ function _computeKdfKey<T>(
       const count = parseInt(searchPath(data, "crypto/kdfparams/c"), 10);
 
       const dkLen = parseInt(searchPath(data, "crypto/kdfparams/dklen"), 10);
+
       if (dkLen !== 32) {
         throwError("dklen", dkLen);
       }
@@ -254,6 +268,7 @@ function _decrypt(
   ciphertext: Uint8Array
 ): Uint8Array {
   const cipher = searchPath(data, "crypto/cipher");
+
   if (cipher === "aes-128-ctr") {
     const iv = looseArrayify(searchPath(data, "crypto/cipherparams/iv"));
     const counter = new aes.Counter(iv);
@@ -273,6 +288,7 @@ function _getInput(data: any, key: Uint8Array): string {
   const computedMAC = hexlify(
     keccak256(concat([key.slice(16, 32), ciphertext]))
   ).substring(2);
+
   if (computedMAC !== searchPath(data, "crypto/mac").toLowerCase()) {
     throw new Error("invalid password");
   }
@@ -296,5 +312,6 @@ export async function decryptKeystore(
     scrypt.scrypt,
     progressCallback
   );
+
   return _getInput(data, key);
 }

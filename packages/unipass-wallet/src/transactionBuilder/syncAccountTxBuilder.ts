@@ -71,6 +71,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
       this.implementation,
       this.signature,
     ]);
+
     return {
       callType: CallType.Call,
       revertOnError: true,

@@ -91,6 +91,7 @@ export class DkimParams extends DkimParamsBase {
           `<${fromHeader}>`,
           fromIndex
         );
+
         if (fromLeftIndex === -1 || fromLeftIndex > fromEndIndex) {
           fromLeftIndex = processedHeader.indexOf(fromHeader);
         } else {
@@ -99,6 +100,7 @@ export class DkimParams extends DkimParamsBase {
         const fromRightIndex = fromLeftIndex + fromHeader.length - 1;
 
         const signature = result.signature as any as Signature;
+
         if (emailBlackList.includes(signature.domain)) {
           return undefined;
         }
@@ -115,6 +117,7 @@ export class DkimParams extends DkimParamsBase {
           dkimHeaderIndex
         );
         const selectorRightIndex = selectorIndex + signature.selector.length;
+
         return new DkimParams(
           processedHeader,
           signature.signature,
@@ -134,6 +137,7 @@ export class DkimParams extends DkimParamsBase {
         );
       })
       .find((v) => v !== undefined);
+
     return params;
   }
 
@@ -160,6 +164,7 @@ export class DkimParams extends DkimParamsBase {
     const results: Dkim.VerifyResult[] = (await verifyDKIMContent(
       Buffer.from(email, "utf-8")
     )) as Dkim.VerifyResult[];
+
     return this.getDkimParams(
       results,
       subs.subs,

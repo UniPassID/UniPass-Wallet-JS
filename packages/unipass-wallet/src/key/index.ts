@@ -1,8 +1,11 @@
 import { BytesLike, utils, Wallet } from "ethers";
 
 export * from "./keyBase";
+
 export * from "./keySecp256k1";
+
 export * from "./keySecp256k1Wallet";
+
 export * from "./keyEmailDkim";
 
 export enum KeyType {
@@ -49,6 +52,7 @@ export function eip712Sign(_hash: BytesLike, _key: Wallet): string {
   const sig = utils.joinSignature(
     _key._signingKey().signDigest(utils.arrayify(_hash))
   );
+
   return sig;
 }
 
@@ -58,20 +62,24 @@ export async function sign(
   signType: SignType
 ): Promise<string> {
   let sig;
+
   switch (signType) {
     case SignType.EIP712Sign: {
       sig = await eip712Sign(hash, key);
       break;
     }
+
     case SignType.EthSign: {
       sig = await ethSign(hash, key);
       break;
     }
+
     default: {
       const error: any = new Error(`Invalid SignTyp: ${signType}`);
       error.signType = signType;
       throw error;
     }
   }
+
   return utils.solidityPack(["bytes", "uint8"], [sig, signType]);
 }

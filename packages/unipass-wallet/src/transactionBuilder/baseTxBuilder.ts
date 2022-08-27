@@ -10,6 +10,7 @@ export abstract class BaseTxBuilder implements ITxBuilder {
 
   constructor(signature?: BytesLike) {
     this.contractInterface = new utils.Interface(moduleMain.abi);
+
     if (signature) {
       this._signature = utils.hexlify(signature);
     }
@@ -36,6 +37,7 @@ export abstract class BaseTxBuilder implements ITxBuilder {
       assetsOpWeight: 0,
       guardianWeight: 0,
     };
+
     // eslint-disable-next-line no-restricted-syntax
     for (const [key, isSig] of keys) {
       if (isSig) {
@@ -59,6 +61,7 @@ export abstract class BaseTxBuilder implements ITxBuilder {
     }
 
     this.signature = sig;
+
     return this;
   }
 

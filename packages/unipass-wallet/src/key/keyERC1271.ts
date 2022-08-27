@@ -27,6 +27,7 @@ export class KeyERC1271 extends KeyBase {
 
   public async generateSignature(digestHash: string): Promise<string> {
     const sig = await this.signFunc(digestHash);
+
     return utils.solidityPack(
       ["uint8", "uint8", "uint32", "bytes", "bytes"],
       [

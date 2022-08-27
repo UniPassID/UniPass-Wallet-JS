@@ -30,6 +30,7 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
     const data = this.contractInterface.encodeFunctionData("unlockKeysetHash", [
       this.metaNonce,
     ]);
+
     return {
       revertOnError: true,
       callType: CallType.Call,

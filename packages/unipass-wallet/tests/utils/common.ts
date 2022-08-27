@@ -30,9 +30,11 @@ function randomInt(max: number) {
 
 export function randomKeys(len: number): KeyBase[] {
   const ret: KeyBase[] = [];
+
   for (let i = 0; i < len; i++) {
     [Role.Owner, Role.AssetsOp, Role.Guardian].forEach((role) => {
       const random = randomInt(1);
+
       if (random === 0) {
         ret.push(
           new KeySecp256k1Wallet(
@@ -52,11 +54,13 @@ export function randomKeys(len: number): KeyBase[] {
       }
     });
   }
+
   return ret;
 }
 
 export function randomRoleWeight(role: Role, len: number): RoleWeight {
   const v = Math.ceil(100 / len);
+
   switch (role) {
     case Role.Owner: {
       return {
@@ -65,6 +69,7 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
         guardianWeight: 0,
       };
     }
+
     case Role.AssetsOp: {
       return {
         ownerWeight: 0,
@@ -72,6 +77,7 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
         guardianWeight: 0,
       };
     }
+
     case Role.Guardian: {
       return {
         ownerWeight: 0,
@@ -79,6 +85,7 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
         guardianWeight: randomInt(50 - v) + v,
       };
     }
+
     default: {
       throw new Error(`Invalid Role: ${role}`);
     }
@@ -97,6 +104,7 @@ export async function selectKeys(
   keys
     .map((v, i) => {
       let value;
+
       if (role === Role.Owner) {
         value = v.roleWeight.ownerWeight;
       } else if (role === Role.AssetsOp) {
@@ -106,6 +114,7 @@ export async function selectKeys(
       } else {
         throw new Error(`Invalid Role: ${role}`);
       }
+
       return { index: i, value };
     })
     .sort((a, b) => b.value - a.value)
@@ -127,11 +136,14 @@ export async function selectKeys(
           // eslint-disable-next-line no-param-reassign
           key.setDkimParams(dkimParams);
         }
+
         return [key, true];
       }
+
       return [key, false];
     })
   );
+
   return ret;
 }
 
@@ -142,6 +154,7 @@ export function getKeysetHash(keys: KeyBase[]): string {
       solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()])
     );
   });
+
   return keysetHash;
 }
 
@@ -163,6 +176,7 @@ export function getProxyAddress(
     solidityPack(["bytes32", "address"], [keysetHash, dkimKeysAddress])
   );
   const expectedAddress = getCreate2Address(factoryAddress, salt, codeHash);
+
   return expectedAddress;
 }
 
@@ -185,6 +199,7 @@ export async function getSignEmailWithDkim(
     privateKey: unipassPrivateKey,
   });
   const email = await signEmailWithDkim(mail, dkim);
+
   return email;
 }
 
@@ -192,6 +207,7 @@ export async function signEmailWithDkim(mail: MailComposer, dkim: DKIM) {
   const msg = await mail.compile().build();
   const signedMsg = dkim.sign(msg);
   let buff = "";
+
   // eslint-disable-next-line no-restricted-syntax
   for await (const chunk of signedMsg) {
     buff += chunk;
@@ -212,6 +228,7 @@ export async function generateDkimParams(
     unipassPrivateKey
   );
   const dkims = await DkimParams.parseEmailParams(email, []);
+
   return dkims;
 }
 
@@ -222,5 +239,6 @@ export async function transferEth(from: Wallet, to: string, amount: BigNumber) {
       value: amount,
     })
   ).wait();
+
   return ret;
 }

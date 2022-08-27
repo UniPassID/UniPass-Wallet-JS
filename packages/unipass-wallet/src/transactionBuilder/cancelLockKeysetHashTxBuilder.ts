@@ -52,6 +52,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
       "cancelLockKeysetHsah",
       [this.metaNonce, this.signature]
     );
+
     return {
       callType: CallType.Call,
       revertOnError: true,

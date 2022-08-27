@@ -67,6 +67,7 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
       this.keysetHash,
       this.signature,
     ]);
+
     return {
       revertOnError: true,
       callType: CallType.Call,

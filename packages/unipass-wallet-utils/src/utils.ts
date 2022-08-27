@@ -11,6 +11,7 @@ export function getPassword(password: Bytes | string): Uint8Array {
   if (typeof password === "string") {
     return toUtf8Bytes(password, UnicodeNormalizationForm.NFKC);
   }
+
   return arrayify(password);
 }
 
@@ -44,9 +45,11 @@ export function searchPath(object: any, path: string): string {
   let currentChild = object;
 
   const comps = path.toLowerCase().split("/");
+
   for (let i = 0; i < comps.length; i++) {
     // Search for a child object with a case-insensitive matching key
     let matchingChild = null;
+
     // eslint-disable-next-line no-restricted-syntax
     for (const key in currentChild) {
       if (key.toLowerCase() === comps[i]) {
@@ -72,5 +75,6 @@ export function looseArrayify(hexString: string): Uint8Array {
     // eslint-disable-next-line no-param-reassign
     hexString = `0x${hexString}`;
   }
+
   return arrayify(hexString);
 }

@@ -8,6 +8,7 @@ export function getKeysetHash(keys: KeyBase[]): string {
       utils.solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()])
     );
   });
+
   return keysetHash;
 }
 

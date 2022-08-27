@@ -13,6 +13,7 @@ export class KeyEmailDkim extends KeyBase {
     private dkimParams?: DkimParamsBase
   ) {
     super(roleWeight);
+
     if (
       this.dkimParams !== undefined &&
       this.emailFrom !==
@@ -57,6 +58,7 @@ export class KeyEmailDkim extends KeyBase {
       v.fromLeftIndex,
       v.fromRightIndex + 1
     );
+
     if (this.emailFrom !== emailFrom) {
       throw new Error("Not Matched EmailFrom And DkimParams");
     }
@@ -70,9 +72,11 @@ export class KeyEmailDkim extends KeyBase {
     const subject = this.dkimParams.subjectPadding.concat(
       this.dkimParams.subjects.join("")
     );
+
     if (subject !== digestHash) {
       throw new Error(`Expected subject ${subject}, got ${digestHash}`);
     }
+
     return utils.solidityPack(
       ["uint8", "uint8", "bytes32", "bytes", "bytes"],
       [

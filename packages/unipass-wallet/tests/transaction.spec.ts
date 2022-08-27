@@ -475,6 +475,7 @@ describe("Test ModuleMain", () => {
     txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
     ]).generateSignature([]);
+
     try {
       await txExecutor.execute({ gasLimit: optimalGasLimit });
     } catch (error) {

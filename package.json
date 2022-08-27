@@ -1,8 +1,7 @@
 {
   "name": "unipass-wallet.js",
   "workspaces": [
-    "packages/*",
-    "examples/*"
+    "packages/*"
   ],
   "scripts": {
     "docs": "doctoc --title '**Table of content**' README.md",

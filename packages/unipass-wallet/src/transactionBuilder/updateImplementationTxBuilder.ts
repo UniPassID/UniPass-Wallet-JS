@@ -61,6 +61,7 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
       "updateImplementation",
       [this.metaNonce, this.implementation, this.signature]
     );
+
     return {
       callType: CallType.Call,
       revertOnError: true,

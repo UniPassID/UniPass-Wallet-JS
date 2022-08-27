@@ -162,6 +162,7 @@ export class DkimParamsBase {
 
   public static fromString(input: string): DkimParamsBase {
     const obj = JSON.parse(input);
+
     return DkimParamsBase.fromJsonObj(obj);
   }
 
@@ -179,16 +180,20 @@ export class DkimParamsBase {
     if (ret.subsAllLen >= 66) {
       return;
     }
+
     if (ret.subsAllLen === 0) {
       if (subIsBase64[subPartIndex]) {
         const decodedPart = toUtf8String(base64.decode(subPart));
         const IndexOf0x = decodedPart.indexOf("0x");
+
         if (IndexOf0x > -1) {
           const remainder = (decodedPart.length - IndexOf0x) % 3;
           ret.subsAllLen = decodedPart.length - IndexOf0x;
+
           if (ret.subsAllLen > 66) {
             ret.subsAllLen = 66;
           }
+
           if (remainder === 1) {
             ret.subjectPadding = "0";
           } else if (remainder === 2) {
@@ -206,8 +211,10 @@ export class DkimParamsBase {
         }
       } else {
         const IndexOf0x = subPart.indexOf("0x");
+
         if (IndexOf0x > -1) {
           ret.subsAllLen = subPart.length - IndexOf0x;
+
           if (ret.subsAllLen > 66) {
             ret.subsAllLen = 66;
           }

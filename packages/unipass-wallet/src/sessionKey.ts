@@ -5,6 +5,7 @@ import { subdigest } from "./utils";
 
 export class SessionKey {
   public userAddr: string;
+
   constructor(
     public readonly wallet: Wallet,
     public signType: SignType,
@@ -43,6 +44,7 @@ export class SessionKey {
             await key.generateSignature(permitDigestHash),
           ];
         }
+
         return [0, key.generateKey()];
       })
     );
@@ -63,6 +65,7 @@ export class SessionKey {
       weight,
       permit,
     };
+
     return this;
   }
 

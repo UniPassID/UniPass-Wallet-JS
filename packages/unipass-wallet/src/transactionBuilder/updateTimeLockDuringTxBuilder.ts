@@ -51,6 +51,7 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
       "updateTimeLockDuring",
       [this.metaNonce, this.timeLockDuring, this.signature]
     );
+
     return {
       revertOnError: true,
       callType: CallType.Call,

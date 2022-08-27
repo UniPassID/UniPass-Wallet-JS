@@ -61,6 +61,7 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
       "updateKeysetHashWithTimeLock",
       [this.metaNonce, this.keysetHash, this.signature]
     );
+
     return {
       revertOnError: true,
       callType: CallType.Call,

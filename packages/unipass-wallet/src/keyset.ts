@@ -35,9 +35,11 @@ export class Keyset {
       }
     );
     const keys = [masterKey as KeyBase, registerEmailKey].concat(guardians);
+
     if (policy) {
       keys.push(policy);
     }
+
     return new Keyset(keys);
   }
 
@@ -51,12 +53,15 @@ export class Keyset {
         if (v instanceof KeyEmailDkim) {
           return `{"KeyEmailDkim":${v.toJson()}}`;
         }
+
         if (v instanceof KeyERC1271) {
           return `{"KeyERC1271":${v.toJson()}}`;
         }
+
         if (v instanceof KeySecp256k1) {
           return `{"KeySecp256k1":${v.toJson()}}`;
         }
+
         if (v instanceof KeySecp256k1Wallet) {
           return `{"KeySecp256k1Wallet":${v.toJson()}}`;
         }
@@ -71,12 +76,15 @@ export class Keyset {
         if (v.KeyEmailDkim) {
           return KeyEmailDkim.fromJsonObj(v.KeyEmailDkim);
         }
+
         if (v.KeyERC1271) {
           return KeyERC1271.fromJsonObj(v.KeyERC1271);
         }
+
         if (v.KeySecp256k1) {
           return KeySecp256k1.fromJsonObj(v.KeySecp256k1);
         }
+
         if (v.KeySecp256k1Wallet) {
           return KeySecp256k1Wallet.fromJsonObj(v.KeySecp256k1Wallet);
         }

@@ -1,4 +1,4 @@
-import { BigNumber, BytesLike, Contract, Overrides, utils } from "ethers";
+import { Contract, Overrides, utils } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
 import { KeyBase } from "./key";
 import { SessionKey } from "./sessionKey";
@@ -46,6 +46,7 @@ export class TxExcutor {
   ): Promise<TxExcutor> {
     const digestHash = this.digestMessage();
     let sig;
+
     if (keyOrSessionKey instanceof SessionKey) {
       const isSessionKey = 1;
       sig = solidityPack(
@@ -65,8 +66,10 @@ export class TxExcutor {
               keyOrSessionKey.map(async ([key, isSig]) => {
                 if (isSig) {
                   const ret = await key.generateSignature(digestHash);
+
                   return ret;
                 }
+
                 return key.generateKey();
               })
             )
@@ -76,6 +79,7 @@ export class TxExcutor {
     }
 
     this.signature = sig;
+
     return this;
   }
 
@@ -89,6 +93,7 @@ export class TxExcutor {
     if (this.signature === undefined) {
       throw new Error(`expected generating signature`);
     }
+
     return this.contract.execute(
       this.txs,
       this.nonce,
