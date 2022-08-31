@@ -18,12 +18,14 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
    * @param userAddr The Address Of User's Smart Contract Address
    * @param metaNonce The meta nonce of Account Layer
    * @param keysetHash New KeysetHash to Update
+   * @param revertOnError Whether revert when transaction failed
    * @param signature Signature, default undefined
    */
   constructor(
     userAddr: BytesLike,
     public readonly metaNonce: number,
     keysetHash: BytesLike,
+    public readonly revertOnError: boolean,
     signature?: BytesLike
   ) {
     super(signature);
@@ -63,7 +65,7 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
     );
 
     return {
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       callType: CallType.Call,
       gasLimit: constants.Zero,
       target: this.userAddr,

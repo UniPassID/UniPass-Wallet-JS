@@ -20,7 +20,7 @@ export function subdigest(
   return utils.keccak256(
     utils.solidityPack(
       ["bytes", "uint256", "address", "bytes32"],
-      [Buffer.from("\x19\x01"), chainId, address, hash]
+      [utils.toUtf8Bytes("\x19\x01"), chainId, address, hash]
     )
   );
 }

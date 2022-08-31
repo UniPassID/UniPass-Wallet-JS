@@ -349,6 +349,19 @@
       "inputs": [
         {
           "indexed": false,
+          "internalType": "bytes32",
+          "name": "_source",
+          "type": "bytes32"
+        }
+      ],
+      "name": "SetSource",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
           "internalType": "uint256",
           "name": "_metaNonce",
           "type": "uint256"
@@ -751,6 +764,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "getSource",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "source",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -994,6 +1020,19 @@
         }
       ],
       "name": "removePermission",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_source",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setSource",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

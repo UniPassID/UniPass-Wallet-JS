@@ -9,6 +9,7 @@ export class CallTxBuilder extends BaseTxBuilder {
   public readonly data: string;
 
   constructor(
+    public readonly revertOnError: boolean,
     public readonly gasLimit: BigNumber,
     _target: BytesLike,
     public readonly value: BigNumber,
@@ -32,7 +33,7 @@ export class CallTxBuilder extends BaseTxBuilder {
   public build(): Transaction {
     return {
       callType: CallType.Call,
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       gasLimit: this.gasLimit,
       target: this.target,
       value: this.value,

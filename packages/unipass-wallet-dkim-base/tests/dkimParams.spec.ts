@@ -1,20 +1,19 @@
 import { randomInt } from "crypto";
 import { hexlify, randomBytes } from "ethers/lib/utils";
-import { DkimParamsBase } from "../src/dkimParams";
+import { DkimParamsBase, EmailType } from "../src/dkimParams";
 
 describe("Test DkimParamsBase", () => {
   it("ToString And FromString Should Success", () => {
     const dkimParamsBase = new DkimParamsBase(
+      EmailType.CallOtherContract,
       hexlify(randomBytes(32)),
       randomBytes(32),
       randomInt(100),
       randomInt(100),
       randomInt(100),
-      randomInt(100),
-      randomInt(100),
-      [hexlify(randomBytes(32))],
       hexlify(randomBytes(32)),
-      [],
+      randomInt(100),
+      randomInt(100),
       randomInt(100),
       randomInt(100),
       randomInt(100),
@@ -37,21 +36,14 @@ describe("Test DkimParamsBase", () => {
     expect(dkimParamsBase.fromRightIndex).toEqual(
       parsedDkimParamsBase.fromRightIndex
     );
+    expect(dkimParamsBase.digestHash).toEqual(parsedDkimParamsBase.digestHash);
     expect(dkimParamsBase.subjectIndex).toEqual(
       parsedDkimParamsBase.subjectIndex
     );
     expect(dkimParamsBase.subjectRightIndex).toEqual(
       parsedDkimParamsBase.subjectRightIndex
     );
-    dkimParamsBase.subjects.forEach((subject, i) => {
-      expect(subject).toEqual(parsedDkimParamsBase.subjects[i]);
-    });
-    expect(dkimParamsBase.subjectPadding).toEqual(
-      parsedDkimParamsBase.subjectPadding
-    );
-    expect(dkimParamsBase.isSubBase64).toEqual(
-      parsedDkimParamsBase.isSubBase64
-    );
+
     expect(dkimParamsBase.dkimHeaderIndex).toEqual(
       parsedDkimParamsBase.dkimHeaderIndex
     );

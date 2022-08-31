@@ -18,12 +18,14 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
    * @param userAddr The Address Of User's Smart Contract Address
    * @param metaNonce The meta nonce of Account Layer
    * @param implemenation The New Implemenation
+   * @param revertOnError Whether revert when transaction failed
    * @param signature Signature, default undefined
    */
   constructor(
     userAddr: BytesLike,
     public readonly metaNonce: number,
     implemenation: BytesLike,
+    public readonly revertOnError: boolean,
     signature?: BytesLike
   ) {
     super(signature);
@@ -64,7 +66,7 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
 
     return {
       callType: CallType.Call,
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,

@@ -15,6 +15,7 @@ import {
   RoleWeight,
   SignType,
 } from "../../src/key";
+import { EmailType } from "unipass-wallet-dkim-base";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
 
@@ -94,7 +95,8 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
 
 export async function selectKeys(
   keys: KeyBase[],
-  subject: string,
+  emailType: EmailType,
+  digestHash: string,
   unipassPrivateKey: string,
   role: Role,
   threshold: number
@@ -124,6 +126,7 @@ export async function selectKeys(
         sum += v.value;
       }
     });
+  const subject = generateEmailSubject(emailType, digestHash);
   const ret: [KeyBase, boolean][] = await Promise.all(
     keys.map(async (key, i) => {
       if (indexes.includes(i)) {
@@ -145,6 +148,45 @@ export async function selectKeys(
   );
 
   return ret;
+}
+
+export function generateEmailSubject(
+  emailType: EmailType,
+  digestHash: string
+): string {
+  switch (emailType) {
+    case EmailType.UpdateKeysetHash: {
+      return `UniPass-Update-Account-${digestHash}`;
+    }
+
+    case EmailType.LockKeysetHash: {
+      return `UniPass-Start-Recovery-${digestHash}`;
+    }
+
+    case EmailType.CancelLockKeysetHash: {
+      return `UniPass-Cancel-Recovery-${digestHash}`;
+    }
+
+    case EmailType.UpdateTimeLockDuring: {
+      return `UniPass-Update-Timelock-${digestHash}`;
+    }
+
+    case EmailType.UpdateImplementation: {
+      return `UniPass-Update-Implementation-${digestHash}`;
+    }
+
+    case EmailType.SyncAccount: {
+      return `UniPass-Deploy-Account-${digestHash}`;
+    }
+
+    case EmailType.CallOtherContract: {
+      return `UniPass-Call-Contract-${digestHash}`;
+    }
+
+    default: {
+      throw new Error(`Invalid EmailType: ${emailType}`);
+    }
+  }
 }
 
 export function getKeysetHash(keys: KeyBase[]): string {

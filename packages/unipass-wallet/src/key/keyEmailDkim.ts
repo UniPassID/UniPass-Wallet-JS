@@ -69,12 +69,11 @@ export class KeyEmailDkim extends KeyBase {
     if (this.dkimParams === undefined) {
       throw new Error("Expected DkimParams");
     }
-    const subject = this.dkimParams.subjectPadding.concat(
-      this.dkimParams.subjects.join("")
-    );
 
-    if (subject !== digestHash) {
-      throw new Error(`Expected subject ${subject}, got ${digestHash}`);
+    if (this.dkimParams!.digestHash !== digestHash) {
+      throw new Error(
+        `Expected subject ${this.dkimParams!.digestHash}, got ${digestHash}`
+      );
     }
 
     return utils.solidityPack(

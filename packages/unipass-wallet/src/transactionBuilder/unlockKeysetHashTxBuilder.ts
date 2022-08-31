@@ -8,10 +8,12 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
    *
    * @param userAddr Wallet Address
    * @param metaNonce MetaNonce
+   * @param revertOnError Whether revert when transaction failed
    */
   constructor(
     public readonly userAddr: string,
-    public readonly metaNonce: number
+    public readonly metaNonce: number,
+    public readonly revertOnError: boolean
   ) {
     super();
   }
@@ -32,7 +34,7 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
     ]);
 
     return {
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       callType: CallType.Call,
       gasLimit: constants.Zero,
       target: this.userAddr,
