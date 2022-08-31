@@ -4,10 +4,10 @@ import {
   KeySecp256k1Wallet,
   sign,
   SignType,
-} from "../src/key";
+  KeyERC1271,
+} from "unipass-wallet-keys";
 import { Keyset } from "../src/keyset";
 import { BytesLike, Wallet, utils } from "ethers";
-import { KeyERC1271 } from "../src/key/keyERC1271";
 
 describe("Test Keyset", () => {
   it("Create Keyset Should Success", async () => {

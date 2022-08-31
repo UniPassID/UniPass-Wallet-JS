@@ -1,9 +1,8 @@
 import { Contract, Overrides, utils } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
-import { KeyBase } from "./key";
-import { SessionKey } from "./sessionKey";
+import { SessionKey, KeyBase } from "unipass-wallet-keys";
+import { subDigest } from "unipass-wallet-utils";
 import { Transaction } from "./transaction";
-import { subdigest } from "./utils";
 
 export class TxExcutor {
   /**
@@ -26,7 +25,7 @@ export class TxExcutor {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return subdigest(
+    return subDigest(
       this.chainId,
       this.contract.address,
       keccak256(

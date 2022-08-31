@@ -1,15 +1,15 @@
 import { BytesLike, utils, Wallet } from "ethers";
-import { KeyBase, sign, SignType } from "./key";
+import { KeyBase, sign, SignType } from ".";
 import { IPermit } from "./permit";
-import { subdigest } from "./utils";
+import { subDigest } from "unipass-wallet-utils";
 
 export class SessionKey {
-  public userAddr: string;
+  public readonly userAddr: string;
 
   constructor(
     public readonly wallet: Wallet,
-    public signType: SignType,
-    public chainId: number,
+    public readonly signType: SignType,
+    public readonly chainId: number,
     _userAddr: BytesLike,
     public permit?: IPermit
   ) {
@@ -17,7 +17,7 @@ export class SessionKey {
   }
 
   public digestPermitMessage(timestamp: number, weight: number): string {
-    return subdigest(
+    return subDigest(
       this.chainId,
       this.userAddr,
       utils.keccak256(

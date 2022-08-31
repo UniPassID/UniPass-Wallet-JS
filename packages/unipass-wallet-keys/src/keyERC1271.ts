@@ -1,7 +1,7 @@
 import { KeyBase } from "./keyBase";
 import { BytesLike, utils } from "ethers";
 import { KeyType, RoleWeight, SignFlag } from ".";
-import { defineReadOnly } from "../utils";
+import { defineReadOnly } from "ethers/lib/utils";
 
 export class KeyERC1271 extends KeyBase {
   public readonly address: string;

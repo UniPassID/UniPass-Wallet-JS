@@ -17,11 +17,11 @@
     "ci:publish": "pnpm run hardhat:compile && pnpm publish -r && pnpm changeset tag"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.24.3",
+    "@changesets/cli": "^2.24.4",
     "@nighttrax/eslint-config-tsx": "~10.0.0",
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/contracts-upgradeable": "^4.7.3",
-    "@types/node": "^18.7.13",
+    "@types/node": "^18.7.14",
     "doctoc": "~2.2.0",
     "eslint": "~8.20.0",
     "eslint-plugin-import": "~2.26.0",

@@ -1,5 +1,5 @@
 import { constants } from "ethers";
-import { RoleWeight } from "../key";
+import { RoleWeight } from "unipass-wallet-keys";
 import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 

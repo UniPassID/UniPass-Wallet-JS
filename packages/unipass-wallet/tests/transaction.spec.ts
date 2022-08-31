@@ -39,10 +39,9 @@ import {
   selectKeys,
   transferEth,
 } from "./utils/common";
-import { KeyBase, SignType } from "../src/key";
-import { SessionKey } from "../src";
-import { TxExcutor } from "../src/txExecutor";
+import { KeyBase, SignType, SessionKey } from "unipass-wallet-keys";
 import { EmailType, pureEmailHash } from "unipass-wallet-dkim-base";
+import { TxExcutor } from "../src/txExecutor";
 import { Deployer } from "../src/deployer";
 import { UnlockKeysetHashTxBuilder } from "../src/transactionBuilder/unlockKeysetHashTxBuilder";
 import { CancelLockKeysetHashTxBuilder } from "../src/transactionBuilder/cancelLockKeysetHashTxBuilder";
