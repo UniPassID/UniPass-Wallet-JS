@@ -50,19 +50,19 @@ export class Keyset {
   public toJson(): string {
     return `[${this.keys
       .map((v) => {
-        if (v instanceof KeyEmailDkim) {
+        if (KeyEmailDkim.isKeyEmailDkim(v)) {
           return `{"KeyEmailDkim":${v.toJson()}}`;
         }
 
-        if (v instanceof KeyERC1271) {
+        if (KeyERC1271.isKeyERC1271(v)) {
           return `{"KeyERC1271":${v.toJson()}}`;
         }
 
-        if (v instanceof KeySecp256k1) {
+        if (KeySecp256k1.isKeySecp256k1(v)) {
           return `{"KeySecp256k1":${v.toJson()}}`;
         }
 
-        if (v instanceof KeySecp256k1Wallet) {
+        if (KeySecp256k1Wallet.isKeySecp256k1Wallet(v)) {
           return `{"KeySecp256k1Wallet":${v.toJson()}}`;
         }
         throw new Error("Not Valid KeyBase");
