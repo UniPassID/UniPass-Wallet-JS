@@ -19,6 +19,8 @@ export * from "./updateKeysetHashWithTimeLockTxBuilder";
 
 export * from "./updateImplementationTxBuilder";
 
+export * from "./syncAccountTxBuilder";
+
 export * from "./callTxBuilder";
 
 export * from "./baseTxBuilder";

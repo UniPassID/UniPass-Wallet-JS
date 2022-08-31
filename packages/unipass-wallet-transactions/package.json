@@ -1,0 +1,26 @@
+{
+  "name": "unipass-wallet-transactions",
+  "version": "0.0.1",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf -rf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "ethers": "^5.7.0",
+    "unipass-wallet-keys": "^0.0.1",
+    "unipass-wallet-utils": "^0.0.12",
+    "unipass-wallet-abi": "^0.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.5",
+    "rimraf": "~3.0.2",
+    "typescript": "~4.7.0"
+  }
+}

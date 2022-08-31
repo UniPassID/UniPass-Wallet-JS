@@ -28,7 +28,11 @@ import {
   UpdateKeysetHashTxBuilder,
   UpdateKeysetHashWithTimeLockTxBuilder,
   UpdateTimeLockDuringTxBuilder,
-} from "../src/transactionBuilder";
+  UnlockKeysetHashTxBuilder,
+  CancelLockKeysetHashTxBuilder,
+  UpdateImplementationTxBuilder,
+  SyncAccountTxBuilder,
+} from "unipass-wallet-transactions/src/transactionBuilders";
 import {
   generateDkimParams,
   generateEmailSubject,
@@ -43,11 +47,7 @@ import { KeyBase, SignType, SessionKey } from "unipass-wallet-keys";
 import { EmailType, pureEmailHash } from "unipass-wallet-dkim-base";
 import { TxExcutor } from "../src/txExecutor";
 import { Deployer } from "../src/deployer";
-import { UnlockKeysetHashTxBuilder } from "../src/transactionBuilder/unlockKeysetHashTxBuilder";
-import { CancelLockKeysetHashTxBuilder } from "../src/transactionBuilder/cancelLockKeysetHashTxBuilder";
-import { UpdateImplementationTxBuilder } from "../src/transactionBuilder/updateImplementationTxBuilder";
 import NodeRSA from "node-rsa";
-import { SyncAccountTxBuilder } from "../src/transactionBuilder/syncAccountTxBuilder";
 import { randomInt } from "crypto";
 
 describe("Test ModuleMain", () => {
