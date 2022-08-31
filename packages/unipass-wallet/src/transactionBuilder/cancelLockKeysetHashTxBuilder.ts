@@ -15,11 +15,13 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
    *
    * @param userAddr The Address Of User Wallet
    * @param metaNonce MetaNonce
+   * @param revertOnError Whether revert when transaction failed
    * @param signature The Signature Of Transaction
    */
   constructor(
     _userAddr: BytesLike,
     public readonly metaNonce: number,
+    public readonly revertOnError: boolean,
     signature?: string
   ) {
     super(signature);
@@ -55,7 +57,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
 
     return {
       callType: CallType.Call,
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,

@@ -31,6 +31,7 @@ import {
 } from "../src/transactionBuilder";
 import {
   generateDkimParams,
+  generateEmailSubject,
   getKeysetHash,
   optimalGasLimit,
   randomKeys,
@@ -41,7 +42,7 @@ import {
 import { KeyBase, SignType } from "../src/key";
 import { SessionKey } from "../src";
 import { TxExcutor } from "../src/txExecutor";
-import { pureEmailHash } from "unipass-wallet-dkim-base";
+import { EmailType, pureEmailHash } from "unipass-wallet-dkim-base";
 import { Deployer } from "../src/deployer";
 import { UnlockKeysetHashTxBuilder } from "../src/transactionBuilder/unlockKeysetHashTxBuilder";
 import { CancelLockKeysetHashTxBuilder } from "../src/transactionBuilder/cancelLockKeysetHashTxBuilder";
@@ -209,10 +210,12 @@ describe("Test ModuleMain", () => {
     const txBuilder = await new UpdateKeysetHashTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      newKeysetHash
+      newKeysetHash,
+      true
     );
     const selectedKeys = await selectKeys(
       keys,
+      EmailType.UpdateKeysetHash,
       txBuilder.digestMessage(),
       unipassPrivateKey,
       Role.Owner,
@@ -240,12 +243,14 @@ describe("Test ModuleMain", () => {
     const txBuilder = await new UpdateKeysetHashWithTimeLockTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      newKeysetHash
+      newKeysetHash,
+      true
     );
 
     const subject = txBuilder.digestMessage();
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.UpdateKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
@@ -273,6 +278,7 @@ describe("Test ModuleMain", () => {
       10,
     ]);
     const tx = new CallTxBuilder(
+      true,
       constants.Zero,
       testERC20Token.address,
       constants.Zero,
@@ -290,6 +296,7 @@ describe("Test ModuleMain", () => {
 
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.CallOtherContract,
       sessionKey.digestPermitMessage(timestamp, weight),
       unipassPrivateKey,
       Role.AssetsOp,
@@ -318,6 +325,7 @@ describe("Test ModuleMain", () => {
   it("Transfer ETH Should Success", async () => {
     const to = Wallet.createRandom();
     const tx = new CallTxBuilder(
+      true,
       constants.Zero,
       to.address,
       utils.parseEther("10"),
@@ -337,6 +345,7 @@ describe("Test ModuleMain", () => {
     const subject = sessionKey.digestPermitMessage(timestamp, weight);
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.CallOtherContract,
       subject,
       unipassPrivateKey,
       Role.AssetsOp,
@@ -363,31 +372,33 @@ describe("Test ModuleMain", () => {
     nonce++;
   });
   it("Dkim Verify Should Success", async function () {
-    const subject = constants.HashZero;
+    const digestHash = constants.HashZero;
     const emailFrom = `${Buffer.from(randomBytes(10)).toString(
       "hex"
     )}@unipass.com`;
     const email = await generateDkimParams(
       emailFrom,
-      subject,
+      generateEmailSubject(EmailType.CallOtherContract, digestHash),
       unipassPrivateKey
     );
     const pepper = hexlify(randomBytes(32));
     const ret = await dkimKeys.dkimVerify(email.serialize(), 0, pepper);
     expect(ret[0]).toBe(true);
     expect(ret[1]).toBe(pureEmailHash(emailFrom, pepper));
-    expect(ret[2]).toBe(hexlify(toUtf8Bytes(subject)));
+    expect(ret[2]).toBe(hexlify(toUtf8Bytes(digestHash)));
   });
   it("Update TimeLock During Should Success", async () => {
     const newDelay = 3600;
     const txBuilder = new UpdateTimeLockDuringTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      newDelay
+      newDelay,
+      true
     );
     const subject = txBuilder.digestMessage();
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.UpdateTimeLockDuring,
       subject,
       unipassPrivateKey,
       Role.Owner,
@@ -412,11 +423,13 @@ describe("Test ModuleMain", () => {
     const txBuilder1 = new UpdateTimeLockDuringTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      newTimelockDuring
+      newTimelockDuring,
+      true
     );
     let subject = txBuilder1.digestMessage();
     let selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.UpdateTimeLockDuring,
       subject,
       unipassPrivateKey,
       Role.Owner,
@@ -442,11 +455,13 @@ describe("Test ModuleMain", () => {
     const txBuilder2 = new UpdateKeysetHashWithTimeLockTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      newKeysetHash
+      newKeysetHash,
+      true
     );
     subject = txBuilder2.digestMessage();
     selectedKeys = await selectKeys(
       keys,
+      EmailType.UpdateKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
@@ -470,7 +485,8 @@ describe("Test ModuleMain", () => {
     // Step3 Unlock TimeLock
     tx = new UnlockKeysetHashTxBuilder(
       proxyModuleMain.address,
-      metaNonce
+      metaNonce,
+      true
     ).build();
     txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
@@ -506,11 +522,13 @@ describe("Test ModuleMain", () => {
     const txBuilder1 = new UpdateKeysetHashWithTimeLockTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      newKeysetHash
+      newKeysetHash,
+      true
     );
     let subject = txBuilder1.digestMessage();
     let selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.UpdateKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
@@ -534,11 +552,13 @@ describe("Test ModuleMain", () => {
     // Step 2: Cancel TimeLock
     const txBuilder2 = await new CancelLockKeysetHashTxBuilder(
       proxyModuleMain.address,
-      metaNonce
+      metaNonce,
+      true
     );
     subject = txBuilder2.digestMessage();
     selectedKeys = await selectKeys(
       keys,
+      EmailType.CancelLockKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Owner,
@@ -577,11 +597,13 @@ describe("Test ModuleMain", () => {
     const txBuilder = new UpdateImplementationTxBuilder(
       proxyModuleMain.address,
       metaNonce,
-      greeter.address
+      greeter.address,
+      true
     );
     const subject = txBuilder.digestMessage();
     const selectedKeys: [KeyBase, boolean][] = await selectKeys(
       keys,
+      EmailType.UpdateImplementation,
       subject,
       unipassPrivateKey,
       Role.Owner,
@@ -612,11 +634,13 @@ describe("Test ModuleMain", () => {
       metaNonce,
       newKeysetHash,
       newTimelockDuring,
-      newImplementation
+      newImplementation,
+      true
     );
     const subject = txBuilder.digestMessage();
     const selectedKeys = await selectKeys(
       keys,
+      EmailType.SyncAccount,
       subject,
       unipassPrivateKey,
       Role.Owner,

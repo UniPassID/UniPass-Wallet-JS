@@ -15,6 +15,7 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
     userAddr: BytesLike,
     public readonly metaNonce: number,
     public readonly timeLockDuring: number,
+    public readonly revertOnError: boolean,
     signature?: BytesLike
   ) {
     super(signature);
@@ -53,7 +54,7 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
     );
 
     return {
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       callType: CallType.Call,
       gasLimit: constants.Zero,
       target: this.userAddr,

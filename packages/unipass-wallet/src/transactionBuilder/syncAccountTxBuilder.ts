@@ -20,6 +20,8 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
    * @param userAddr The Address Of User's Smart Contract Address
    * @param metaNonce The meta nonce of Account Layer
    * @param keysetHash New KeysetHash to Update
+   * @param implementation New Implementation to Update
+   * @param revertOnError Whether revert when transaction failed
    * @param signature Signature, default undefined
    */
   constructor(
@@ -28,6 +30,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
     keysetHash: BytesLike,
     public readonly timeLockDuring: number,
     implementation: BytesLike,
+    public readonly revertOnError: boolean,
     signature?: BytesLike
   ) {
     super(signature);
@@ -74,7 +77,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
 
     return {
       callType: CallType.Call,
-      revertOnError: true,
+      revertOnError: this.revertOnError,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,

@@ -1,4 +1,5 @@
-import { DkimParamsBase, Signature } from "unipass-wallet-dkim-base";
+import { DkimParamsBase, Signature, EmailType } from "unipass-wallet-dkim-base";
+import { BytesLike } from "ethers";
 import * as Dkim from "dkim";
 
 const mailParser = require("mailparser");
@@ -18,16 +19,15 @@ export function verifyDKIMContent(content: Buffer) {
 export class DkimParams extends DkimParamsBase {
   /**
    *
-   * @param _emailHeader The original message For Dkim, UTF8 string or Uint8Array
+   * @param emailType What this email used for
+   * @param emailHeader The original message For Dkim, UTF8 string or Uint8Array
    * @param dkimSig The Dkim Signature
    * @param fromIndex The From Header Index Of emailHeader
    * @param fromLeftIndex The Start Index Of From Email Address in the From Header
    * @param fromRightIndex The End Index Of From Email Address in the From Header
+   * @param digestHash The digest hash parsed from Subject
    * @param subjectIndex The Start Index Of Subject Header
    * @param subjectRightIndex The End Index Of Suject Header
-   * @param subject The subject parts
-   * @param subjectPadding The subject prefix padding
-   * @param isSubBase64 Is base64 encoded for subject parts
    * @param dkimHeaderIndex The start Index of Dkim Header
    * @param sdidIndex The Start Index Of Sdid
    * @param sdidRightIndex The End Index Of Sdid
@@ -35,16 +35,15 @@ export class DkimParams extends DkimParamsBase {
    * @param selectorRightIndex The End Index Of Selector
    */
   constructor(
+    emailType: EmailType,
     emailHeader: string,
-    dkimSig: Uint8Array,
+    dkimSig: BytesLike,
     fromIndex: number,
     fromLeftIndex: number,
     fromRightIndex: number,
+    digestHash: string,
     subjectIndex: number,
     subjectRightIndex: number,
-    subject: string[],
-    subjectPadding: string,
-    isSubBase64: boolean[],
     dkimHeaderIndex: number,
     sdidIndex: number,
     sdidRightIndex: number,
@@ -52,16 +51,15 @@ export class DkimParams extends DkimParamsBase {
     selectorRightIndex: number
   ) {
     super(
+      emailType,
       emailHeader,
       dkimSig,
       fromIndex,
       fromLeftIndex,
       fromRightIndex,
+      digestHash,
       subjectIndex,
       subjectRightIndex,
-      subject,
-      subjectPadding,
-      isSubBase64,
       dkimHeaderIndex,
       sdidIndex,
       sdidRightIndex,
@@ -72,15 +70,11 @@ export class DkimParams extends DkimParamsBase {
 
   public static getDkimParams(
     results: Dkim.VerifyResult[],
-    subs: string[],
-    isSubBase64: boolean[],
-    subjectPadding: string,
+    emailType: EmailType,
     fromHeader: string,
+    digestHash: string,
     emailBlackList: string[]
   ): DkimParams {
-    if (isSubBase64.length === 0) {
-      isSubBase64.push(false);
-    }
     const params = results
       .map((result): DkimParams | undefined => {
         const { processedHeader } = result;
@@ -119,16 +113,15 @@ export class DkimParams extends DkimParamsBase {
         const selectorRightIndex = selectorIndex + signature.selector.length;
 
         return new DkimParams(
+          emailType,
           processedHeader,
           signature.signature,
           fromIndex,
           fromLeftIndex,
           fromRightIndex,
+          digestHash,
           subjectIndex,
           processedHeader.indexOf("\r\n", subjectIndex),
-          subs,
-          subjectPadding,
-          isSubBase64,
           dkimHeaderIndex,
           sdidIndex,
           sdidRightIndex,
@@ -150,28 +143,72 @@ export class DkimParams extends DkimParamsBase {
       isSepBase64: true,
     });
 
-    const subs = {
-      subs: [],
-      subsAllLen: 0,
-      subjectPadding: "",
-      subIsBase64: [],
-    };
-    mail.subParser.forEach((s: string, index: number) => {
-      this.dealSubPart(index, s, mail.isSubBase64, subs);
-    });
+    const subject = mail.headers.get("subject");
+    const from: string = mail.headers.get("from").value[0].address;
+    const [emailType, digestHash] = DkimParams.parseEmailSubject(subject);
 
-    const from = mail.headers.get("from").value[0].address;
     const results: Dkim.VerifyResult[] = (await verifyDKIMContent(
       Buffer.from(email, "utf-8")
     )) as Dkim.VerifyResult[];
 
     return this.getDkimParams(
       results,
-      subs.subs,
-      subs.subIsBase64,
-      subs.subjectPadding,
+      emailType,
       from,
+      digestHash,
       emailBlackList
     );
+  }
+
+  public static parseEmailSubject(emailSubject: string): [EmailType, string] {
+    if (
+      emailSubject.startsWith("UniPass-Update-Account-0x") &&
+      emailSubject.length === 89
+    ) {
+      return [EmailType.UpdateKeysetHash, emailSubject.slice(23)];
+    }
+
+    if (
+      emailSubject.startsWith("UniPass-Start-Recovery-0x") &&
+      emailSubject.length === 89
+    ) {
+      return [EmailType.LockKeysetHash, emailSubject.slice(23)];
+    }
+
+    if (
+      emailSubject.startsWith("UniPass-Cancel-Recovery-0x") &&
+      emailSubject.length === 90
+    ) {
+      return [EmailType.CancelLockKeysetHash, emailSubject.slice(24)];
+    }
+
+    if (
+      emailSubject.startsWith("UniPass-Update-Timelock-0x") &&
+      emailSubject.length === 90
+    ) {
+      return [EmailType.UpdateTimeLockDuring, emailSubject.slice(24)];
+    }
+
+    if (
+      emailSubject.startsWith("UniPass-Update-Implementation-0x") &&
+      emailSubject.length === 96
+    ) {
+      return [EmailType.UpdateImplementation, emailSubject.slice(30)];
+    }
+
+    if (
+      emailSubject.startsWith("UniPass-Deploy-Account-0x") &&
+      emailSubject.length === 89
+    ) {
+      return [EmailType.SyncAccount, emailSubject.slice(23)];
+    }
+
+    if (
+      emailSubject.startsWith("UniPass-Call-Contract-0x") &&
+      emailSubject.length === 88
+    ) {
+      return [EmailType.CallOtherContract, emailSubject.slice(22)];
+    }
+    throw new Error(`Invalid Email Subject: ${emailSubject}`);
   }
 }

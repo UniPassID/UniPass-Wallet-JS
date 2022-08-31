@@ -14,6 +14,28 @@
     {
       "inputs": [
         {
+          "internalType": "enum IDkimKeys.EmailType",
+          "name": "_emailType",
+          "type": "uint8"
+        }
+      ],
+      "name": "InvalidEmailType",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes1",
+          "name": "_encodings",
+          "type": "bytes1"
+        }
+      ],
+      "name": "InvalidEncodings",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes",
           "name": "_data",
           "type": "bytes"
@@ -25,11 +47,6 @@
         }
       ],
       "name": "ReadBytes32OutOfBounds",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "SplitInvalidNeedle",
       "type": "error"
     },
     {
@@ -152,6 +169,32 @@
       ],
       "name": "Upgraded",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "AtSignBytes1",
+      "outputs": [
+        {
+          "internalType": "bytes1",
+          "name": "",
+          "type": "bytes1"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "DotSignBytes1",
+      "outputs": [
+        {
+          "internalType": "bytes1",
+          "name": "",
+          "type": "bytes1"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [],
