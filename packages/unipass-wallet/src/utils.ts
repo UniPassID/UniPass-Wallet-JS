@@ -1,5 +1,5 @@
-import { KeyBase } from "./key";
-import { BytesLike, utils } from "ethers";
+import { KeyBase } from "unipass-wallet-keys";
+import { utils } from "ethers";
 
 export function getKeysetHash(keys: KeyBase[]): string {
   let keysetHash = "0x";
@@ -10,29 +10,4 @@ export function getKeysetHash(keys: KeyBase[]): string {
   });
 
   return keysetHash;
-}
-
-export function subdigest(
-  chainId: number,
-  address: string,
-  hash: BytesLike
-): string {
-  return utils.keccak256(
-    utils.solidityPack(
-      ["bytes", "uint256", "address", "bytes32"],
-      [utils.toUtf8Bytes("\x19\x01"), chainId, address, hash]
-    )
-  );
-}
-
-export function defineReadOnly<T, K extends keyof T>(
-  object: T,
-  name: K,
-  value: T[K]
-): void {
-  Object.defineProperty(object, name, {
-    enumerable: true,
-    value,
-    writable: false,
-  });
 }

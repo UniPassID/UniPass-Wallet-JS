@@ -1,38 +1,41 @@
 import { KeyBase } from "./keyBase";
-import { utils, Wallet } from "ethers";
-import { KeyType, RoleWeight, sign, SignFlag, SignType } from ".";
-import { defineReadOnly } from "../utils";
+import { BytesLike, utils } from "ethers";
+import { KeyType, RoleWeight, SignFlag, SignType } from ".";
+import { defineReadOnly } from "ethers/lib/utils";
 
-export class KeySecp256k1Wallet extends KeyBase {
-  public readonly _isKeySecp256k1Wallet: boolean;
+export class KeySecp256k1 extends KeyBase {
+  public readonly address: string;
+
+  public readonly _isKeySecp256k1: boolean;
 
   constructor(
-    public wallet: Wallet,
+    _address: BytesLike,
     roleWeight: RoleWeight,
-    private signType: SignType
+    private signType: SignType,
+    public signFunc?: (
+      digestHash: BytesLike,
+      signType: SignType
+    ) => Promise<string>
   ) {
     super(roleWeight);
-    defineReadOnly(this, "_isKeySecp256k1Wallet", true);
+    this.address = utils.hexlify(_address);
+    defineReadOnly(this, "_isKeySecp256k1", true);
   }
 
-  static isKeySecp256k1Wallet(value: any): value is KeySecp256k1Wallet {
-    return !!(value && value._isKeySecp256k1Wallet);
+  static isKeySecp256k1(value: any): value is KeySecp256k1 {
+    return !!(value && value._isKeySecp256k1);
   }
 
   public toJson() {
     return JSON.stringify({
-      wallet: this.wallet.privateKey,
+      address: this.address,
       roleWeight: this.roleWeight,
       signType: this.signType,
     });
   }
 
-  static fromJsonObj(obj: any): KeySecp256k1Wallet {
-    return new KeySecp256k1Wallet(
-      new Wallet(obj.wallet),
-      obj.roleWeight,
-      obj.signType
-    );
+  static fromJsonObj(obj: any): KeySecp256k1 {
+    return new KeySecp256k1(obj.address, obj.roleWeight, obj.signType);
   }
 
   public getSignType(): SignType {
@@ -49,7 +52,7 @@ export class KeySecp256k1Wallet extends KeyBase {
       [
         KeyType.Secp256k1,
         SignFlag.Sign,
-        await sign(digestHash, this.wallet, this.signType),
+        await this.signFunc!(digestHash, this.signType),
         this.serializeRoleWeight(),
       ]
     );
@@ -61,7 +64,7 @@ export class KeySecp256k1Wallet extends KeyBase {
       [
         KeyType.Secp256k1,
         SignFlag.NotSign,
-        this.wallet.address,
+        this.address,
         this.serializeRoleWeight(),
       ]
     );
@@ -70,7 +73,7 @@ export class KeySecp256k1Wallet extends KeyBase {
   public serialize(): string {
     return utils.solidityPack(
       ["uint8", "address", "bytes"],
-      [KeyType.Secp256k1, this.wallet.address, this.serializeRoleWeight()]
+      [KeyType.Secp256k1, this.address, this.serializeRoleWeight()]
     );
   }
 }

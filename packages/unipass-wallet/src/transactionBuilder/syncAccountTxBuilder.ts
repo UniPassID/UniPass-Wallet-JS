@@ -1,9 +1,9 @@
 import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
+import { RoleWeight } from "unipass-wallet-keys";
+import { subDigest } from "unipass-wallet-utils";
 import { AccountLayerActionType } from ".";
-import { RoleWeight } from "../key";
 import { Transaction, CallType } from "../transaction";
-import { subdigest } from "../utils";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class SyncAccountTxBuilder extends BaseTxBuilder {
@@ -44,7 +44,7 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return subdigest(
+    return subDigest(
       0,
       this.userAddr,
       keccak256(

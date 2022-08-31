@@ -1,10 +1,10 @@
 import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
+import { RoleWeight } from "unipass-wallet-keys";
+import { subDigest } from "unipass-wallet-utils";
 import { AccountLayerActionType } from ".";
 import { CallType, Transaction } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
-import { RoleWeight } from "../key";
-import { subdigest } from "../utils";
 
 export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
   public readonly OWNER_THRESHOLD = 1;
@@ -33,7 +33,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
    * @returns The Original Message For Signing
    */
   public digestMessage(): string {
-    return subdigest(
+    return subDigest(
       0,
       this.userAddr,
       keccak256(

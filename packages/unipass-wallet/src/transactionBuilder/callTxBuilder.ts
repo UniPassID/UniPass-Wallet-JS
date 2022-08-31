@@ -1,7 +1,7 @@
 import { BigNumber, BytesLike, utils } from "ethers";
-import { RoleWeight } from "../key";
-import { CallType, Transaction } from "../transaction";
+import { RoleWeight } from "unipass-wallet-keys";
 import { BaseTxBuilder } from "./baseTxBuilder";
+import { CallType, Transaction } from "../transaction";
 
 export class CallTxBuilder extends BaseTxBuilder {
   public readonly target: string;

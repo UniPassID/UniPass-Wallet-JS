@@ -8,14 +8,14 @@ import { DkimParams } from "unipass-wallet-dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, ethers, Wallet } from "ethers";
+import { EmailType } from "unipass-wallet-dkim-base";
 import {
   KeyBase,
   KeyEmailDkim,
   KeySecp256k1Wallet,
   RoleWeight,
   SignType,
-} from "../../src/key";
-import { EmailType } from "unipass-wallet-dkim-base";
+} from "unipass-wallet-keys";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
 

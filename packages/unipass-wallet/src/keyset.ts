@@ -4,8 +4,8 @@ import {
   RoleWeight,
   KeyBase,
   KeySecp256k1Wallet,
-} from "./key";
-import { KeyERC1271 } from "./key/keyERC1271";
+  KeyERC1271,
+} from "unipass-wallet-keys";
 import { getKeysetHash } from "./utils";
 import { BytesLike } from "ethers";
 

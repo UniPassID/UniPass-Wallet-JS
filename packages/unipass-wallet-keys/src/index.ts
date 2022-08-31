@@ -8,6 +8,12 @@ export * from "./keySecp256k1Wallet";
 
 export * from "./keyEmailDkim";
 
+export * from "./keyERC1271";
+
+export * from "./permit";
+
+export * from "./sessionKey";
+
 export enum KeyType {
   Secp256k1,
   ERC1271Wallet,
