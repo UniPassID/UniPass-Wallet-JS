@@ -130,7 +130,7 @@ export async function selectKeys(
   const ret: [KeyBase, boolean][] = await Promise.all(
     keys.map(async (key, i) => {
       if (indexes.includes(i)) {
-        if (key instanceof KeyEmailDkim) {
+        if (KeyEmailDkim.isKeyEmailDkim(key)) {
           const dkimParams = await generateDkimParams(
             key.emailFrom,
             subject,

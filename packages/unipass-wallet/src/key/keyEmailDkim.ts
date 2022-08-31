@@ -2,9 +2,12 @@ import { DkimParamsBase, pureEmailHash } from "unipass-wallet-dkim-base";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
 import { BytesLike, utils } from "ethers";
+import { defineReadOnly } from "../utils";
 
 export class KeyEmailDkim extends KeyBase {
   public readonly pepper: string;
+
+  public readonly _isKeyEmailDkim: boolean;
 
   constructor(
     public readonly emailFrom: string,
@@ -25,6 +28,11 @@ export class KeyEmailDkim extends KeyBase {
       throw new Error("Not Matched DkimParams With Email Address");
     }
     this.pepper = utils.hexlify(_pepper);
+    defineReadOnly(this, "_isKeyEmailDkim", true);
+  }
+
+  static isKeyEmailDkim(value: any): value is KeyEmailDkim {
+    return !!(value && value._isKeyEmailDkim);
   }
 
   public toJson() {

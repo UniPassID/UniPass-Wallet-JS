@@ -1,14 +1,22 @@
 import { KeyBase } from "./keyBase";
 import { utils, Wallet } from "ethers";
 import { KeyType, RoleWeight, sign, SignFlag, SignType } from ".";
+import { defineReadOnly } from "../utils";
 
 export class KeySecp256k1Wallet extends KeyBase {
+  public readonly _isKeySecp256k1Wallet: boolean;
+
   constructor(
     public wallet: Wallet,
     roleWeight: RoleWeight,
     private signType: SignType
   ) {
     super(roleWeight);
+    defineReadOnly(this, "_isKeySecp256k1Wallet", true);
+  }
+
+  static isKeySecp256k1Wallet(value: any): value is KeySecp256k1Wallet {
+    return !!(value && value._isKeySecp256k1Wallet);
   }
 
   public toJson() {

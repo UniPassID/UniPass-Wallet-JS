@@ -47,7 +47,7 @@ export class TxExcutor {
     const digestHash = this.digestMessage();
     let sig;
 
-    if (keyOrSessionKey instanceof SessionKey) {
+    if (!Array.isArray(keyOrSessionKey)) {
       const isSessionKey = 1;
       sig = solidityPack(
         ["uint8", "bytes"],

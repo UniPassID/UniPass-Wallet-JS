@@ -1,9 +1,12 @@
 import { KeyBase } from "./keyBase";
 import { BytesLike, utils } from "ethers";
 import { KeyType, RoleWeight, SignFlag } from ".";
+import { defineReadOnly } from "../utils";
 
 export class KeyERC1271 extends KeyBase {
   public readonly address: string;
+
+  public readonly _isKeyERC1271: boolean;
 
   constructor(
     _address: BytesLike,
@@ -12,6 +15,11 @@ export class KeyERC1271 extends KeyBase {
   ) {
     super(roleWeight);
     this.address = utils.hexlify(_address);
+    defineReadOnly(this, "_isKeyERC1271", true);
+  }
+
+  static isKeyERC1271(value: any): value is KeyERC1271 {
+    return !!(value && value._isKeyERC1271);
   }
 
   public toJson() {
