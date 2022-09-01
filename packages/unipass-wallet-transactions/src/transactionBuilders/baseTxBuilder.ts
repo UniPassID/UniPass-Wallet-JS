@@ -1,9 +1,10 @@
 import { BytesLike, utils } from "ethers";
 import { moduleMain } from "unipass-wallet-abi";
-import { KeyBase, RoleWeight } from "unipass-wallet-keys";
+import { RoleWeight } from "unipass-wallet-keys";
+import { Wallet } from "unipass-wallet-wallet";
 import { Transaction } from "../transaction";
 
-export abstract class BaseTxBuilder implements ITxBuilder {
+export abstract class BaseTxBuilder {
   public readonly contractInterface: utils.Interface;
 
   private _signature: string;
@@ -28,36 +29,19 @@ export abstract class BaseTxBuilder implements ITxBuilder {
 
   abstract digestMessage(): string;
 
-  async generateSignature(keys: [KeyBase, boolean][]): Promise<ITxBuilder> {
+  async generateSignature(
+    wallet: Wallet,
+    signerIndexes: number[]
+  ): Promise<BaseTxBuilder> {
     const notSessionKey = 0;
     const digestHash = this.digestMessage();
-    let sig = utils.solidityPack(["uint8"], [notSessionKey]);
-    const selectedRole: RoleWeight = {
-      ownerWeight: 0,
-      assetsOpWeight: 0,
-      guardianWeight: 0,
-    };
+    const sig = utils.solidityPack(
+      ["uint8", "bytes"],
+      [notSessionKey, await wallet.signMessage(digestHash, signerIndexes)]
+    );
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [key, isSig] of keys) {
-      if (isSig) {
-        selectedRole.ownerWeight += key.roleWeight.ownerWeight;
-        selectedRole.assetsOpWeight += key.roleWeight.assetsOpWeight;
-        selectedRole.guardianWeight += key.roleWeight.guardianWeight;
-        sig = utils.solidityPack(
-          ["bytes", "bytes"],
-          // eslint-disable-next-line no-await-in-loop
-          [sig, await key.generateSignature(digestHash)]
-        );
-      } else {
-        sig = utils.solidityPack(["bytes", "bytes"], [sig, key.generateKey()]);
-      }
-    }
-
-    if (!this.validateRoleWeight(selectedRole)) {
-      const error: any = new Error("Invalid Role Weight");
-      error.roleWeight = selectedRole;
-      throw error;
+    if (!this.validateRoleWeight(wallet.getSignRoleWeight(signerIndexes))) {
+      throw new Error(`Invalid Role Weight To Sign`);
     }
 
     this.signature = sig;
@@ -66,11 +50,4 @@ export abstract class BaseTxBuilder implements ITxBuilder {
   }
 
   abstract validateRoleWeight(roleWeight: RoleWeight): boolean;
-}
-
-export interface ITxBuilder {
-  build(): Transaction;
-  digestMessage(): string;
-  generateSignature(keys: [KeyBase, boolean][]): Promise<ITxBuilder>;
-  validateRoleWeight(roleWeight: RoleWeight): boolean;
 }

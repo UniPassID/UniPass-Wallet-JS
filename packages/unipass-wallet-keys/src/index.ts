@@ -10,9 +10,7 @@ export * from "./keyEmailDkim";
 
 export * from "./keyERC1271";
 
-export * from "./permit";
-
-export * from "./sessionKey";
+export * from "./roleWeight";
 
 export enum KeyType {
   Secp256k1,
@@ -28,23 +26,6 @@ export enum SignType {
 export enum SignFlag {
   NotSign = 0,
   Sign = 1,
-}
-
-export interface RoleWeight {
-  ownerWeight: number;
-  assetsOpWeight: number;
-  guardianWeight: number;
-}
-
-export function serializeRoleWeight(roleWeight: RoleWeight): string {
-  return utils.solidityPack(
-    ["uint32", "uint32", "uint32"],
-    [
-      roleWeight.ownerWeight,
-      roleWeight.assetsOpWeight,
-      roleWeight.guardianWeight,
-    ]
-  );
 }
 
 export async function ethSign(

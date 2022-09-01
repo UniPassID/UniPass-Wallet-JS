@@ -1,13 +1,14 @@
-import { BytesLike, utils, Wallet } from "ethers";
-import { KeyBase, sign, SignType } from ".";
+import { BytesLike, utils, Wallet as WalletEOA } from "ethers";
+import { sign, SignType } from "unipass-wallet-keys/src";
 import { IPermit } from "./permit";
 import { subDigest } from "unipass-wallet-utils";
+import { Wallet } from "./wallet";
 
 export class SessionKey {
   public readonly userAddr: string;
 
   constructor(
-    public readonly wallet: Wallet,
+    public readonly wallet: WalletEOA,
     public readonly signType: SignType,
     public readonly chainId: number,
     _userAddr: BytesLike,
@@ -32,34 +33,13 @@ export class SessionKey {
   public async generatePermit(
     timestamp: number,
     weight: number,
-    selectedKeys: [KeyBase, boolean][]
+    wallet: Wallet,
+    signerIndexes: number[]
   ): Promise<SessionKey> {
     const permitDigestHash = this.digestPermitMessage(timestamp, weight);
 
-    const permitParts: [number, string][] = await Promise.all(
-      selectedKeys.map(async ([key, isSig]) => {
-        if (isSig) {
-          return [
-            key.roleWeight.assetsOpWeight,
-            await key.generateSignature(permitDigestHash),
-          ];
-        }
+    const permit = await wallet.signMessage(permitDigestHash, signerIndexes);
 
-        return [0, key.generateKey()];
-      })
-    );
-
-    const selectedWeight = permitParts
-      .map((v) => v[0])
-      .reduce((previous, current) => previous + current);
-
-    if (selectedWeight < weight) {
-      throw new Error(
-        `Expected Key Weight[${weight}], Less than ${selectedWeight}`
-      );
-    }
-
-    const permit = utils.hexlify(utils.concat(permitParts.map((v) => v[1])));
     this.permit = {
       timestamp,
       weight,

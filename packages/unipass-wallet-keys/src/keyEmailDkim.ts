@@ -1,8 +1,8 @@
+import { defineReadOnly } from "ethers/lib/utils";
 import { DkimParamsBase, pureEmailHash } from "unipass-wallet-dkim-base";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
 import { BytesLike, utils } from "ethers";
-import { defineReadOnly } from "ethers/lib/utils";
 
 export class KeyEmailDkim extends KeyBase {
   public readonly pepper: string;

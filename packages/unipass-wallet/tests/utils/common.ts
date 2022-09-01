@@ -7,8 +7,9 @@ import {
 import { DkimParams } from "unipass-wallet-dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
-import { BigNumber, ethers, Wallet } from "ethers";
+import { BigNumber, ethers, Wallet as WalletEOA } from "ethers";
 import { EmailType } from "unipass-wallet-dkim-base";
+import { Keyset, Wallet } from "unipass-wallet-wallet";
 import {
   KeyBase,
   KeyEmailDkim,
@@ -29,7 +30,7 @@ function randomInt(max: number) {
   return Math.ceil(Math.random() * (max + 1));
 }
 
-export function randomKeys(len: number): KeyBase[] {
+export function randomKeyset(len: number): Keyset {
   const ret: KeyBase[] = [];
 
   for (let i = 0; i < len; i++) {
@@ -39,7 +40,7 @@ export function randomKeys(len: number): KeyBase[] {
       if (random === 0) {
         ret.push(
           new KeySecp256k1Wallet(
-            Wallet.createRandom(),
+            WalletEOA.createRandom(),
             randomRoleWeight(role, len),
             SignType.EthSign
           )
@@ -56,7 +57,7 @@ export function randomKeys(len: number): KeyBase[] {
     });
   }
 
-  return ret;
+  return new Keyset(ret);
 }
 
 export function randomRoleWeight(role: Role, len: number): RoleWeight {
@@ -64,27 +65,15 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
 
   switch (role) {
     case Role.Owner: {
-      return {
-        ownerWeight: randomInt(50 - v) + v,
-        assetsOpWeight: 0,
-        guardianWeight: 0,
-      };
+      return new RoleWeight(randomInt(50 - v) + v, 0, 0);
     }
 
     case Role.AssetsOp: {
-      return {
-        ownerWeight: 0,
-        assetsOpWeight: randomInt(50 - v) + v,
-        guardianWeight: 0,
-      };
+      return new RoleWeight(0, randomInt(50 - v) + v, 0);
     }
 
     case Role.Guardian: {
-      return {
-        ownerWeight: 0,
-        assetsOpWeight: 0,
-        guardianWeight: randomInt(50 - v) + v,
-      };
+      return new RoleWeight(0, 0, randomInt(50 - v) + v);
     }
 
     default: {
@@ -94,16 +83,16 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
 }
 
 export async function selectKeys(
-  keys: KeyBase[],
+  wallet: Wallet,
   emailType: EmailType,
   digestHash: string,
   unipassPrivateKey: string,
   role: Role,
   threshold: number
-): Promise<[KeyBase, boolean][]> {
+): Promise<[Wallet, number[]]> {
   const indexes: number[] = [];
   let sum = 0;
-  keys
+  wallet.keyset.keys
     .map((v, i) => {
       let value;
 
@@ -127,8 +116,8 @@ export async function selectKeys(
       }
     });
   const subject = generateEmailSubject(emailType, digestHash);
-  const ret: [KeyBase, boolean][] = await Promise.all(
-    keys.map(async (key, i) => {
+  const keys: KeyBase[] = await Promise.all(
+    wallet.keyset.keys.map(async (key, i) => {
       if (indexes.includes(i)) {
         if (KeyEmailDkim.isKeyEmailDkim(key)) {
           const dkimParams = await generateDkimParams(
@@ -139,15 +128,13 @@ export async function selectKeys(
           // eslint-disable-next-line no-param-reassign
           key.setDkimParams(dkimParams);
         }
-
-        return [key, true];
       }
 
-      return [key, false];
+      return key;
     })
   );
 
-  return ret;
+  return [wallet.setKeyset(new Keyset(keys)), indexes];
 }
 
 export function generateEmailSubject(
@@ -274,7 +261,11 @@ export async function generateDkimParams(
   return dkims;
 }
 
-export async function transferEth(from: Wallet, to: string, amount: BigNumber) {
+export async function transferEth(
+  from: WalletEOA,
+  to: string,
+  amount: BigNumber
+) {
   const ret = await (
     await from.sendTransaction({
       to,

@@ -6,7 +6,7 @@ import {
   Overrides,
   providers,
   utils,
-  Wallet,
+  Wallet as WalletEOA,
 } from "ethers";
 import {
   formatBytes32String,
@@ -36,15 +36,15 @@ import {
 import {
   generateDkimParams,
   generateEmailSubject,
-  getKeysetHash,
   optimalGasLimit,
-  randomKeys,
+  randomKeyset,
   Role,
   selectKeys,
   transferEth,
 } from "./utils/common";
-import { KeyBase, SignType, SessionKey } from "unipass-wallet-keys";
+import { KeyBase, SignType } from "unipass-wallet-keys";
 import { EmailType, pureEmailHash } from "unipass-wallet-dkim-base";
+import { SessionKey, Wallet } from "unipass-wallet-wallet";
 import { TxExcutor } from "../src/txExecutor";
 import { Deployer } from "../src/deployer";
 import NodeRSA from "node-rsa";
@@ -60,10 +60,9 @@ describe("Test ModuleMain", () => {
   let txParams: Overrides;
   let proxyModuleMain: Contract;
   let dkimKeys: Contract;
-  let keysetHash: string;
-  let keys: KeyBase[];
-  let dkimKeysAdmin: Wallet;
-  let whiteListAdmin: Wallet;
+  let wallet: Wallet;
+  let dkimKeysAdmin: WalletEOA;
+  let whiteListAdmin: WalletEOA;
   let whiteList: Contract;
   let chainId: number;
   let TestERC20Token: ContractFactory;
@@ -93,7 +92,7 @@ describe("Test ModuleMain", () => {
     };
     const instance = 0;
 
-    dkimKeysAdmin = Wallet.createRandom().connect(provider);
+    dkimKeysAdmin = WalletEOA.createRandom().connect(provider);
     dkimKeys = await deployer.deployContract(
       DkimKeys,
       instance,
@@ -106,7 +105,7 @@ describe("Test ModuleMain", () => {
       WhiteListArtifact.bytecode,
       provider.getSigner()
     );
-    whiteListAdmin = Wallet.createRandom().connect(provider);
+    whiteListAdmin = WalletEOA.createRandom().connect(provider);
     whiteList = await deployer.deployContract(
       WhiteList,
       instance,
@@ -120,7 +119,7 @@ describe("Test ModuleMain", () => {
     );
 
     await transferEth(
-      new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
+      new WalletEOA(process.env.HARDHAT_PRIVATE_KEY, provider),
       dkimKeysAdmin.address,
       utils.parseEther("10")
     );
@@ -134,7 +133,7 @@ describe("Test ModuleMain", () => {
     ).wait();
     expect(ret.status).toEqual(1);
     await transferEth(
-      new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
+      new WalletEOA(process.env.HARDHAT_PRIVATE_KEY, provider),
       whiteListAdmin.address,
       utils.parseEther("10")
     );
@@ -180,13 +179,12 @@ describe("Test ModuleMain", () => {
   beforeEach(async () => {
     testERC20Token = await TestERC20Token.deploy();
 
-    keys = randomKeys(10);
-    keysetHash = getKeysetHash(keys);
+    const keyset = randomKeyset(10);
 
     proxyModuleMain = await deployer.deployProxyContract(
       moduleMain.interface,
       moduleMain.address,
-      keysetHash,
+      keyset.hash(),
       txParams
     );
     const txRet = await provider.getSigner().sendTransaction({
@@ -201,6 +199,7 @@ describe("Test ModuleMain", () => {
     expect(await testERC20Token.balanceOf(proxyModuleMain.address)).toEqual(
       BigNumber.from(100)
     );
+    wallet = new Wallet(proxyModuleMain.address, keyset);
     nonce = 1;
     metaNonce = 1;
   });
@@ -212,15 +211,18 @@ describe("Test ModuleMain", () => {
       newKeysetHash,
       true
     );
-    const selectedKeys = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateKeysetHash,
       txBuilder.digestMessage(),
       unipassPrivateKey,
       Role.Owner,
       100
     );
-    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const tx = (
+      await txBuilder.generateSignature(wallet, signerIndexes)
+    ).build();
 
     const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
@@ -247,15 +249,18 @@ describe("Test ModuleMain", () => {
     );
 
     const subject = txBuilder.digestMessage();
-    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
       50
     );
-    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const tx = (
+      await txBuilder.generateSignature(wallet, signerIndexes)
+    ).build();
     const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
     ]).generateSignature([]);
@@ -285,7 +290,7 @@ describe("Test ModuleMain", () => {
     ).build();
 
     let sessionKey = new SessionKey(
-      Wallet.createRandom(),
+      WalletEOA.createRandom(),
       SignType.EthSign,
       chainId,
       proxyModuleMain.address
@@ -293,8 +298,9 @@ describe("Test ModuleMain", () => {
     const timestamp = Math.ceil(Date.now() / 1000) + 5000;
     const weight = 100;
 
-    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.CallOtherContract,
       sessionKey.digestPermitMessage(timestamp, weight),
       unipassPrivateKey,
@@ -305,7 +311,8 @@ describe("Test ModuleMain", () => {
     sessionKey = await sessionKey.generatePermit(
       timestamp,
       weight,
-      selectedKeys
+      wallet,
+      signerIndexes
     );
 
     const txExecutor = new TxExcutor(chainId, proxyModuleMain, nonce, [tx]);
@@ -322,7 +329,7 @@ describe("Test ModuleMain", () => {
     nonce++;
   });
   it("Transfer ETH Should Success", async () => {
-    const to = Wallet.createRandom();
+    const to = WalletEOA.createRandom();
     const tx = new CallTxBuilder(
       true,
       constants.Zero,
@@ -331,7 +338,7 @@ describe("Test ModuleMain", () => {
       "0x"
     ).build();
     let sessionKey = new SessionKey(
-      Wallet.createRandom(),
+      WalletEOA.createRandom(),
       SignType.EthSign,
       chainId,
       proxyModuleMain.address
@@ -342,8 +349,9 @@ describe("Test ModuleMain", () => {
 
     const txExecutor = new TxExcutor(chainId, proxyModuleMain, nonce, [tx]);
     const subject = sessionKey.digestPermitMessage(timestamp, weight);
-    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.CallOtherContract,
       subject,
       unipassPrivateKey,
@@ -354,7 +362,8 @@ describe("Test ModuleMain", () => {
     sessionKey = await sessionKey.generatePermit(
       timestamp,
       weight,
-      selectedKeys
+      wallet,
+      signerIndexes
     );
     const ret = await (
       await (
@@ -395,15 +404,18 @@ describe("Test ModuleMain", () => {
       true
     );
     const subject = txBuilder.digestMessage();
-    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateTimeLockDuring,
       subject,
       unipassPrivateKey,
       Role.Owner,
       100
     );
-    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const tx = (
+      await txBuilder.generateSignature(wallet, signerIndexes)
+    ).build();
     const ret = await (
       await (
         await new TxExcutor(chainId, proxyModuleMain, nonce, [
@@ -426,15 +438,18 @@ describe("Test ModuleMain", () => {
       true
     );
     let subject = txBuilder1.digestMessage();
-    let selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateTimeLockDuring,
       subject,
       unipassPrivateKey,
       Role.Owner,
       100
     );
-    let tx = (await txBuilder1.generateSignature(selectedKeys)).build();
+    let tx = (
+      await txBuilder1.generateSignature(wallet, signerIndexes)
+    ).build();
     let ret = await await (
       await (
         await new TxExcutor(chainId, proxyModuleMain, nonce, [
@@ -458,15 +473,15 @@ describe("Test ModuleMain", () => {
       true
     );
     subject = txBuilder2.digestMessage();
-    selectedKeys = await selectKeys(
-      keys,
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
       50
     );
-    tx = (await txBuilder2.generateSignature(selectedKeys)).build();
+    tx = (await txBuilder2.generateSignature(wallet, signerIndexes)).build();
     let txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
     ]).generateSignature([]);
@@ -525,15 +540,18 @@ describe("Test ModuleMain", () => {
       true
     );
     let subject = txBuilder1.digestMessage();
-    let selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
       50
     );
-    let tx = (await txBuilder1.generateSignature(selectedKeys)).build();
+    let tx = (
+      await txBuilder1.generateSignature(wallet, signerIndexes)
+    ).build();
     let txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
     ]).generateSignature([]);
@@ -555,15 +573,15 @@ describe("Test ModuleMain", () => {
       true
     );
     subject = txBuilder2.digestMessage();
-    selectedKeys = await selectKeys(
-      keys,
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.CancelLockKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Owner,
       1
     );
-    tx = (await txBuilder2.generateSignature(selectedKeys)).build();
+    tx = (await txBuilder2.generateSignature(wallet, signerIndexes)).build();
 
     txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
@@ -600,8 +618,9 @@ describe("Test ModuleMain", () => {
       true
     );
     const subject = txBuilder.digestMessage();
-    const selectedKeys: [KeyBase, boolean][] = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.UpdateImplementation,
       subject,
       unipassPrivateKey,
@@ -609,7 +628,9 @@ describe("Test ModuleMain", () => {
       100
     );
 
-    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const tx = (
+      await txBuilder.generateSignature(wallet, signerIndexes)
+    ).build();
     const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
     ]).generateSignature([]);
@@ -637,15 +658,18 @@ describe("Test ModuleMain", () => {
       true
     );
     const subject = txBuilder.digestMessage();
-    const selectedKeys = await selectKeys(
-      keys,
+    let signerIndexes;
+    [wallet, signerIndexes] = await selectKeys(
+      wallet,
       EmailType.SyncAccount,
       subject,
       unipassPrivateKey,
       Role.Owner,
       100
     );
-    const tx = (await txBuilder.generateSignature(selectedKeys)).build();
+    const tx = (
+      await txBuilder.generateSignature(wallet, signerIndexes)
+    ).build();
     const txExecutor = await new TxExcutor(chainId, proxyModuleMain, nonce, [
       tx,
     ]).generateSignature([]);
