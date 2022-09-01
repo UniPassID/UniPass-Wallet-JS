@@ -1,4 +1,4 @@
-import { RoleWeight, serializeRoleWeight } from ".";
+import { RoleWeight } from ".";
 import { BytesLike } from "ethers";
 
 export abstract class KeyBase {
@@ -11,6 +11,6 @@ export abstract class KeyBase {
   public abstract serialize(): string;
 
   public serializeRoleWeight(): string {
-    return serializeRoleWeight(this.roleWeight);
+    return this.roleWeight.serialize();
   }
 }

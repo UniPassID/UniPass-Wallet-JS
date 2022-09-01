@@ -5,6 +5,7 @@ import {
   sign,
   SignType,
   KeyERC1271,
+  RoleWeight,
 } from "unipass-wallet-keys";
 import { Keyset } from "../src/keyset";
 import { BytesLike, Wallet, utils } from "ethers";
@@ -14,11 +15,7 @@ describe("Test Keyset", () => {
     const registerEmail = "test1@gmail.com";
     const registerEmailPepper = utils.randomBytes(32);
     const masterKeyInner = Wallet.createRandom();
-    const masterKeyRoleWeight = {
-      ownerWeight: 40,
-      guardianWeight: 60,
-      assetsOpWeight: 0,
-    };
+    const masterKeyRoleWeight = new RoleWeight(40, 0, 60);
     const masterKey = new KeySecp256k1(
       masterKeyInner.address,
       masterKeyRoleWeight,
@@ -42,11 +39,11 @@ describe("Test Keyset", () => {
     const keysetRecover = Keyset.fromJson(keyset.toJson());
     expect(keyset.keys[0]).toEqual(masterKey);
     expect(keyset.keys[1]).toEqual(
-      new KeyEmailDkim(registerEmail, registerEmailPepper, {
-        ownerWeight: 60,
-        assetsOpWeight: 0,
-        guardianWeight: 60,
-      })
+      new KeyEmailDkim(
+        registerEmail,
+        registerEmailPepper,
+        new RoleWeight(60, 0, 60)
+      )
     );
     masterKey.signFunc = undefined;
     expect(keysetRecover.keys[0]).toEqual(masterKey);

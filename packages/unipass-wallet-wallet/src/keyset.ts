@@ -6,8 +6,19 @@ import {
   KeySecp256k1Wallet,
   KeyERC1271,
 } from "unipass-wallet-keys";
-import { getKeysetHash } from "./utils";
 import { BytesLike } from "ethers";
+import { keccak256, solidityPack } from "ethers/lib/utils";
+
+export function getKeysetHash(keys: KeyBase[]): string {
+  let keysetHash = "0x";
+  keys.forEach((key) => {
+    keysetHash = keccak256(
+      solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()])
+    );
+  });
+
+  return keysetHash;
+}
 
 export class Keyset {
   /**
@@ -17,22 +28,18 @@ export class Keyset {
    */
   constructor(public readonly keys: KeyBase[]) {}
 
-  static new(
+  static create(
     registerEmail: string,
     registerEmailPepper: BytesLike,
     masterKey: KeySecp256k1,
     guardians: KeyBase[],
     policy?: KeyBase,
-    registerEmailRoleWeight?: RoleWeight
+    registerEmailRoleWeight: RoleWeight = new RoleWeight(60, 0, 60)
   ): Keyset {
     const registerEmailKey = new KeyEmailDkim(
       registerEmail,
       registerEmailPepper,
-      registerEmailRoleWeight || {
-        ownerWeight: 60,
-        assetsOpWeight: 0,
-        guardianWeight: 60,
-      }
+      registerEmailRoleWeight
     );
     const keys = [masterKey as KeyBase, registerEmailKey].concat(guardians);
 

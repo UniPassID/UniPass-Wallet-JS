@@ -1,5 +1,5 @@
 {
-  "name": "unipass-wallet-transactions",
+  "name": "unipass-wallet-wallet",
   "version": "0.0.1",
   "main": "dist/index",
   "types": "dist/index",
@@ -14,14 +14,15 @@
   },
   "dependencies": {
     "ethers": "^5.7.0",
-    "unipass-wallet-keys": "^0.0.1",
-    "unipass-wallet-wallet": "^0.0.1",
     "unipass-wallet-utils": "^0.0.12",
-    "unipass-wallet-abi": "^0.0.14"
+    "unipass-wallet-keys": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^18.0.5",
+    "@types/jest": "~27.5.0",
     "rimraf": "~3.0.2",
+    "ts-jest": "~28.0.0",
+    "jest": "~28.1.0",
     "typescript": "~4.7.0"
   }
 }
