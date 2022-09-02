@@ -42,7 +42,7 @@ import {
   selectKeys,
   transferEth,
 } from "./utils/common";
-import { KeyBase, SignType } from "unipass-wallet-keys";
+import { SignType } from "unipass-wallet-keys";
 import { EmailType, pureEmailHash } from "unipass-wallet-dkim-base";
 import { SessionKey, Wallet } from "unipass-wallet-wallet";
 import { TxExcutor } from "../src/txExecutor";
