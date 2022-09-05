@@ -1,0 +1,28 @@
+{
+  "name": "@unipasswallet/wallet",
+  "version": "0.0.1-alpha.1",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf -rf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "ethers": "^5.7.0",
+    "@unipasswallet/utils": "^0.0.1-alpha.1",
+    "@unipasswallet/keys": "^0.0.1-alpha.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.5",
+    "@types/jest": "~27.5.0",
+    "rimraf": "~3.0.2",
+    "ts-jest": "~28.0.0",
+    "jest": "~28.1.0",
+    "typescript": "~4.7.0"
+  }
+}

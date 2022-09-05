@@ -4,19 +4,19 @@ import {
   randomBytes,
   solidityPack,
 } from "ethers/lib/utils";
-import { DkimParams } from "unipass-wallet-dkim";
+import { DkimParams } from "@unipasswallet/dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, ethers, Wallet as WalletEOA } from "ethers";
-import { EmailType } from "unipass-wallet-dkim-base";
-import { Keyset, Wallet } from "unipass-wallet-wallet";
+import { EmailType } from "@unipasswallet/dkim-base";
+import { Keyset, Wallet } from "@unipasswallet/wallet";
 import {
   KeyBase,
   KeyEmailDkim,
   KeySecp256k1Wallet,
   RoleWeight,
   SignType,
-} from "unipass-wallet-keys";
+} from "@unipasswallet/keys";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
 
