@@ -1,9 +1,9 @@
 import { Contract, Overrides, utils } from "ethers";
 import { defaultAbiCoder, keccak256, solidityPack } from "ethers/lib/utils";
-import { KeyBase } from "unipass-wallet-keys";
-import { subDigest } from "unipass-wallet-utils";
-import { Transaction } from "unipass-wallet-transactions";
-import { SessionKey } from "unipass-wallet-wallet";
+import { KeyBase } from "@unipasswallet/keys";
+import { subDigest } from "@unipasswallet/utils";
+import { Transaction } from "@unipasswallet/transactions";
+import { SessionKey } from "@unipasswallet/wallet";
 
 export class TxExcutor {
   /**

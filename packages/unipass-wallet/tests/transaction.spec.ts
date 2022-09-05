@@ -32,7 +32,7 @@ import {
   CancelLockKeysetHashTxBuilder,
   UpdateImplementationTxBuilder,
   SyncAccountTxBuilder,
-} from "unipass-wallet-transactions/src/transactionBuilders";
+} from "@unipasswallet/transactions/src/transactionBuilders";
 import {
   generateDkimParams,
   generateEmailSubject,
@@ -42,9 +42,9 @@ import {
   selectKeys,
   transferEth,
 } from "./utils/common";
-import { SignType } from "unipass-wallet-keys";
-import { EmailType, pureEmailHash } from "unipass-wallet-dkim-base";
-import { SessionKey, Wallet } from "unipass-wallet-wallet";
+import { SignType } from "@unipasswallet/keys";
+import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
+import { SessionKey, Wallet } from "@unipasswallet/wallet";
 import { TxExcutor } from "../src/txExecutor";
 import { Deployer } from "../src/deployer";
 import NodeRSA from "node-rsa";

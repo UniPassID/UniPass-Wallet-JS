@@ -37,83 +37,36 @@ importers:
       typescript: 4.7.4
       unipass-wallet-contracts: github.com/UniPassID/Unipass-Wallet-Contract/803b2910517244e807e60fdeedb413ae22eef73d_hardhat@2.10.2
 
-  packages/unipass-wallet:
-    specifiers:
-      '@ethereumjs/tx': ^3.5.2
-      '@jest/types': ~28.1.0
-      '@types/jest': ~27.5.0
-      '@types/node': ^18.0.5
-      '@types/node-rsa': ^1.1.1
-      '@types/nodemailer': ^6.4.4
-      dotenv: ^16.0.1
-      ethers: ^5.7.0
-      jest: ~28.1.0
-      node-rsa: ^1.1.1
-      nodemailer: ^6.7.2
-      rimraf: ~3.0.2
-      ts-jest: ~28.0.0
-      typescript: ~4.7.0
-      unipass-wallet-abi: ^0.0.14
-      unipass-wallet-dkim: ^0.0.12
-      unipass-wallet-dkim-base: ^0.0.12
-      unipass-wallet-keys: ^0.0.1
-      unipass-wallet-transactions: ^0.0.1
-      unipass-wallet-utils: ^0.0.12
-      unipass-wallet-wallet: ^0.0.1
-    dependencies:
-      '@ethereumjs/tx': 3.5.2
-      ethers: 5.7.0
-      unipass-wallet-abi: link:../unipass-wallet-abi
-      unipass-wallet-dkim-base: link:../unipass-wallet-dkim-base
-      unipass-wallet-keys: link:../unipass-wallet-keys
-      unipass-wallet-transactions: link:../unipass-wallet-transactions
-      unipass-wallet-utils: link:../unipass-wallet-utils
-      unipass-wallet-wallet: link:../unipass-wallet-wallet
-    devDependencies:
-      '@jest/types': 28.1.3
-      '@types/jest': 27.5.2
-      '@types/node': 18.0.6
-      '@types/node-rsa': 1.1.1
-      '@types/nodemailer': 6.4.4
-      dotenv: 16.0.1
-      jest: 28.1.3_@types+node@18.0.6
-      node-rsa: 1.1.1
-      nodemailer: 6.7.7
-      rimraf: 3.0.2
-      ts-jest: 28.0.7_lhw3xkmzugq5tscs3x2ndm4sby
-      typescript: 4.7.4
-      unipass-wallet-dkim: link:../unipass-wallet-dkim
-
-  packages/unipass-wallet-abi:
+  packages/abi:
     specifiers:
       '@types/node': ^18.0.5
       rimraf: ~3.0.2
       typescript: ~4.7.0
     devDependencies:
-      '@types/node': 18.0.6
+      '@types/node': 18.7.14
       rimraf: 3.0.2
       typescript: 4.7.4
 
-  packages/unipass-wallet-dkim:
+  packages/dkim:
     specifiers:
       '@types/node': ^18.0.5
+      '@unipasswallet/dkim-base': ^0.0.1-alpha.1
       dkim: github:zzhengzhuo/node-dkim#next
       ethers: ^5.7.0
       mailparser: github:zzhengzhuo/mailparser
       rimraf: ~3.0.2
       typescript: ~4.7.0
-      unipass-wallet-dkim-base: ^0.0.12
     dependencies:
+      '@unipasswallet/dkim-base': link:../dkim-base
       dkim: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
       ethers: 5.7.0
       mailparser: github.com/zzhengzhuo/mailparser/a9bfccd72ccc89499e313b085c6b81972b785c0f
-      unipass-wallet-dkim-base: link:../unipass-wallet-dkim-base
     devDependencies:
-      '@types/node': 18.0.6
+      '@types/node': 18.7.14
       rimraf: 3.0.2
       typescript: 4.7.4
 
-  packages/unipass-wallet-dkim-base:
+  packages/dkim-base:
     specifiers:
       '@jest/types': ~28.1.0
       '@types/jest': ~27.5.0
@@ -128,30 +81,30 @@ importers:
     devDependencies:
       '@jest/types': 28.1.3
       '@types/jest': 27.5.2
-      '@types/node': 18.0.6
-      jest: 28.0.3_@types+node@18.0.6
+      '@types/node': 18.7.14
+      jest: 28.0.3_@types+node@18.7.14
       rimraf: 3.0.2
       ts-jest: 28.0.7_xed4xoypqwqyivasxqbnzaeaxm
       typescript: 4.7.4
 
-  packages/unipass-wallet-keys:
+  packages/keys:
     specifiers:
       '@types/node': ^18.0.5
+      '@unipasswallet/dkim-base': ^0.0.1-alpha.1
+      '@unipasswallet/utils': ^0.0.1-alpha.1
       ethers: ^5.7.0
       rimraf: ~3.0.2
       typescript: ~4.7.0
-      unipass-wallet-dkim-base: ^0.0.12
-      unipass-wallet-utils: ^0.0.12
     dependencies:
+      '@unipasswallet/dkim-base': link:../dkim-base
+      '@unipasswallet/utils': link:../utils
       ethers: 5.7.0
-      unipass-wallet-dkim-base: link:../unipass-wallet-dkim-base
-      unipass-wallet-utils: link:../unipass-wallet-utils
     devDependencies:
-      '@types/node': 18.7.13
+      '@types/node': 18.7.14
       rimraf: 3.0.2
       typescript: 4.7.4
 
-  packages/unipass-wallet-network:
+  packages/nerwork:
     specifiers:
       '@types/node': ^18.0.5
       rimraf: ~3.0.2
@@ -161,28 +114,75 @@ importers:
       rimraf: 3.0.2
       typescript: 4.7.4
 
-  packages/unipass-wallet-transactions:
+  packages/transactions:
     specifiers:
       '@types/node': ^18.0.5
+      '@unipasswallet/abi': ^0.0.1-alpha.1
+      '@unipasswallet/keys': ^0.0.1-alpha.1
+      '@unipasswallet/utils': ^0.0.1-alpha.1
+      '@unipasswallet/wallet': ^0.0.1-alpha.1
       ethers: ^5.7.0
       rimraf: ~3.0.2
       typescript: ~4.7.0
-      unipass-wallet-abi: ^0.0.14
-      unipass-wallet-keys: ^0.0.1
-      unipass-wallet-utils: ^0.0.12
-      unipass-wallet-wallet: ^0.0.1
     dependencies:
+      '@unipasswallet/abi': link:../abi
+      '@unipasswallet/keys': link:../keys
+      '@unipasswallet/utils': link:../utils
+      '@unipasswallet/wallet': link:../wallet
       ethers: 5.7.0
-      unipass-wallet-abi: link:../unipass-wallet-abi
-      unipass-wallet-keys: link:../unipass-wallet-keys
-      unipass-wallet-utils: link:../unipass-wallet-utils
-      unipass-wallet-wallet: link:../unipass-wallet-wallet
     devDependencies:
       '@types/node': 18.7.14
       rimraf: 3.0.2
       typescript: 4.7.4
 
-  packages/unipass-wallet-utils:
+  packages/unipass-wallet:
+    specifiers:
+      '@ethereumjs/tx': ^3.5.2
+      '@jest/types': ~28.1.0
+      '@types/jest': ~27.5.0
+      '@types/node': ^18.0.5
+      '@types/node-rsa': ^1.1.1
+      '@types/nodemailer': ^6.4.4
+      '@unipasswallet/abi': ^0.0.1-alpha.1
+      '@unipasswallet/dkim': ^0.0.1-alpha.1
+      '@unipasswallet/dkim-base': ^0.0.1-alpha.1
+      '@unipasswallet/keys': ^0.0.1-alpha.1
+      '@unipasswallet/transactions': ^0.0.1-alpha.1
+      '@unipasswallet/utils': ^0.0.1-alpha.1
+      '@unipasswallet/wallet': ^0.0.1-alpha.1
+      dotenv: ^16.0.1
+      ethers: ^5.7.0
+      jest: ~28.1.0
+      node-rsa: ^1.1.1
+      nodemailer: ^6.7.2
+      rimraf: ~3.0.2
+      ts-jest: ~28.0.0
+      typescript: ~4.7.0
+    dependencies:
+      '@ethereumjs/tx': 3.5.2
+      '@unipasswallet/abi': link:../abi
+      '@unipasswallet/dkim-base': link:../dkim-base
+      '@unipasswallet/keys': link:../keys
+      '@unipasswallet/transactions': link:../transactions
+      '@unipasswallet/utils': link:../utils
+      '@unipasswallet/wallet': link:../wallet
+      ethers: 5.7.0
+    devDependencies:
+      '@jest/types': 28.1.3
+      '@types/jest': 27.5.2
+      '@types/node': 18.0.6
+      '@types/node-rsa': 1.1.1
+      '@types/nodemailer': 6.4.4
+      '@unipasswallet/dkim': link:../dkim
+      dotenv: 16.0.1
+      jest: 28.1.3_@types+node@18.0.6
+      node-rsa: 1.1.1
+      nodemailer: 6.7.7
+      rimraf: 3.0.2
+      ts-jest: 28.0.7_lhw3xkmzugq5tscs3x2ndm4sby
+      typescript: 4.7.4
+
+  packages/utils:
     specifiers:
       '@ethersproject/pbkdf2': ^5.6.1
       '@jest/types': ~28.1.0
@@ -196,34 +196,34 @@ importers:
       ts-jest: ~28.0.0
       typescript: ~4.7.0
     dependencies:
-      '@ethersproject/pbkdf2': 5.6.1
+      '@ethersproject/pbkdf2': 5.7.0
       aes-js: 3.0.0
       ethers: 5.7.0
       scrypt-js: 3.0.1
     devDependencies:
       '@jest/types': 28.1.3
       '@types/jest': 27.5.2
-      '@types/node': 18.7.3
-      jest: 28.0.3_@types+node@18.7.3
+      '@types/node': 18.7.14
+      jest: 28.0.3_@types+node@18.7.14
       rimraf: 3.0.2
       ts-jest: 28.0.7_xed4xoypqwqyivasxqbnzaeaxm
       typescript: 4.7.4
 
-  packages/unipass-wallet-wallet:
+  packages/wallet:
     specifiers:
       '@types/jest': ~27.5.0
       '@types/node': ^18.0.5
+      '@unipasswallet/keys': ^0.0.1-alpha.1
+      '@unipasswallet/utils': ^0.0.1-alpha.1
       ethers: ^5.7.0
       jest: ~28.1.0
       rimraf: ~3.0.2
       ts-jest: ~28.0.0
       typescript: ~4.7.0
-      unipass-wallet-keys: ^0.0.1
-      unipass-wallet-utils: ^0.0.12
     dependencies:
+      '@unipasswallet/keys': link:../keys
+      '@unipasswallet/utils': link:../utils
       ethers: 5.7.0
-      unipass-wallet-keys: link:../unipass-wallet-keys
-      unipass-wallet-utils: link:../unipass-wallet-utils
     devDependencies:
       '@types/jest': 27.5.2
       '@types/node': 18.7.14
@@ -927,12 +927,6 @@ packages:
       '@ethersproject/logger': 5.7.0
       bn.js: 5.2.1
 
-  /@ethersproject/bytes/5.6.1:
-    resolution: {integrity: sha512-NwQt7cKn5+ZE4uDn+X5RAXLp46E1chXoaMmrxAyA0rblpxz8t58lVkrHXoRIn0lz1joQElQ8410GqhTqMOwc6g==}
-    dependencies:
-      '@ethersproject/logger': 5.6.0
-    dev: false
-
   /@ethersproject/bytes/5.7.0:
     resolution: {integrity: sha512-nsbxwgFXWh9NyYWo+U8atvmMsSdKJprTcICAkvbBffT75qDocbuggBU0SJiVK2MuTrp0q+xvLkTnGMPK1+uA9A==}
     dependencies:
@@ -1009,10 +1003,6 @@ packages:
       '@ethersproject/bytes': 5.7.0
       js-sha3: 0.8.0
 
-  /@ethersproject/logger/5.6.0:
-    resolution: {integrity: sha512-BiBWllUROH9w+P21RzoxJKzqoqpkyM1pRnEKG69bulE9TSQD8SAIvTQqIMZmmCO8pUNkgLP1wndX1gKghSpBmg==}
-    dev: false
-
   /@ethersproject/logger/5.7.0:
     resolution: {integrity: sha512-0odtFdXu/XHtjQXJYA3u9G0G8btm0ND5Cu8M7i5vhEcE8/HmF4Lbdqanwyv4uQTr2tx6b7fQRmgLrsnpQlmnig==}
 
@@ -1020,13 +1010,6 @@ packages:
     resolution: {integrity: sha512-MG6oHSQHd4ebvJrleEQQ4HhVu8Ichr0RDYEfHzsVAVjHNM+w36x9wp9r+hf1JstMXtseXDtkiVoARAG6M959AA==}
     dependencies:
       '@ethersproject/logger': 5.7.0
-
-  /@ethersproject/pbkdf2/5.6.1:
-    resolution: {integrity: sha512-k4gRQ+D93zDRPNUfmduNKq065uadC2YjMP/CqwwX5qG6R05f47boq6pLZtV/RnC4NZAYOPH1Cyo54q0c9sshRQ==}
-    dependencies:
-      '@ethersproject/bytes': 5.6.1
-      '@ethersproject/sha2': 5.6.1
-    dev: false
 
   /@ethersproject/pbkdf2/5.7.0:
     resolution: {integrity: sha512-oR/dBRZR6GTyaofd86DehG72hY6NpAjhabkhxgr3X2FpJtJuodEl2auADWBZfhDHgVCbu3/H/Ocq2uC6dpNjjw==}
@@ -1077,14 +1060,6 @@ packages:
     dependencies:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
-
-  /@ethersproject/sha2/5.6.1:
-    resolution: {integrity: sha512-5K2GyqcW7G4Yo3uenHegbXRPDgARpWUiXc6RiF7b6i/HXUoWlb7uCARh7BAHg7/qT/Q5ydofNwiZcim9qpjB6g==}
-    dependencies:
-      '@ethersproject/bytes': 5.6.1
-      '@ethersproject/logger': 5.6.0
-      hash.js: 1.1.7
-    dev: false
 
   /@ethersproject/sha2/5.7.0:
     resolution: {integrity: sha512-gKlH42riwb3KYp0reLsFTokByAKoJdgFCwI+CCiX/k+Jm2mbNs6oOaCjYQSlI1+XBVejwH2KrmCbMAT/GnRDQw==}
@@ -1889,16 +1864,8 @@ packages:
     resolution: {integrity: sha512-/xUq6H2aQm261exT6iZTMifUySEt4GR5KX8eYyY+C4MSNPqSh9oNIP7tz2GLKTlFaiBbgZNxffoR3CVRG+cljw==}
     dev: true
 
-  /@types/node/18.7.13:
-    resolution: {integrity: sha512-46yIhxSe5xEaJZXWdIBP7GU4HDTG8/eo0qd9atdiL+lFpA03y8KS+lkTN834TWJj5767GbWv4n/P6efyTFt1Dw==}
-    dev: true
-
   /@types/node/18.7.14:
     resolution: {integrity: sha512-6bbDaETVi8oyIARulOE9qF1/Qdi/23z6emrUh0fNJRUmjznqrixD4MpGDdgOFk5Xb0m2H6Xu42JGdvAxaJR/wA==}
-
-  /@types/node/18.7.3:
-    resolution: {integrity: sha512-LJgzOEwWuMTBxHzgBR/fhhBOWrvBjvO+zPteUgbbuQi80rYIZHrk1mNbRUqPZqSLP2H7Rwt1EFLL/tNLD1Xx/w==}
-    dev: true
 
   /@types/nodemailer/6.4.4:
     resolution: {integrity: sha512-Ksw4t7iliXeYGvIQcSIgWQ5BLuC/mljIEbjf615svhZL10PE9t+ei8O9gDaD3FPCasUJn9KTLwz2JFJyiiyuqw==}
@@ -4681,34 +4648,6 @@ packages:
       - ts-node
     dev: true
 
-  /jest-cli/28.1.3_@types+node@18.7.3:
-    resolution: {integrity: sha512-roY3kvrv57Azn1yPgdTebPAXvdR2xfezaKKYzVxZ6It/5NCxzJym6tUI5P1zkdWhfUYkxEI9uZWcQdaFLo8mJQ==}
-    engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
-    hasBin: true
-    peerDependencies:
-      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
-    peerDependenciesMeta:
-      node-notifier:
-        optional: true
-    dependencies:
-      '@jest/core': 28.1.3
-      '@jest/test-result': 28.1.3
-      '@jest/types': 28.1.3
-      chalk: 4.1.2
-      exit: 0.1.2
-      graceful-fs: 4.2.10
-      import-local: 3.1.0
-      jest-config: 28.1.3_@types+node@18.7.3
-      jest-util: 28.1.3
-      jest-validate: 28.1.3
-      prompts: 2.4.2
-      yargs: 17.5.1
-    transitivePeerDependencies:
-      - '@types/node'
-      - supports-color
-      - ts-node
-    dev: true
-
   /jest-config/28.1.3_@types+node@18.0.6:
     resolution: {integrity: sha512-MG3INjByJ0J4AsNBm7T3hsuxKQqFIiRo/AUqb1q9LRKI5UU6Aar9JHbr9Ivn1TVwfUD9KirRoM/T6u8XlcQPHQ==}
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
@@ -4764,45 +4703,6 @@ packages:
       '@jest/test-sequencer': 28.1.3
       '@jest/types': 28.1.3
       '@types/node': 18.7.14
-      babel-jest: 28.1.3_@babel+core@7.18.9
-      chalk: 4.1.2
-      ci-info: 3.3.2
-      deepmerge: 4.2.2
-      glob: 7.2.3
-      graceful-fs: 4.2.10
-      jest-circus: 28.1.3
-      jest-environment-node: 28.1.3
-      jest-get-type: 28.0.2
-      jest-regex-util: 28.0.2
-      jest-resolve: 28.1.3
-      jest-runner: 28.1.3
-      jest-util: 28.1.3
-      jest-validate: 28.1.3
-      micromatch: 4.0.5
-      parse-json: 5.2.0
-      pretty-format: 28.1.3
-      slash: 3.0.0
-      strip-json-comments: 3.1.1
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /jest-config/28.1.3_@types+node@18.7.3:
-    resolution: {integrity: sha512-MG3INjByJ0J4AsNBm7T3hsuxKQqFIiRo/AUqb1q9LRKI5UU6Aar9JHbr9Ivn1TVwfUD9KirRoM/T6u8XlcQPHQ==}
-    engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
-    peerDependencies:
-      '@types/node': '*'
-      ts-node: '>=9.0.0'
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      ts-node:
-        optional: true
-    dependencies:
-      '@babel/core': 7.18.9
-      '@jest/test-sequencer': 28.1.3
-      '@jest/types': 28.1.3
-      '@types/node': 18.7.3
       babel-jest: 28.1.3_@babel+core@7.18.9
       chalk: 4.1.2
       ci-info: 3.3.2
@@ -5135,7 +5035,7 @@ packages:
       supports-color: 8.1.1
     dev: true
 
-  /jest/28.0.3_@types+node@18.0.6:
+  /jest/28.0.3_@types+node@18.7.14:
     resolution: {integrity: sha512-uS+T5J3w5xyzd1KSJCGKhCo8WTJXbNl86f5SW11wgssbandJOVLRKKUxmhdFfmKxhPeksl1hHZ0HaA8VBzp7xA==}
     engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
     hasBin: true
@@ -5147,26 +5047,7 @@ packages:
     dependencies:
       '@jest/core': 28.1.3
       import-local: 3.1.0
-      jest-cli: 28.1.3_@types+node@18.0.6
-    transitivePeerDependencies:
-      - '@types/node'
-      - supports-color
-      - ts-node
-    dev: true
-
-  /jest/28.0.3_@types+node@18.7.3:
-    resolution: {integrity: sha512-uS+T5J3w5xyzd1KSJCGKhCo8WTJXbNl86f5SW11wgssbandJOVLRKKUxmhdFfmKxhPeksl1hHZ0HaA8VBzp7xA==}
-    engines: {node: ^12.13.0 || ^14.15.0 || ^16.10.0 || >=17.0.0}
-    hasBin: true
-    peerDependencies:
-      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
-    peerDependenciesMeta:
-      node-notifier:
-        optional: true
-    dependencies:
-      '@jest/core': 28.1.3
-      import-local: 3.1.0
-      jest-cli: 28.1.3_@types+node@18.7.3
+      jest-cli: 28.1.3_@types+node@18.7.14
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
@@ -7162,7 +7043,7 @@ packages:
       '@jest/types': 28.1.3
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 28.0.3_@types+node@18.0.6
+      jest: 28.0.3_@types+node@18.7.14
       jest-util: 28.1.3
       json5: 2.2.1
       lodash.memoize: 4.1.2
