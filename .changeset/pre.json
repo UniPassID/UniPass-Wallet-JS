@@ -8,7 +8,7 @@
     "@unipasswallet/keys": "0.0.1-alpha.1",
     "@unipasswallet/network": "0.0.1-alpha.1",
     "@unipasswallet/transactions": "0.0.1-alpha.1",
-    "@unipasswallet/unipass-wallet": "0.0.1-alpha.1",
+    "@unipasswallet/sdk": "0.0.1-alpha.1",
     "@unipasswallet/utils": "0.0.1-alpha.1",
     "@unipasswallet/wallet": "0.0.1-alpha.1"
   },

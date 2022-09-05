@@ -1,5 +1,5 @@
 {
-  "name": "@unipasswallet/unipass-wallet",
+  "name": "@unipasswallet/sdk",
   "description": "Example of using ts-node in a TS monorepo",
   "version": "0.0.1-alpha.1",
   "main": "dist/index",
