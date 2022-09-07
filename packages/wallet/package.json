@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/wallet",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,17 +14,17 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "ethers": "^5.7.0",
-    "@unipasswallet/utils": "^0.0.1-alpha.1",
-    "@unipasswallet/keys": "^0.0.1-alpha.1"
+    "@unipasswallet/keys": "workspace:^0.0.1-alpha.2",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.2",
+    "ethers": "^5.7.0"
   },
   "devDependencies": {
-    "@jest/types": "~28.1.0",
-    "@types/node": "^18.0.5",
-    "@types/jest": "~27.5.0",
+    "@jest/types": "~28.1.3",
+    "@types/jest": "~27.5.2",
+    "@types/node": "^18.7.15",
+    "jest": "~28.1.3",
     "rimraf": "~3.0.2",
-    "ts-jest": "~28.0.0",
-    "jest": "~28.1.0",
-    "typescript": "~4.7.0"
+    "ts-jest": "~28.0.8",
+    "typescript": "~4.7.4"
   }
 }

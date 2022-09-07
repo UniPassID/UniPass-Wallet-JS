@@ -1,6 +1,6 @@
 {
   "mode": "pre",
-  "tag": "alpha.2",
+  "tag": "alpha",
   "initialVersions": {
     "@unipasswallet/abi": "0.0.1-alpha.1",
     "@unipasswallet/dkim": "0.0.1-alpha.1",
@@ -12,5 +12,7 @@
     "@unipasswallet/utils": "0.0.1-alpha.1",
     "@unipasswallet/wallet": "0.0.1-alpha.2"
   },
-  "changesets": []
+  "changesets": [
+    "healthy-points-serve"
+  ]
 }
