@@ -128,7 +128,7 @@ importers:
       '@unipasswallet/keys': ^0.0.1-alpha.1
       '@unipasswallet/transactions': ^0.0.1-alpha.1
       '@unipasswallet/utils': ^0.0.1-alpha.1
-      '@unipasswallet/wallet': ^0.0.1-alpha.1
+      '@unipasswallet/wallet': ^0.0.1-alpha.2
       dotenv: ^16.0.1
       ethers: ^5.7.0
       jest: ~28.1.0
@@ -167,7 +167,7 @@ importers:
       '@unipasswallet/abi': ^0.0.1-alpha.1
       '@unipasswallet/keys': ^0.0.1-alpha.1
       '@unipasswallet/utils': ^0.0.1-alpha.1
-      '@unipasswallet/wallet': ^0.0.1-alpha.1
+      '@unipasswallet/wallet': ^0.0.1-alpha.2
       ethers: ^5.7.0
       rimraf: ~3.0.2
       typescript: ~4.7.0

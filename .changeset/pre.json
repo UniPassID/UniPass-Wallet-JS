@@ -1,16 +1,16 @@
 {
   "mode": "pre",
-  "tag": "alpha",
+  "tag": "alpha.2",
   "initialVersions": {
     "@unipasswallet/abi": "0.0.1-alpha.1",
     "@unipasswallet/dkim": "0.0.1-alpha.1",
     "@unipasswallet/dkim-base": "0.0.1-alpha.1",
     "@unipasswallet/keys": "0.0.1-alpha.1",
     "@unipasswallet/network": "0.0.1-alpha.1",
+    "@unipasswallet/sdk": "0.0.1-alpha.2",
     "@unipasswallet/transactions": "0.0.1-alpha.1",
-    "@unipasswallet/sdk": "0.0.1-alpha.1",
     "@unipasswallet/utils": "0.0.1-alpha.1",
-    "@unipasswallet/wallet": "0.0.1-alpha.1"
+    "@unipasswallet/wallet": "0.0.1-alpha.2"
   },
   "changesets": []
 }
