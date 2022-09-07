@@ -32,14 +32,18 @@ export class KeyEmailDkim extends KeyBase {
   }
 
   static isKeyEmailDkim(value: any): value is KeyEmailDkim {
-    return !!(value && value._isKeyEmailDkim);
+    return !!(
+      value &&
+      value._isKeyEmailDkim &&
+      RoleWeight.isRoleWeight(value.roleWeight)
+    );
   }
 
   public toJson() {
     return JSON.stringify({
       emailFrom: this.emailFrom,
       pepper: this.pepper,
-      roleWeight: this.roleWeight,
+      roleWeight: this.roleWeight.toJsonObj(),
       dkimParams: this.dkimParams
         ? this.dkimParams.toJsonObj()
         : this.dkimParams,
@@ -50,7 +54,7 @@ export class KeyEmailDkim extends KeyBase {
     return new KeyEmailDkim(
       obj.emailFrom,
       obj.pepper,
-      obj.roleWeight,
+      RoleWeight.fromJsonObj(obj.roleWeight),
       obj.dkimParams
         ? DkimParamsBase.fromJsonObj(obj.dkimParams)
         : obj.dkimParams

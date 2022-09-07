@@ -16,13 +16,17 @@ export class KeySecp256k1Wallet extends KeyBase {
   }
 
   static isKeySecp256k1Wallet(value: any): value is KeySecp256k1Wallet {
-    return !!(value && value._isKeySecp256k1Wallet);
+    return !!(
+      value &&
+      value._isKeySecp256k1Wallet &&
+      RoleWeight.isRoleWeight(value.roleWeight)
+    );
   }
 
   public toJson() {
     return JSON.stringify({
       wallet: this.wallet.privateKey,
-      roleWeight: this.roleWeight,
+      roleWeight: this.roleWeight.toJsonObj(),
       signType: this.signType,
     });
   }
@@ -30,7 +34,7 @@ export class KeySecp256k1Wallet extends KeyBase {
   static fromJsonObj(obj: any): KeySecp256k1Wallet {
     return new KeySecp256k1Wallet(
       new Wallet(obj.wallet),
-      obj.roleWeight,
+      RoleWeight.fromJsonObj(obj.roleWeight),
       obj.signType
     );
   }
