@@ -1,5 +1,5 @@
 import { BytesLike, utils, Wallet as WalletEOA } from "ethers";
-import { sign, SignType } from "@unipasswallet/keys/src";
+import { sign, SignType } from "@unipasswallet/keys";
 import { IPermit } from "./permit";
 import { subDigest } from "@unipasswallet/utils";
 import { Wallet } from "./wallet";
