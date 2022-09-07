@@ -23,19 +23,27 @@ export class KeySecp256k1 extends KeyBase {
   }
 
   static isKeySecp256k1(value: any): value is KeySecp256k1 {
-    return !!(value && value._isKeySecp256k1);
+    return !!(
+      value &&
+      value._isKeySecp256k1 &&
+      RoleWeight.isRoleWeight(value.roleWeight)
+    );
   }
 
   public toJson() {
     return JSON.stringify({
       address: this.address,
-      roleWeight: this.roleWeight,
+      roleWeight: this.roleWeight.toJsonObj(),
       signType: this.signType,
     });
   }
 
   static fromJsonObj(obj: any): KeySecp256k1 {
-    return new KeySecp256k1(obj.address, obj.roleWeight, obj.signType);
+    return new KeySecp256k1(
+      obj.address,
+      RoleWeight.fromJsonObj(obj.roleWeight),
+      obj.signType
+    );
   }
 
   public getSignType(): SignType {

@@ -19,18 +19,22 @@ export class KeyERC1271 extends KeyBase {
   }
 
   static isKeyERC1271(value: any): value is KeyERC1271 {
-    return !!(value && value._isKeyERC1271);
+    return !!(
+      value &&
+      value._isKeyERC1271 &&
+      RoleWeight.isRoleWeight(value.roleWeight)
+    );
   }
 
   public toJson() {
     return JSON.stringify({
       address: this.address,
-      roleWeight: this.roleWeight,
+      roleWeight: this.roleWeight.toJsonObj(),
     });
   }
 
   static fromJsonObj(obj: any): KeyERC1271 {
-    return new KeyERC1271(obj.address, obj.roleWeight);
+    return new KeyERC1271(obj.address, RoleWeight.fromJsonObj(obj.roleWeight));
   }
 
   public async generateSignature(digestHash: string): Promise<string> {

@@ -1,11 +1,15 @@
-import { solidityPack } from "ethers/lib/utils";
+import { defineReadOnly, solidityPack } from "ethers/lib/utils";
 
 export class RoleWeight {
+  public readonly _isRoleWeight: boolean;
+
   constructor(
     public readonly ownerWeight: number,
     public readonly assetsOpWeight: number,
     public readonly guardianWeight: number
-  ) {}
+  ) {
+    defineReadOnly(this, "_isRoleWeight", true);
+  }
 
   public static zero(): RoleWeight {
     return new RoleWeight(0, 0, 0);
@@ -16,6 +20,30 @@ export class RoleWeight {
       ["uint32", "uint32", "uint32"],
       [this.ownerWeight, this.assetsOpWeight, this.guardianWeight]
     );
+  }
+
+  static isRoleWeight(value: any): value is RoleWeight {
+    return !!(value && value._isRoleWeight);
+  }
+
+  static fromJsonObj(obj: any): RoleWeight {
+    return new RoleWeight(
+      obj.ownerWeight,
+      obj.assetsOpWeight,
+      obj.guardianWeight
+    );
+  }
+
+  public toJson(): string {
+    return JSON.stringify(this.toJsonObj());
+  }
+
+  public toJsonObj() {
+    return {
+      ownerWeight: this.ownerWeight,
+      assetsOpWeight: this.assetsOpWeight,
+      guardianWeight: this.guardianWeight,
+    };
   }
 
   public add(other: RoleWeight): RoleWeight {

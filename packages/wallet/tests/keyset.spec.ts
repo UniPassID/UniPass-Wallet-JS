@@ -32,11 +32,17 @@ describe("Test Keyset", () => {
       masterKeyRoleWeight,
       SignType.EIP712Sign
     );
-    const keyset = Keyset.new(registerEmail, registerEmailPepper, masterKey, [
-      guardian1,
-      guardian2,
-    ]);
+    const keyset = Keyset.create(
+      registerEmail,
+      registerEmailPepper,
+      masterKey,
+      [guardian1, guardian2]
+    );
     const keysetRecover = Keyset.fromJson(keyset.toJson());
+    expect(KeySecp256k1.isKeySecp256k1(keyset.keys[0])).toBe(true);
+    expect(KeyEmailDkim.isKeyEmailDkim(keyset.keys[1])).toBe(true);
+    expect(KeyERC1271.isKeyERC1271(keyset.keys[2])).toBe(true);
+    expect(KeySecp256k1Wallet.isKeySecp256k1Wallet(keyset.keys[3])).toBe(true);
     expect(keyset.keys[0]).toEqual(masterKey);
     expect(keyset.keys[1]).toEqual(
       new KeyEmailDkim(
@@ -46,6 +52,12 @@ describe("Test Keyset", () => {
       )
     );
     masterKey.signFunc = undefined;
+    expect(KeySecp256k1.isKeySecp256k1(keysetRecover.keys[0])).toBe(true);
+    expect(KeyEmailDkim.isKeyEmailDkim(keysetRecover.keys[1])).toBe(true);
+    expect(KeyERC1271.isKeyERC1271(keysetRecover.keys[2])).toBe(true);
+    expect(KeySecp256k1Wallet.isKeySecp256k1Wallet(keysetRecover.keys[3])).toBe(
+      true
+    );
     expect(keysetRecover.keys[0]).toEqual(masterKey);
     expect(keysetRecover.keys[1]).toEqual(keyset.keys[1]);
     expect(keysetRecover.keys[2]).toEqual(keyset.keys[2]);
