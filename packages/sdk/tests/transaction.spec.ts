@@ -252,7 +252,7 @@ describe("Test ModuleMain", () => {
     let signerIndexes;
     [wallet, signerIndexes] = await selectKeys(
       wallet,
-      EmailType.UpdateKeysetHash,
+      EmailType.LockKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
@@ -390,10 +390,11 @@ describe("Test ModuleMain", () => {
       unipassPrivateKey
     );
     const pepper = hexlify(randomBytes(32));
-    const ret = await dkimKeys.dkimVerify(email.serialize(), 0, pepper);
+    const ret = await dkimKeys.dkimVerify(pepper, 0, email.serialize());
     expect(ret[0]).toBe(true);
-    expect(ret[1]).toBe(pureEmailHash(emailFrom, pepper));
-    expect(ret[2]).toBe(hexlify(toUtf8Bytes(digestHash)));
+    expect(ret[1]).toBe(EmailType.CallOtherContract);
+    expect(ret[2]).toBe(pureEmailHash(emailFrom, pepper));
+    expect(ret[3]).toBe(hexlify(toUtf8Bytes(digestHash)));
   });
   it("Update TimeLock During Should Success", async () => {
     const newDelay = 3600;
@@ -543,7 +544,7 @@ describe("Test ModuleMain", () => {
     let signerIndexes;
     [wallet, signerIndexes] = await selectKeys(
       wallet,
-      EmailType.UpdateKeysetHash,
+      EmailType.LockKeysetHash,
       subject,
       unipassPrivateKey,
       Role.Guardian,
