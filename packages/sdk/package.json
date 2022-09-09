@@ -1,7 +1,7 @@
 {
   "name": "@unipasswallet/sdk",
   "description": "Example of using ts-node in a TS monorepo",
-  "version": "0.0.1-alpha.3",
+  "version": "0.0.1-alpha.4",
   "main": "dist/index",
   "types": "dist/index",
   "scripts": {
@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@ethereumjs/tx": "^3.5.2",
-    "@unipasswallet/abi": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/dkim-base": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/keys": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/utils": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/abi": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/dkim-base": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/keys": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.4",
     "ethers": "^5.7.0"
   },
   "devDependencies": {
@@ -27,7 +27,7 @@
     "@types/node": "^18.7.16",
     "@types/node-rsa": "^1.1.1",
     "@types/nodemailer": "^6.4.5",
-    "@unipasswallet/dkim": "workspace:^0.0.1-alpha.2",
+    "@unipasswallet/dkim": "workspace:^0.0.1-alpha.3",
     "dotenv": "^16.0.2",
     "jest": "~28.1.3",
     "node-rsa": "^1.1.1",
