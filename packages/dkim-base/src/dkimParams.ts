@@ -16,6 +16,7 @@ export interface Signature {
 }
 
 export enum EmailType {
+  None,
   UpdateKeysetHash,
   LockKeysetHash,
   CancelLockKeysetHash,

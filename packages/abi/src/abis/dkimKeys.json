@@ -225,9 +225,9 @@
     {
       "inputs": [
         {
-          "internalType": "bytes",
-          "name": "_data",
-          "type": "bytes"
+          "internalType": "bytes32",
+          "name": "_pepper",
+          "type": "bytes32"
         },
         {
           "internalType": "uint256",
@@ -235,9 +235,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "bytes32",
-          "name": "_pepper",
-          "type": "bytes32"
+          "internalType": "bytes",
+          "name": "_data",
+          "type": "bytes"
         }
       ],
       "name": "dkimVerify",
@@ -246,6 +246,11 @@
           "internalType": "bool",
           "name": "ret",
           "type": "bool"
+        },
+        {
+          "internalType": "enum IDkimKeys.EmailType",
+          "name": "emailType",
+          "type": "uint8"
         },
         {
           "internalType": "bytes32",
