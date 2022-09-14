@@ -5,16 +5,19 @@ import { history } from "umi";
 
 export default function HomePage() {
   const [isRegister, setIsRegister] = useState(true);
-  const { sendCode, passwordToken } = useUnipass();
+  const { registerCode, loginCode, passwordToken, loading } = useUnipass();
 
   const onRe = async (values: any) => {
-    const res = await sendCode(values.email);
+    const res = await registerCode(values.email);
     if (res) history.push("/register_step2");
   };
 
   const onLo = async (values: any) => {
     const res = await passwordToken(values.email, values.password);
-    if (res) history.push("/login_step2");
+    if (res) {
+      const res1 = await loginCode(values.email);
+      if (res1) history.push("/login_step2");
+    }
   };
 
   return (
@@ -45,7 +48,7 @@ export default function HomePage() {
               <Input />
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" loading={loading} htmlType="submit">
                 Next
               </Button>
             </Form.Item>

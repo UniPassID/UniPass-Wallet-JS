@@ -3,7 +3,7 @@ import { Button, Form, Input } from "antd";
 import { history } from "umi";
 
 const RegisterStep3: React.FC = () => {
-  const { register } = useUnipass();
+  const { register, loading } = useUnipass();
 
   const onFinish = async (values: any) => {
     const res = await register(values.password);
@@ -19,7 +19,7 @@ const RegisterStep3: React.FC = () => {
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" loading={loading} htmlType="submit">
             Next
           </Button>
         </Form.Item>

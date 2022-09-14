@@ -6,7 +6,7 @@ const generateAccountAddress = async (keysetHash: string, provider: providers.Js
     const deployer = await new Deployer(provider.getSigner()).init();
     const address = deployer.getProxyContractAddress(
       // TODO import address
-      "0x32ab2e39ca105b1718f805413FB01C1d94b939ae",
+      "0x86407827c875a69F6A2dfa00d50dd4F2Da24ac66",
       keysetHash,
     );
 

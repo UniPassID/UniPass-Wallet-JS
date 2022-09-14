@@ -107,23 +107,12 @@
     {
       "inputs": [
         {
-          "internalType": "enum KeyType",
+          "internalType": "enum LibUnipassSig.KeyType",
           "name": "_keyType",
           "type": "uint8"
         }
       ],
       "name": "InvalidKeyType",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "enum ModuleRole.Role",
-          "name": "_role",
-          "type": "uint8"
-        }
-      ],
-      "name": "InvalidRole",
       "type": "error"
     },
     {
@@ -189,6 +178,22 @@
         }
       ],
       "name": "IsImplementationWhiteListRevert",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_requested",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_available",
+          "type": "uint256"
+        }
+      ],
+      "name": "NotEnoughGas",
       "type": "error"
     },
     {
@@ -285,12 +290,6 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "enum ModuleRole.Role",
-          "name": "_role",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
           "internalType": "bytes4",
           "name": "_permission",
           "type": "bytes4"
@@ -298,7 +297,19 @@
         {
           "indexed": false,
           "internalType": "uint32",
-          "name": "_threshold",
+          "name": "_ownerWeight",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "_assetsOpWeight",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "_guardianWeight",
           "type": "uint32"
         }
       ],
@@ -315,7 +326,7 @@
           "type": "uint256"
         }
       ],
-      "name": "CancelLockKeysetHsah",
+      "name": "CancelLockKeysetHash",
       "type": "event"
     },
     {
@@ -553,18 +564,23 @@
     {
       "inputs": [
         {
-          "internalType": "enum ModuleRole.Role",
-          "name": "_role",
-          "type": "uint8"
-        },
-        {
           "internalType": "bytes4",
           "name": "_permission",
           "type": "bytes4"
         },
         {
           "internalType": "uint32",
-          "name": "_threshold",
+          "name": "_ownerWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_assetsOpWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_guardianWeight",
           "type": "uint32"
         }
       ],
@@ -586,7 +602,7 @@
           "type": "bytes"
         }
       ],
-      "name": "cancelLockKeysetHsah",
+      "name": "cancelLockKeysetHash",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -750,13 +766,18 @@
       "name": "getRoleOfPermission",
       "outputs": [
         {
-          "internalType": "enum ModuleRole.Role",
-          "name": "role",
-          "type": "uint8"
+          "internalType": "uint32",
+          "name": "ownerWeight",
+          "type": "uint32"
         },
         {
           "internalType": "uint32",
-          "name": "threshold",
+          "name": "assetsOpWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "guardianWeight",
           "type": "uint32"
         }
       ],
@@ -971,9 +992,9 @@
       "name": "permissions",
       "outputs": [
         {
-          "internalType": "bytes5",
+          "internalType": "bytes12",
           "name": "",
-          "type": "bytes5"
+          "type": "bytes12"
         }
       ],
       "stateMutability": "view",
@@ -1020,6 +1041,66 @@
         }
       ],
       "name": "removePermission",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "_ownerWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_assetsOpWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "_guardianWeight",
+          "type": "uint32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "enum ModuleTransaction.CallType",
+              "name": "callType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "bool",
+              "name": "revertOnError",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "target",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gasLimit",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct ModuleTransaction.Transaction[]",
+          "name": "_txs",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "selfExecute",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1092,9 +1173,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint32",
           "name": "_metaNonce",
-          "type": "uint256"
+          "type": "uint32"
         }
       ],
       "name": "unlockKeysetHash",
@@ -1215,26 +1296,24 @@
           "type": "bool"
         },
         {
-          "components": [
-            {
-              "internalType": "uint32",
-              "name": "ownerWeight",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "assetsOpWeight",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "guardianWeight",
-              "type": "uint32"
-            }
-          ],
-          "internalType": "struct RoleWeight",
-          "name": "roleWeightRet",
-          "type": "tuple"
+          "internalType": "enum IDkimKeys.EmailType",
+          "name": "emailType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint32",
+          "name": "ownerWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "assetsOpWeight",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "guardianWeight",
+          "type": "uint32"
         }
       ],
       "stateMutability": "view",
