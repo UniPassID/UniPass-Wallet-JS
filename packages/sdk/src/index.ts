@@ -13,3 +13,5 @@ export * as abi from "@unipasswallet/abi";
 export * as transactions from "@unipasswallet/transactions";
 
 export * as wallets from "@unipasswallet/wallet";
+
+// export * as provider from "@unipasswallet/provider";
