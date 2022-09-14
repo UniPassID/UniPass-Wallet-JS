@@ -4,7 +4,7 @@ import Tss, { SIG_PREFIX } from "./utils/tss";
 import api from "./api/backend";
 import blockchain from "./api/blockchain";
 import { checkEmailFormat, checkPassword, formatPassword } from "./utils/rules";
-import { AuthType, SignUpAccountInput, User } from "./interface";
+import { AuthType, OtpAction, SignUpAccountInput, User } from "./interface";
 import { generateKdfPassword, signMsg } from "./utils/cloud-key";
 import WalletError from "./constant/error_map";
 import { generateSessionKey } from "./utils/session-key";
@@ -12,14 +12,14 @@ import { getAccountKeysetJson } from "./utils/rbac";
 import DB from "./utils/db";
 import UnipassWalletProvider from ".";
 
-const getVerifyCode = async (email: string, mailServices: Array<string>) => {
+const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
   checkEmailFormat(email, mailServices);
-  await api.sendOtpCode({ email, action: "signUp", authType: AuthType.Email });
+  await api.sendOtpCode({ email, action, authType: AuthType.Email });
 };
 
-const verifyOtpCode = async (email: string, code: string, mailServices: Array<string>) => {
+const verifyOtpCode = async (email: string, code: string, action: OtpAction, mailServices: Array<string>) => {
   checkEmailFormat(email, mailServices);
-  const { data } = await api.verifyOtpCode({ email, code, action: "signUp", authType: AuthType.Email });
+  const { data } = await api.verifyOtpCode({ email, code, action, authType: AuthType.Email });
   return data.upAuthToken;
 };
 
@@ -30,10 +30,6 @@ const doRegister = async (
   policyAddress: string,
   provider: UnipassWalletProvider,
 ) => {
-  console.log(`upAuthToken: ${upAuthToken}`);
-  console.log(`policyAddress: ${policyAddress}`);
-  console.log(`provider: ${provider}`);
-
   if (!email || !upAuthToken || !policyAddress) throw new WalletError(402004);
   // 1、verify password
   const formattedPsw = formatPassword(password);
@@ -49,15 +45,11 @@ const doRegister = async (
     },
     formattedPsw,
   );
-  console.log(localKeyData);
-
   if (!localKeyData) throw new WalletError(402001);
   // 3. 获取accountAddress
   const keyset = getAccountKeysetJson(email, localKeyData.localKeyAddress, policyAddress, pepper);
   const keysetHash = keyset.hash();
   const accountAddress = await blockchain.generateAccountAddress(keysetHash, provider);
-  console.log(`accountAddress: ${accountAddress}`);
-
   if (!accountAddress) throw new WalletError(402002);
   const timestamp = dayjs().add(4, "hour").unix();
   // 4. 生成sessionKey
@@ -128,7 +120,6 @@ const getPasswordToken = async (email: string, password: string) => {
   const kdfPassword = generateKdfPassword(password);
   const { data } = await api.getPasswordToken({ email, kdfPassword, captchaToken: "" });
   const { upAuthToken, pending } = data;
-  console.log(`getPasswordToken: ${JSON.stringify(data)}`);
 
   if (pending) throw new WalletError(402005);
   if (!upAuthToken) throw new WalletError(402006);
@@ -202,6 +193,10 @@ const doLogin = async (email: string, password: string, upAuthToken: string, pws
   await DB.setUser(user);
 };
 
+const doLogout = async (email: string) => {
+  await DB.delUser(email ?? "");
+};
+
 // const hasLogged = async () => {
 //   const users = await DB.getUsers();
 //   const email = window.localStorage.getItem("email");
@@ -224,4 +219,4 @@ const doLogin = async (email: string, password: string, upAuthToken: string, pws
 //   }
 // };
 
-export { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin };
+export { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout };

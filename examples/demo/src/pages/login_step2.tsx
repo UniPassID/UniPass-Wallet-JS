@@ -1,9 +1,10 @@
 import { useUnipass } from "@/hooks/useUnipass";
 import { Button, Form, Input } from "antd";
+import { useEffect } from "react";
 import { history } from "umi";
 
 const LoginStep2: React.FC = () => {
-  const { login } = useUnipass();
+  const { login, loading } = useUnipass();
 
   const onFinish = async (values: any) => {
     const res = await login(values.code);
@@ -19,7 +20,7 @@ const LoginStep2: React.FC = () => {
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" loading={loading} htmlType="submit">
             Login
           </Button>
         </Form.Item>

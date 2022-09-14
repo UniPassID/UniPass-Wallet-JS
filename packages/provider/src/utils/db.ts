@@ -42,6 +42,7 @@ const DB: DBProps = {
   },
   async delUser(email: string) {
     try {
+      window.localStorage.removeItem("email");
       const res = await db.table("users").delete(email);
       return res;
     } catch (err) {

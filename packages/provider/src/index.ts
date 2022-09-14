@@ -5,7 +5,7 @@ import api from "./api/backend";
 import { getApiConfig, getChainConfig } from "./config";
 import { AxiosInstance } from "axios";
 import requestFactory from "./api/axios";
-import { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin } from "./operate";
+import { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout } from "./operate";
 
 interface UnipassWalletProps {
   chainName: "polygon" | "bsc" | "rangers";
@@ -53,13 +53,23 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
     this.policyAddress = data.policyAddress;
   }
 
-  public async sendCode(email: string) {
-    await getVerifyCode(email, this.mailServices);
+  public async registerCode(email: string) {
+    await getVerifyCode(email, "signUp", this.mailServices);
     this.email = email;
   }
 
-  public async verifyCode(code: string) {
-    const upAuthToken = await verifyOtpCode(this.email, code, this.mailServices);
+  public async verifyRegisterCode(code: string) {
+    const upAuthToken = await verifyOtpCode(this.email, code, "signUp", this.mailServices);
+    this.upAuthToken = upAuthToken;
+  }
+
+  public async loginCode(email: string) {
+    await getVerifyCode(email, "auth2Fa", this.mailServices);
+    this.email = email;
+  }
+
+  public async verifyLoginCode(code: string) {
+    const upAuthToken = await verifyOtpCode(this.email, code, "auth2Fa", this.mailServices);
     this.upAuthToken = upAuthToken;
   }
 
@@ -74,8 +84,20 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
   }
 
   public async login(code: string) {
-    await this.verifyCode(code);
+    await this.verifyLoginCode(code);
     await doLogin(this.email, this.password, this.upAuthToken, this.pwsToken);
+  }
+
+  public async logout() {
+    await doLogout(this.email);
+    this.clean();
+  }
+
+  private clean() {
+    this.email = undefined;
+    this.upAuthToken = undefined;
+    this.pwsToken = undefined;
+    this.password = undefined;
   }
 
   // isSynced() {

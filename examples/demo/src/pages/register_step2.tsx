@@ -3,10 +3,10 @@ import { Button, Form, Input } from "antd";
 import { history } from "umi";
 
 const RegisterStep2: React.FC = () => {
-  const { verifyCode, unipassWallet } = useUnipass();
+  const { verifyRegisterCode, loading } = useUnipass();
 
   const onFinish = async (values: any) => {
-    const res = await verifyCode(values.code);
+    const res = await verifyRegisterCode(values.code);
     if (res) history.push("/register_step3");
   };
 
@@ -19,7 +19,7 @@ const RegisterStep2: React.FC = () => {
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" loading={loading} htmlType="submit">
             Next
           </Button>
         </Form.Item>
