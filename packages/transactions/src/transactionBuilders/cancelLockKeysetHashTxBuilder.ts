@@ -51,7 +51,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
 
   public build(): Transaction {
     const data = this.contractInterface.encodeFunctionData(
-      "cancelLockKeysetHsah",
+      "cancelLockKeysetHash",
       [this.metaNonce, this.signature]
     );
 

@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/abi",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,7 +14,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@types/node": "^18.7.15",
+    "@types/node": "^18.7.16",
     "rimraf": "~3.0.2",
     "typescript": "~4.7.4"
   }

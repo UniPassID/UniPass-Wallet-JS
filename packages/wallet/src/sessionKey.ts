@@ -19,7 +19,7 @@ export class SessionKey {
 
   public digestPermitMessage(timestamp: number, weight: number): string {
     return subDigest(
-      this.chainId,
+      0,
       this.userAddr,
       utils.keccak256(
         utils.solidityPack(
