@@ -10,7 +10,6 @@ export class SessionKey {
   constructor(
     public readonly wallet: WalletEOA,
     public readonly signType: SignType,
-    public readonly chainId: number,
     _userAddr: BytesLike,
     public permit?: IPermit
   ) {
@@ -38,7 +37,7 @@ export class SessionKey {
   ): Promise<SessionKey> {
     const permitDigestHash = this.digestPermitMessage(timestamp, weight);
 
-    const permit = await wallet.signMessage(permitDigestHash, signerIndexes);
+    const permit = await wallet.signPermit(permitDigestHash, signerIndexes);
 
     this.permit = {
       timestamp,

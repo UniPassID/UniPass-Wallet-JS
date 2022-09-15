@@ -2,7 +2,8 @@ import { BytesLike, utils } from "ethers";
 import { moduleMain } from "@unipasswallet/abi";
 import { RoleWeight } from "@unipasswallet/keys";
 import { Wallet } from "@unipasswallet/wallet";
-import { Transaction } from "../transaction";
+import { Transaction } from "@unipasswallet/transactions";
+import { arrayify } from "ethers/lib/utils";
 
 export abstract class BaseTxBuilder {
   public readonly contractInterface: utils.Interface;
@@ -33,12 +34,8 @@ export abstract class BaseTxBuilder {
     wallet: Wallet,
     signerIndexes: number[]
   ): Promise<BaseTxBuilder> {
-    const notSessionKey = 0;
     const digestHash = this.digestMessage();
-    const sig = utils.solidityPack(
-      ["uint8", "bytes"],
-      [notSessionKey, await wallet.signMessage(digestHash, signerIndexes)]
-    );
+    const sig = await wallet.signMessage(arrayify(digestHash), signerIndexes);
 
     if (!this.validateRoleWeight(wallet.getSignRoleWeight(signerIndexes))) {
       throw new Error(`Invalid Role Weight To Sign`);

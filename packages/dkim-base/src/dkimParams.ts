@@ -65,6 +65,52 @@ export class DkimParamsBase {
     this.dkimSig = hexlify(_dkimSig);
   }
 
+  public static create(
+    emailType: EmailType,
+    fromHeader: string,
+    digestHash: string,
+    emailHeader: string,
+    dkimSig: string,
+    sdid: string,
+    selector: string
+  ): DkimParamsBase {
+    const fromIndex = emailHeader.indexOf("from:");
+    const fromEndIndex = emailHeader.indexOf("\r\n", fromIndex);
+
+    let fromLeftIndex = emailHeader.indexOf(`<${fromHeader}>`, fromIndex);
+
+    if (fromLeftIndex === -1 || fromLeftIndex > fromEndIndex) {
+      fromLeftIndex = emailHeader.indexOf(fromHeader);
+    } else {
+      fromLeftIndex += 1;
+    }
+    const fromRightIndex = fromLeftIndex + fromHeader.length - 1;
+
+    const subjectIndex = emailHeader.indexOf("subject:");
+    const dkimHeaderIndex = emailHeader.indexOf("dkim-signature:");
+    const sdidIndex = emailHeader.indexOf(sdid, dkimHeaderIndex);
+    const sdidRightIndex = sdidIndex + sdid.length;
+    const selectorIndex = emailHeader.indexOf(selector, dkimHeaderIndex);
+    const selectorRightIndex = selectorIndex + selector.length;
+
+    return new DkimParamsBase(
+      emailType,
+      emailHeader,
+      dkimSig,
+      fromIndex,
+      fromLeftIndex,
+      fromRightIndex,
+      digestHash,
+      subjectIndex,
+      emailHeader.indexOf("\r\n", subjectIndex),
+      dkimHeaderIndex,
+      sdidIndex,
+      sdidRightIndex,
+      selectorIndex,
+      selectorRightIndex
+    );
+  }
+
   /**
    * @desc Serialize For Signature Generator
    * @returns Serialized Bytes
@@ -225,9 +271,5 @@ export class DkimParamsBase {
       ret.subsAllLen += len;
       ret.subIsBase64.push(false);
     }
-  }
-
-  public async dkimVerify(contract: Contract, oriEmailFrom: string) {
-    return contract.dkimVerifyParams(this, toUtf8Bytes(oriEmailFrom));
   }
 }
