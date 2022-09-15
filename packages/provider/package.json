@@ -14,10 +14,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/keys": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/utils": "workspace:^0.0.1-alpha.2",
-    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/keys": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.4",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.4",
+    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.3",
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
     "dexie": "^3.2.2",
