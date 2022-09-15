@@ -203,7 +203,6 @@ export async function initWalletContext(
     context.provider.getSigner()
   );
   const testERC20Token = await TestERC20Token.deploy();
-
   const keyset = randomKeyset(10);
   const wallet = UnipassWallet.create(
     keyset,
