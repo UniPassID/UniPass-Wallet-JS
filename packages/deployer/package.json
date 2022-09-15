@@ -1,0 +1,25 @@
+{
+  "name": "@unipasswallet/deployer",
+  "version": "0.0.1",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf -rf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@ethereumjs/tx": "^4.0.0",
+    "@unipasswallet/utils": "workspace:0.0.1-alpha.3",
+    "ethers": "^5.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.18",
+    "rimraf": "~3.0.2",
+    "typescript": "~4.8.3"
+  }
+}
