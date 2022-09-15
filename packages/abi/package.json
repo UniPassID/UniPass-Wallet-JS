@@ -14,7 +14,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
-    "@types/node": "^18.7.16",
+    "@types/node": "^18.7.18",
     "rimraf": "~3.0.2",
     "typescript": "~4.7.4"
   }

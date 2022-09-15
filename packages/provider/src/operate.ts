@@ -1,16 +1,18 @@
 import dayjs from "dayjs";
 import { Keyset } from "@unipasswallet/wallet";
+import { Transaction, CallTxBuilder } from "@unipasswallet/transactions";
 import Tss, { SIG_PREFIX } from "./utils/tss";
 import api from "./api/backend";
 import blockchain from "./api/blockchain";
 import { checkEmailFormat, checkPassword, formatPassword } from "./utils/rules";
-import { AuthType, OtpAction, SignUpAccountInput, User } from "./interface";
+import { AuthType, OtpAction, SignUpAccountInput, SyncStatusEnum, User } from "./interface";
 import { generateKdfPassword, signMsg } from "./utils/cloud-key";
 import WalletError from "./constant/error_map";
-import { generateSessionKey } from "./utils/session-key";
+import { decryptSessionKey, generateSessionKey } from "./utils/session-key";
 import { getAccountKeysetJson } from "./utils/rbac";
 import DB from "./utils/db";
 import UnipassWalletProvider from ".";
+import { NodeName } from "./interface/unipassWalletProvider";
 
 const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
   checkEmailFormat(email, mailServices);
@@ -198,31 +200,45 @@ const doLogout = async (email: string) => {
   await DB.delUser(email ?? "");
 };
 
-const getAccountAddress = async (email: string) => {
-  const user = await DB.getUser(email ?? "");
-  return user?.account || "";
+const syncEmail = async (email: string, upAuthToken: string, authChainNode: NodeName) => {
+  if (!email || !upAuthToken) throw new WalletError(402004);
+  await api.syncEmail({ email, upAuthToken, authChainNode });
 };
 
-// const hasLogged = async () => {
-//   const users = await DB.getUsers();
-//   const email = window.localStorage.getItem("email");
-//   if (users.length > 0) {
-//     const user = email ? users.find((e) => e.email === email) : users[0];
-//     if (user) {
-//       // check login
-//       if (dayjs.unix(user.sessionKey.expires).isAfter(dayjs())) {
-//         const resKeysetHash = await blockchain.getAccountKeysetHash(user.account);
+const checkAccountStatus = async (email: string, authChainNode: NodeName) => {
+  checkEmailFormat(email);
+  const user = await DB.getUser(email ?? "");
+  if (user) {
+    const timestamp = user.sessionKey.expires;
+    const sessionKeyAddress = user.sessionKey.localKey.address;
+    const permit = user.sessionKey.authorization;
+    const sessionKeyPrivateKey = await decryptSessionKey(user.sessionKey.aesKey, user.sessionKey.localKey.keystore);
+    const sig = await signMsg(SIG_PREFIX.UPDATE_2FA + timestamp, sessionKeyPrivateKey, false);
+    const sessionKeyPermit = {
+      timestamp,
+      timestampNow: timestamp,
+      permit,
+      sessionKeyAddress,
+      sig,
+      weight: 100,
+    };
+    const { syncStatus } = await api.accountStatus({ email, authChainNode, sessionKeyPermit });
+    if (syncStatus === SyncStatusEnum.NotReceived) throw new WalletError(403001);
+    if (syncStatus === SyncStatusEnum.NotSynced) throw new WalletError(403002);
 
-//         if (
-//           resKeysetHash === user.keyset.hash ||
-//           // todo no keysetHash
-//           resKeysetHash === "0x0000000000000000000000000000000000000000000000000000000000000000"
-//         ) {
-//           await DB.setUser(user);
-//         }
-//       }
-//     }
-//   }
-// };
+    return { syncStatus, sessionKeyPermit };
+  }
 
-export { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout, getAccountAddress };
+  throw new WalletError(402007);
+};
+
+const genTransaction = async (tx: Transaction, email: string, authChainNode: NodeName) => {
+  const txs: Array<Transaction> = [];
+  const { syncStatus, sessionKeyPermit } = await checkAccountStatus(email, authChainNode);
+  txs.push(new CallTxBuilder().build());
+  if (syncStatus === SyncStatusEnum.ServerSynced) {
+    const { data: syncTransaction } = await api.syncTransaction({ email, sessionKeyPermit });
+  }
+};
+
+export { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout, syncEmail, genTransaction };

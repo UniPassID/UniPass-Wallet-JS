@@ -1,19 +1,12 @@
 import { providers } from "ethers";
+import { Transaction } from "@unipasswallet/transactions";
 import TssWorker from "./utils/tss-worker";
-import { UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
+import { NodeName, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { getApiConfig, getChainConfig } from "./config";
 import { AxiosInstance } from "axios";
 import requestFactory from "./api/axios";
-import {
-  getVerifyCode,
-  verifyOtpCode,
-  doRegister,
-  getPasswordToken,
-  doLogin,
-  doLogout,
-  getAccountAddress,
-} from "./operate";
+import { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout, syncEmail, genTransaction } from "./operate";
 
 export default class UnipassWalletProvider extends providers.JsonRpcProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
@@ -25,6 +18,8 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
   private policyAddress: string | undefined;
 
   private email: string | undefined;
+
+  private authChainNode: NodeName | undefined;
 
   private upAuthToken: string | undefined;
 
@@ -51,6 +46,7 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
     }
     const { backend } = getApiConfig(env);
     this.init(backend);
+    this.authChainNode = chainName;
   }
 
   private async init(backend: string) {
@@ -96,30 +92,13 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
     await doLogin(this.email, this.password, this.upAuthToken, this.pwsToken);
   }
 
-  public async getAccountAddress() {
-    const account = await getAccountAddress(this.email);
-    return account;
+  public async sendSyncEmail() {
+    await syncEmail(this.email, this.upAuthToken, this.authChainNode);
   }
 
-  public async logout() {
-    await doLogout(this.email);
-    this.clean();
+  public async transaction(tx: Transaction) {
+    await genTransaction(tx, this.email, this.authChainNode);
   }
-
-  private clean() {
-    this.email = undefined;
-    this.upAuthToken = undefined;
-    this.pwsToken = undefined;
-    this.password = undefined;
-  }
-
-  // isSynced() {
-  //   api;
-  // }
-
-  // sync() {
-  //   api.sendEmail();
-  // }
 
   // sendCallTx(txs) {
   //   if (!sync) {
@@ -132,4 +111,16 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
   // signMessage(message: string) {
   //   this.wallet.signMessage(message);
   // }
+
+  public async logout() {
+    await doLogout(this.email);
+    this.clean();
+  }
+
+  private clean() {
+    this.email = undefined;
+    this.upAuthToken = undefined;
+    this.pwsToken = undefined;
+    this.password = undefined;
+  }
 }

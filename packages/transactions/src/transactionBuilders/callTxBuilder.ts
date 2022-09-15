@@ -13,7 +13,7 @@ export class CallTxBuilder extends BaseTxBuilder {
     public readonly gasLimit: BigNumber,
     _target: BytesLike,
     public readonly value: BigNumber,
-    _data: BytesLike
+    _data: BytesLike,
   ) {
     super();
     this.target = utils.hexlify(_target);

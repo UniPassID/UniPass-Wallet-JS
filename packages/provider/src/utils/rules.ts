@@ -1,18 +1,20 @@
 import { EMAIL_REG } from "../constant";
 import WalletError from "../constant/error_map";
 
-export const checkEmailFormat = (email: string, mailServices: Array<string>) => {
+export const checkEmailFormat = (email: string, mailServices?: Array<string>) => {
   if (!email) throw new WalletError(40001);
   if (!EMAIL_REG.test(email)) throw new WalletError(40002);
-  if (mailServices.length === 0) throw new WalletError(40003);
-  let ok = false;
-  mailServices.forEach((mail) => {
-    if (email.endsWith(`@${mail}`)) {
-      ok = true;
+  if (mailServices) {
+    if (mailServices.length === 0) throw new WalletError(40003);
+    let ok = false;
+    mailServices.forEach((mail) => {
+      if (email.endsWith(`@${mail}`)) {
+        ok = true;
+      }
+    });
+    if (!ok) {
+      throw new WalletError(40004);
     }
-  });
-  if (!ok) {
-    throw new WalletError(40004);
   }
 };
 

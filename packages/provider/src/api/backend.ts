@@ -1,4 +1,7 @@
+import { SyncTransactionOutput } from "./../interface/index";
 import {
+  AccountStatusInput,
+  AccountStatusOutput,
   ApiResponse,
   FinishKeygenInput,
   GetPasswordTokenInput,
@@ -15,6 +18,9 @@ import {
   StartKeyGenInput,
   StartSignInput,
   SuffixesOutput,
+  SyncEmailInput,
+  SyncEmailOutput,
+  SyncTransactionInput,
   TssOutput,
   VerifyOtpCodeInput,
   VerifyOtpCodeOutput,
@@ -73,6 +79,18 @@ function finishKeygen(data: FinishKeygenInput) {
   return getAxiosInstance().post<any, TssOutput>("/tss/keygen/finish", data);
 }
 
+function accountStatus(data: AccountStatusInput) {
+  return getAxiosInstance().post<any, AccountStatusOutput>("/sync/status", data);
+}
+
+function syncEmail(data: SyncEmailInput) {
+  return getAxiosInstance().post<any, SyncEmailOutput>("/sync/status", data);
+}
+
+function syncTransaction(data: SyncTransactionInput) {
+  return getAxiosInstance().post<any, SyncTransactionOutput>("/sync/status", data);
+}
+
 export default {
   getSuffixes,
   sendOtpCode,
@@ -86,4 +104,7 @@ export default {
   getKeygen,
   startKeygen,
   finishKeygen,
+  accountStatus,
+  syncEmail,
+  syncTransaction,
 };
