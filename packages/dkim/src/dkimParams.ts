@@ -1,5 +1,6 @@
 import { DkimParamsBase, Signature, EmailType } from "@unipasswallet/dkim-base";
 import { BytesLike } from "ethers";
+import { hexlify } from "ethers/lib/utils";
 import * as Dkim from "dkim";
 
 const mailParser = require("mailparser");
@@ -78,56 +79,21 @@ export class DkimParams extends DkimParamsBase {
     const params = results
       .map((result): DkimParams | undefined => {
         const { processedHeader } = result;
-        const fromIndex = processedHeader.indexOf("from:");
-        const fromEndIndex = processedHeader.indexOf("\r\n", fromIndex);
-
-        let fromLeftIndex = processedHeader.indexOf(
-          `<${fromHeader}>`,
-          fromIndex
-        );
-
-        if (fromLeftIndex === -1 || fromLeftIndex > fromEndIndex) {
-          fromLeftIndex = processedHeader.indexOf(fromHeader);
-        } else {
-          fromLeftIndex += 1;
-        }
-        const fromRightIndex = fromLeftIndex + fromHeader.length - 1;
-
-        const signature = result.signature as any as Signature;
+        const signature = result.signature as Signature;
 
         if (emailBlackList.includes(signature.domain)) {
           return undefined;
         }
 
-        const subjectIndex = processedHeader.indexOf("subject:");
-        const dkimHeaderIndex = processedHeader.indexOf("dkim-signature:");
-        const sdidIndex = processedHeader.indexOf(
-          signature.domain,
-          dkimHeaderIndex
-        );
-        const sdidRightIndex = sdidIndex + signature.domain.length;
-        const selectorIndex = processedHeader.indexOf(
-          signature.selector,
-          dkimHeaderIndex
-        );
-        const selectorRightIndex = selectorIndex + signature.selector.length;
-
-        return new DkimParams(
+        return DkimParamsBase.create(
           emailType,
-          processedHeader,
-          signature.signature,
-          fromIndex,
-          fromLeftIndex,
-          fromRightIndex,
+          fromHeader,
           digestHash,
-          subjectIndex,
-          processedHeader.indexOf("\r\n", subjectIndex),
-          dkimHeaderIndex,
-          sdidIndex,
-          sdidRightIndex,
-          selectorIndex,
-          selectorRightIndex
-        );
+          processedHeader,
+          hexlify(signature.signature),
+          signature.domain,
+          signature.selector
+        ) as DkimParams;
       })
       .find((v) => v !== undefined);
 

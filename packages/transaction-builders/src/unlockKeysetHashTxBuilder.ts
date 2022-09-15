@@ -1,6 +1,6 @@
 import { constants } from "ethers";
 import { RoleWeight } from "@unipasswallet/keys";
-import { CallType, Transaction } from "../transaction";
+import { Transaction, CallType } from "@unipasswallet/transactions";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
 export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
@@ -34,6 +34,7 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
     ]);
 
     return {
+      _isUnipassWalletTransaction: true,
       revertOnError: this.revertOnError,
       callType: CallType.Call,
       gasLimit: constants.Zero,
