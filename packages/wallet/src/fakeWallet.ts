@@ -1,63 +1,115 @@
-import { providers, BigNumber, Wallet as WalletEOA, Bytes, constants } from "ethers";
-import { BytesLike, concat, hexlify, keccak256, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
-import { KeyEmailDkim, KeyERC1271, KeySecp256k1, KeySecp256k1Wallet, Keyset, SignType } from "@unipasswallet/keys";
+import {
+  providers,
+  BigNumber,
+  Wallet as WalletEOA,
+  Bytes,
+  constants,
+} from "ethers";
+import {
+  BytesLike,
+  concat,
+  hexlify,
+  keccak256,
+  randomBytes,
+  toUtf8Bytes,
+} from "ethers/lib/utils";
+import {
+  KeyEmailDkim,
+  KeyERC1271,
+  KeySecp256k1,
+  KeySecp256k1Wallet,
+  Keyset,
+  SignType,
+} from "@unipasswallet/keys";
 import { Relayer } from "@unipasswallet/relayer";
 import { moduleMainGasEstimator } from "@unipasswallet/abi";
-import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
+import { UnipassWalletContext } from "@unipasswallet/network";
 import { DkimParamsBase, EmailType } from "@unipasswallet/dkim-base";
 import { CallType, Transaction } from "@unipasswallet/transactions";
-import { Wallet } from "./wallet";
+import { Wallet, WalletOptions } from "./wallet";
+
+export interface FakeWalletOptions extends WalletOptions {
+  address?: string;
+  keyset: Keyset;
+  context?: UnipassWalletContext;
+  bundleCreatation?: boolean;
+  provider?: providers.JsonRpcProvider;
+  relayer?: Relayer;
+  creatationGasLimit?: BigNumber;
+  rsaEncryptor?: (input: BytesLike) => Promise<string>;
+}
 
 export class FakeWallet extends Wallet {
   public readonly fakeKeyset: Keyset;
 
-  constructor(
-    address: string,
-    keyset: Keyset,
-    context: UnipassWalletContext = unipassWalletContext,
-    bundleCreatation: boolean = true,
-    public readonly rsaEncryptor?: (input: BytesLike) => Promise<string>,
-    providerUrl?: string,
-    relayer?: Relayer,
-    creatationGasLimit?: BigNumber,
-  ) {
-    const provider = new providers.JsonRpcProvider(providerUrl);
-    super({
-      address,
-      keyset,
-      context,
-      bundleCreatation,
-      provider,
-      relayer,
-      creatationGasLimit,
-    });
-    this.fakeKeyset = new Keyset(
+  public readonly rsaEncryptor?: (input: BytesLike) => Promise<string>;
+
+  constructor(options: FakeWalletOptions) {
+    super(options);
+    this.fakeKeyset = FakeWallet.createFakeKeyset(options.keyset);
+  }
+
+  static createFakeKeyset(keyset: Keyset): Keyset {
+    const fakeKeyset = new Keyset(
       keyset.keys.map((key) => {
         if (KeyERC1271.isKeyERC1271(key)) {
           throw new Error(`Cannot Create KeyERC1271`);
         }
 
         if (KeyEmailDkim.isKeyEmailDkim(key)) {
-          return new KeyEmailDkim(key.emailFrom, key.pepper, key.roleWeight, key.getDkimParams());
+          return new KeyEmailDkim(
+            key.emailFrom,
+            key.pepper,
+            key.roleWeight,
+            key.getDkimParams()
+          );
         }
 
-        if (KeySecp256k1.isKeySecp256k1(key) || KeySecp256k1Wallet.isKeySecp256k1Wallet(key)) {
-          return new KeySecp256k1Wallet(WalletEOA.createRandom(), key.roleWeight, SignType.EthSign);
+        if (
+          KeySecp256k1.isKeySecp256k1(key) ||
+          KeySecp256k1Wallet.isKeySecp256k1Wallet(key)
+        ) {
+          return new KeySecp256k1Wallet(
+            WalletEOA.createRandom(),
+            key.roleWeight,
+            SignType.EthSign
+          );
         }
 
         throw new Error(`Invalid Key: ${key}`);
-      }),
+      })
     );
+
+    return fakeKeyset;
   }
 
-  async feeOptions(walletAddress: string, ...transactions: Transaction[]): Promise<Transaction[]> {
+  options(): FakeWalletOptions {
+    return {
+      address: this.address,
+      keyset: this.keyset,
+      context: this.context,
+      bundleCreatation: this.bundleCreatation,
+      provider:
+        this.provider === undefined
+          ? undefined
+          : (this.provider as providers.JsonRpcProvider),
+      relayer: this.relayer,
+      creatationGasLimit: this.creatationGasLimit,
+      rsaEncryptor: this.rsaEncryptor,
+    };
+  }
+
+  async feeOptions(
+    walletAddress: string,
+    ...transactions: Transaction[]
+  ): Promise<Transaction[]> {
     const ret = await Promise.all(
       transactions
         .filter(
           (transaction) =>
             !transaction.revertOnError &&
             !transaction.gasLimit.eq(constants.Zero) &&
-            transaction.callType === CallType.Call,
+            transaction.callType === CallType.Call
         )
         .map(async (transaction) => {
           if (this.provider instanceof providers.JsonRpcProvider) {
@@ -83,7 +135,7 @@ export class FakeWallet extends Wallet {
           }
 
           return Promise.reject(new Error("Expect JsonRpcProvider"));
-        }),
+        })
     );
 
     return ret;
@@ -93,14 +145,16 @@ export class FakeWallet extends Wallet {
     message: Bytes | string,
     signerIndexes: number[] = [],
     isDigest: boolean = true,
-    emailType: EmailType = EmailType.None,
+    emailType: EmailType = EmailType.None
   ): Promise<string> {
     let parsedMessage = message;
 
     if (typeof parsedMessage === "string") {
       parsedMessage = toUtf8Bytes(parsedMessage);
     }
-    const digestHash = isDigest ? hexlify(parsedMessage) : keccak256(parsedMessage);
+    const digestHash = isDigest
+      ? hexlify(parsedMessage)
+      : keccak256(parsedMessage);
     const signRet = await Promise.all(
       this.keyset.keys.map(async (key, index) => {
         if (signerIndexes.includes(index)) {
@@ -120,7 +174,15 @@ export class FakeWallet extends Wallet {
 
             const dkimSig = await this.rsaEncryptor(toUtf8Bytes(emailHeader));
             key.setDkimParams(
-              DkimParamsBase.create(emailType, from, digestHash, emailHeader, hexlify(dkimSig), "unipass.com", "s2055"),
+              DkimParamsBase.create(
+                emailType,
+                from,
+                digestHash,
+                emailHeader,
+                hexlify(dkimSig),
+                "unipass.com",
+                "s2055"
+              )
             );
           }
 
@@ -128,14 +190,17 @@ export class FakeWallet extends Wallet {
         }
 
         return key.generateKey();
-      }),
+      })
     );
 
     return hexlify(concat(signRet));
   }
 }
 
-export function generateEmailSubject(emailType: EmailType, digestHash: string): string {
+export function generateEmailSubject(
+  emailType: EmailType,
+  digestHash: string
+): string {
   switch (emailType) {
     case EmailType.UpdateKeysetHash: {
       return `UniPass-Update-Account-${digestHash}`;
