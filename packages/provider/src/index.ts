@@ -5,7 +5,15 @@ import api from "./api/backend";
 import { getApiConfig, getChainConfig } from "./config";
 import { AxiosInstance } from "axios";
 import requestFactory from "./api/axios";
-import { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout } from "./operate";
+import {
+  getVerifyCode,
+  verifyOtpCode,
+  doRegister,
+  getPasswordToken,
+  doLogin,
+  doLogout,
+  getAccountAddress,
+} from "./operate";
 
 interface UnipassWalletProps {
   chainName: "polygon" | "bsc" | "rangers";
@@ -63,6 +71,10 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
     this.upAuthToken = upAuthToken;
   }
 
+  public async register(password: string) {
+    await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this);
+  }
+
   public async loginCode(email: string) {
     await getVerifyCode(email, "auth2Fa", this.mailServices);
     this.email = email;
@@ -71,10 +83,6 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
   public async verifyLoginCode(code: string) {
     const upAuthToken = await verifyOtpCode(this.email, code, "auth2Fa", this.mailServices);
     this.upAuthToken = upAuthToken;
-  }
-
-  public async register(password: string) {
-    await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this);
   }
 
   public async passwordToken(email: string, password: string) {
@@ -86,6 +94,11 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
   public async login(code: string) {
     await this.verifyLoginCode(code);
     await doLogin(this.email, this.password, this.upAuthToken, this.pwsToken);
+  }
+
+  public async getAccountAddress() {
+    const account = await getAccountAddress(this.email);
+    return account;
   }
 
   public async logout() {

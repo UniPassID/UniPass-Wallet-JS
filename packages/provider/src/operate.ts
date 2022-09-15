@@ -197,6 +197,11 @@ const doLogout = async (email: string) => {
   await DB.delUser(email ?? "");
 };
 
+const getAccountAddress = async (email: string) => {
+  const user = await DB.getUser(email ?? "");
+  return user?.account || "";
+};
+
 // const hasLogged = async () => {
 //   const users = await DB.getUsers();
 //   const email = window.localStorage.getItem("email");
@@ -219,4 +224,4 @@ const doLogout = async (email: string) => {
 //   }
 // };
 
-export { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout };
+export { getVerifyCode, verifyOtpCode, doRegister, getPasswordToken, doLogin, doLogout, getAccountAddress };

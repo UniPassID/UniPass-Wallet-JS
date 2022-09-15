@@ -24,10 +24,10 @@ const error_map = {
 export default class WalletError extends Error {
   constructor(code: number, message?: string) {
     if (code < 40000) {
-      super(JSON.stringify({ code, message }));
+      super(message);
     } else {
-      super(error_map[code] ? `code: ${code} message: ${error_map[code]}` : "unknow error");
+      super(error_map[code] || "unknow error");
     }
-    this.name = "Unipass Wallet Error";
+    this.name = `Unipass Wallet Error, code: ${code}`;
   }
 }
