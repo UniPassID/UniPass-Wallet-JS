@@ -49,6 +49,7 @@ const doRegister = async (
   // 3. 获取accountAddress
   const keyset = getAccountKeysetJson(email, localKeyData.localKeyAddress, policyAddress, pepper);
   const keysetHash = keyset.hash();
+  // TODO
   const accountAddress = await blockchain.generateAccountAddress(keysetHash, provider);
   if (!accountAddress) throw new WalletError(402002);
   const timestamp = dayjs().add(4, "hour").unix();

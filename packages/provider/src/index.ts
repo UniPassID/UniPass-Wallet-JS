@@ -1,6 +1,6 @@
 import { providers } from "ethers";
 import TssWorker from "./utils/tss-worker";
-import WalletProvider from "./interface/unipassWalletProvider";
+import { UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { getApiConfig, getChainConfig } from "./config";
 import { AxiosInstance } from "axios";
@@ -14,11 +14,6 @@ import {
   doLogout,
   getAccountAddress,
 } from "./operate";
-
-interface UnipassWalletProps {
-  chainName: "polygon" | "bsc" | "rangers";
-  env: "dev" | "test" | "prod";
-}
 
 export default class UnipassWalletProvider extends providers.JsonRpcProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
@@ -47,9 +42,14 @@ export default class UnipassWalletProvider extends providers.JsonRpcProvider imp
   }
 
   private constructor(props: UnipassWalletProps) {
-    const { rpc_url } = getChainConfig(props.env, props.chainName);
-    const { backend } = getApiConfig(props.env);
-    super(rpc_url);
+    const { chainName, url, env, network } = props;
+    if (chainName) {
+      const { rpc_url, chainId } = getChainConfig(env, chainName);
+      super(rpc_url, { name: chainName, chainId });
+    } else {
+      super(url, network);
+    }
+    const { backend } = getApiConfig(env);
     this.init(backend);
   }
 
