@@ -1,6 +1,6 @@
 const error_map = {
   // email error
-  40001: "email empty",
+  40001: "Email empty",
   40002: "Invalid email format",
   40003: "Network error or timeout, please try again later",
   40004: "Invalid domain, please check the supported emails",
@@ -19,10 +19,16 @@ const error_map = {
   402004: "Please verify email first",
   402005: "Account status is pedding",
   402006: "Email or password is incorrect",
+  402007: "Please login first",
+
+  // 2:not received sync email, 3:not synced
+  // sync error
+  403001: "Not received sync email",
+  403002: "Account not synced",
 };
 
 export default class WalletError extends Error {
-  constructor(code: number, message?: string) {
+  constructor(code: keyof typeof error_map | number, message?: string) {
     if (code < 40000) {
       super(message);
     } else {
