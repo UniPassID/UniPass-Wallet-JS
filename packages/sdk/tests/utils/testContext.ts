@@ -1,17 +1,5 @@
-import {
-  BigNumber,
-  Contract,
-  ContractFactory,
-  Overrides,
-  providers,
-  Wallet,
-} from "ethers";
-import {
-  formatBytes32String,
-  Interface,
-  parseEther,
-  solidityPack,
-} from "ethers/lib/utils";
+import { BigNumber, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
+import { formatBytes32String, Interface, parseEther, solidityPack } from "ethers/lib/utils";
 import { Deployer } from "../../../deployer/src/deployer";
 import * as dotenv from "dotenv";
 import NodeRSA from "node-rsa";
@@ -62,68 +50,43 @@ export async function initTestContext(): Promise<TestContext> {
   const unipassPrivateKey = new NodeRSA({ b: 2048 });
   const instance = 0;
 
-  const DkimKeys = new ContractFactory(
-    new Interface(DkimKeysArtifact.abi),
-    DkimKeysArtifact.bytecode,
-    signer
-  );
+  const DkimKeys = new ContractFactory(new Interface(DkimKeysArtifact.abi), DkimKeysArtifact.bytecode, signer);
   const dkimKeysAdmin = Wallet.createRandom().connect(provider);
-  const dkimKeys = await deployer.deployContract(
-    DkimKeys,
-    instance,
-    txParams,
-    dkimKeysAdmin.address
-  );
-  await transferEth(
-    new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
-    dkimKeysAdmin.address,
-    parseEther("10")
-  );
+  const dkimKeys = await deployer.deployContract(DkimKeys, instance, txParams, dkimKeysAdmin.address);
+  await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), dkimKeysAdmin.address, parseEther("10"));
   const keyServer = solidityPack(
     ["bytes32", "bytes32"],
-    [formatBytes32String("s2055"), formatBytes32String("unipass.com")]
+    [formatBytes32String("s2055"), formatBytes32String("unipass.com")],
   );
   let ret = await (
     await dkimKeys
       .connect(dkimKeysAdmin)
-      .updateDKIMKey(
-        keyServer,
-        unipassPrivateKey.exportKey("components-public").n.subarray(1)
-      )
+      .updateDKIMKey(keyServer, unipassPrivateKey.exportKey("components-public").n.subarray(1))
   ).wait();
   expect(ret.status).toEqual(1);
 
   const WhiteList = new ContractFactory(
     new Interface(WhiteListArtifact.abi),
     WhiteListArtifact.bytecode,
-    provider.getSigner()
+    provider.getSigner(),
   );
   const whiteListAdmin = Wallet.createRandom().connect(provider);
-  const whiteList = await deployer.deployContract(
-    WhiteList,
-    instance,
-    txParams,
-    whiteListAdmin.address
-  );
+  const whiteList = await deployer.deployContract(WhiteList, instance, txParams, whiteListAdmin.address);
 
   const ModuleMainUpgradable = new ContractFactory(
     new Interface(ModuleMainUpgradableArtifact.abi),
     ModuleMainUpgradableArtifact.bytecode,
-    provider.getSigner()
+    provider.getSigner(),
   );
   const moduleMainUpgradable = await deployer.deployContract(
     ModuleMainUpgradable,
     instance,
     txParams,
     dkimKeys.address,
-    whiteList.address
+    whiteList.address,
   );
 
-  const ModuleMain = new ContractFactory(
-    new Interface(ModuleMainArtifact.abi),
-    ModuleMainArtifact.bytecode,
-    signer
-  );
+  const ModuleMain = new ContractFactory(new Interface(ModuleMainArtifact.abi), ModuleMainArtifact.bytecode, signer);
   const moduleMain = await deployer.deployContract(
     ModuleMain,
     instance,
@@ -131,36 +94,22 @@ export async function initTestContext(): Promise<TestContext> {
     deployer.singleFactoryContract.address,
     moduleMainUpgradable.address,
     dkimKeys.address,
-    whiteList.address
+    whiteList.address,
   );
 
-  const ModuleGuest = new ContractFactory(
-    new Interface(ModuleGuestArtifact.abi),
-    ModuleGuestArtifact.bytecode,
-    signer
-  );
-  const moduleGuest = await deployer.deployContract(
-    ModuleGuest,
-    instance,
-    txParams
-  );
+  const ModuleGuest = new ContractFactory(new Interface(ModuleGuestArtifact.abi), ModuleGuestArtifact.bytecode, signer);
+  const moduleGuest = await deployer.deployContract(ModuleGuest, instance, txParams);
 
-  await transferEth(
-    new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
-    whiteListAdmin.address,
-    parseEther("10")
-  );
+  await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), whiteListAdmin.address, parseEther("10"));
 
   await transferEth(
     new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
     "0xe605b64e3688f0f0c21bb0fd65aa10186f4b4f36",
-    parseEther("10")
+    parseEther("10"),
   );
 
   ret = await (
-    await whiteList
-      .connect(whiteListAdmin)
-      .updateImplementationWhiteList(moduleMainUpgradable.address, true)
+    await whiteList.connect(whiteListAdmin).updateImplementationWhiteList(moduleMainUpgradable.address, true)
   ).wait();
   expect(ret.status).toEqual(1);
 
@@ -200,45 +149,35 @@ export interface WalletContext {
   nonce: number;
 }
 
-export async function initWalletContext(
-  context: TestContext,
-  toDeploy: boolean
-): Promise<WalletContext> {
+export async function initWalletContext(context: TestContext, toDeploy: boolean): Promise<WalletContext> {
   const TestERC20Token = new ContractFactory(
     new Interface(TestERC20Artifact.abi),
     TestERC20Artifact.bytecode,
-    context.provider.getSigner()
+    context.provider.getSigner(),
   );
   const testERC20Token = await TestERC20Token.deploy();
 
   const Greeter = new ContractFactory(
     new Interface(GreeterArtifact.abi),
     GreeterArtifact.bytecode,
-    context.provider.getSigner()
+    context.provider.getSigner(),
   );
   const greeter = await Greeter.deploy();
 
   const keyset = randomKeyset(10);
-  const wallet = UnipassWallet.create(
+  const wallet = UnipassWallet.create({
     keyset,
-    context.unipassWalletContext,
-    true,
-    context.provider,
-    context.relayer,
-    BigNumber.from(10_000_000)
-  );
+    context: context.unipassWalletContext,
+    provider: context.provider,
+    relayer: context.relayer,
+    creatationGasLimit: BigNumber.from(10_000_000),
+  });
 
   let ret = await (await testERC20Token.mint(wallet.address, 100)).wait();
   expect(ret.status).toEqual(1);
-  expect(await testERC20Token.balanceOf(wallet.address)).toEqual(
-    BigNumber.from(100)
-  );
+  expect(await testERC20Token.balanceOf(wallet.address)).toEqual(BigNumber.from(100));
 
-  await transferEth(
-    context.provider.getSigner(),
-    wallet.address,
-    parseEther("100")
-  );
+  await transferEth(context.provider.getSigner(), wallet.address, parseEther("100"));
 
   if (toDeploy) {
     ret = await (await wallet.sendTransaction([])).wait();

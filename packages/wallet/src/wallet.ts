@@ -1,11 +1,4 @@
-import {
-  Bytes,
-  Signer,
-  providers,
-  BigNumber,
-  constants,
-  Contract,
-} from "ethers";
+import { Bytes, Signer, providers, BigNumber, constants, Contract, Wallet as WalletEOA } from "ethers";
 import {
   concat,
   Deferrable,
@@ -19,15 +12,8 @@ import {
   parseEther,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
-import {
-  Relayer,
-  PendingExecuteCallArgs,
-  ExecuteCall,
-} from "@unipasswallet/relayer";
-import {
-  unipassWalletContext,
-  UnipassWalletContext,
-} from "@unipasswallet/network";
+import { Relayer, PendingExecuteCallArgs, ExecuteCall } from "@unipasswallet/relayer";
+import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain } from "@unipasswallet/abi";
 import {
   isSignedTransactions,
@@ -69,6 +55,8 @@ export class Wallet extends Signer {
 
   public readonly bundleCreatation: boolean = true;
 
+  public readonly callWallet: WalletEOA;
+
   public readonly provider?: providers.Provider;
 
   public readonly relayer?: Relayer;
@@ -78,15 +66,7 @@ export class Wallet extends Signer {
   constructor(options: WalletOptions) {
     super();
 
-    const {
-      address,
-      keyset,
-      context,
-      bundleCreatation,
-      provider,
-      relayer,
-      creatationGasLimit,
-    } = options;
+    const { address, keyset, context, bundleCreatation, provider, relayer, creatationGasLimit } = options;
 
     if (!address) {
       throw new Error("address should not be undefined");
@@ -114,19 +94,19 @@ export class Wallet extends Signer {
     if (creatationGasLimit) {
       this.creatationGasLimit = creatationGasLimit;
     }
+
+    this.callWallet = WalletEOA.createRandom().connect(this.provider);
   }
 
   static create(options: WalletOptions): Wallet {
     const createOptions = options;
 
-    const { keyset, context } = createOptions;
+    const { keyset, context = unipassWalletContext } = createOptions;
 
     const address = getCreate2Address(
       SingletonFactoryAddress,
       keyset.hash(),
-      keccak256(
-        solidityPack(["bytes", "uint256"], [CreationCode, context.moduleMain])
-      )
+      keccak256(solidityPack(["bytes", "uint256"], [CreationCode, context.moduleMain])),
     );
 
     createOptions.address = address;
@@ -164,10 +144,7 @@ export class Wallet extends Signer {
       .reduce((pre, current) => pre.add(current));
   }
 
-  async signPermit(
-    digestHash: BytesLike,
-    signerIndexer: number[]
-  ): Promise<string> {
+  async signPermit(digestHash: BytesLike, signerIndexer: number[]): Promise<string> {
     return hexlify(
       concat(
         await Promise.all(
@@ -177,16 +154,16 @@ export class Wallet extends Signer {
             }
 
             return key.generateKey();
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
   async signMessage(
     message: Bytes | string,
     sessionKeyOrSignerIndexes: number[] | SessionKey = [],
-    isDigest: boolean = true
+    isDigest: boolean = true,
   ): Promise<string> {
     if (typeof message === "string") {
       throw new Error("Please use Bytes");
@@ -200,10 +177,7 @@ export class Wallet extends Signer {
       const isSessionKey = 1;
       sig = solidityPack(
         ["uint8", "bytes"],
-        [
-          isSessionKey,
-          await sessionKeyOrSignerIndexes.generateSignature(digestHash),
-        ]
+        [isSessionKey, await sessionKeyOrSignerIndexes.generateSignature(digestHash)],
       );
     } else if (sessionKeyOrSignerIndexes.length === 0) {
       sig = "0x";
@@ -211,10 +185,7 @@ export class Wallet extends Signer {
       const isSessionKey = 0;
       sig = solidityPack(
         ["uint8", "bytes"],
-        [
-          isSessionKey,
-          await this.signPermit(digestHash, sessionKeyOrSignerIndexes),
-        ]
+        [isSessionKey, await this.signPermit(digestHash, sessionKeyOrSignerIndexes)],
       );
     }
 
@@ -230,33 +201,21 @@ export class Wallet extends Signer {
 
   signTransaction(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _: Deferrable<providers.TransactionRequest>
+    _: Deferrable<providers.TransactionRequest>,
   ): Promise<string> {
-    throw new Error(
-      "Not Support `signTransaction`, Please use `signTransactions` instead"
-    );
+    throw new Error("Not Support `signTransaction`, Please use `signTransactions` instead");
   }
 
   async getExecuteSignedTransaction(
     transactions: Transaction[],
-    sessionKeyOrSignIndexes: SessionKey | number[]
+    sessionKeyOrSignIndexes: SessionKey | number[],
   ): Promise<SignedTransactions> {
     const { chainId } = await this.provider!.getNetwork();
-    const nonce = BigNumber.from(
-      await this.relayer.getNonce(this.address)
-    ).toNumber();
+    const nonce = BigNumber.from(await this.relayer.getNonce(this.address)).toNumber();
 
-    const txHash = await digestTxHash(
-      chainId,
-      this.address,
-      nonce,
-      transactions
-    );
+    const txHash = await digestTxHash(chainId, this.address, nonce, transactions);
 
-    const signature = await this.signMessage(
-      arrayify(txHash),
-      sessionKeyOrSignIndexes
-    );
+    const signature = await this.signMessage(arrayify(txHash), sessionKeyOrSignIndexes);
 
     return {
       _isSignedTransactions: true,
@@ -269,15 +228,12 @@ export class Wallet extends Signer {
 
   async getExecuteTransaction(
     transactions: SignedTransactions | Transaction[],
-    sessionKeyOrSignerIndexes: number[] | SessionKey
+    sessionKeyOrSignerIndexes: number[] | SessionKey,
   ): Promise<Transaction> {
     let signedTransactions = transactions;
 
     if (Array.isArray(signedTransactions)) {
-      signedTransactions = await this.getExecuteSignedTransaction(
-        signedTransactions,
-        sessionKeyOrSignerIndexes
-      );
+      signedTransactions = await this.getExecuteSignedTransaction(signedTransactions, sessionKeyOrSignerIndexes);
     }
 
     return {
@@ -297,29 +253,17 @@ export class Wallet extends Signer {
 
   async signTransactions(
     transactionish: Deferrable<Transactionish>,
-    sessionKeyOrSignerIndexes: SessionKey | number[]
+    sessionKeyOrSignerIndexes: SessionKey | number[],
   ): Promise<SignedTransactions | GuestTransactions> {
-    let transactions = toTransactions(
-      await resolveArrayProperties<Transactionish>(transactionish)
-    );
+    let transactions = toTransactions(await resolveArrayProperties<Transactionish>(transactionish));
 
-    if (
-      this.bundleCreatation &&
-      !(await isContractDeployed(this.address, this.provider!))
-    ) {
-      const deployTx = getWalletDeployTransaction(
-        this.context,
-        this.keyset.hash(),
-        this.creatationGasLimit
-      );
+    if (this.bundleCreatation && !(await isContractDeployed(this.address, this.provider!))) {
+      const deployTx = getWalletDeployTransaction(this.context, this.keyset.hash(), this.creatationGasLimit);
 
       if (transactions.length === 0) {
         transactions = [deployTx];
       } else {
-        const executeTx = await this.getExecuteTransaction(
-          transactions,
-          sessionKeyOrSignerIndexes
-        );
+        const executeTx = await this.getExecuteTransaction(transactions, sessionKeyOrSignerIndexes);
 
         transactions = [deployTx, executeTx];
       }
@@ -327,11 +271,7 @@ export class Wallet extends Signer {
       return {
         _isGuestTransaction: true,
         transactions,
-        txHash: digestGuestTxHash(
-          await this.getChainId(),
-          this.context.moduleGuest,
-          transactions
-        ),
+        txHash: digestGuestTxHash(await this.getChainId(), this.context.moduleGuest, transactions),
       };
     }
 
@@ -339,20 +279,14 @@ export class Wallet extends Signer {
       throw new Error("Transactinos is Empty");
     }
 
-    return this.getExecuteSignedTransaction(
-      transactions,
-      sessionKeyOrSignerIndexes
-    );
+    return this.getExecuteSignedTransaction(transactions, sessionKeyOrSignerIndexes);
   }
 
   async sendTransaction(
     transaction: Deferrable<Transactionish>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] = []
+    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
   ): Promise<providers.TransactionResponse> {
-    const signedTransactions = await this.signTransactions(
-      transaction,
-      sessionKeyOrSignerIndexes
-    );
+    const signedTransactions = await this.signTransactions(transaction, sessionKeyOrSignerIndexes);
 
     let args: PendingExecuteCallArgs;
 
@@ -377,11 +311,7 @@ export class Wallet extends Signer {
         nonce: nonce.toHexString(),
         signature,
       };
-      data = moduleMainInterface.encodeFunctionData("execute", [
-        signedTransactions.transactions,
-        nonce,
-        signature,
-      ]);
+      data = moduleMainInterface.encodeFunctionData("execute", [signedTransactions.transactions, nonce, signature]);
       estimateGas = await this.provider.estimateGas({
         to: this.address,
         data,
@@ -408,11 +338,7 @@ export class Wallet extends Signer {
         nonce: nonce.toHexString(),
         signature,
       };
-      data = moduleMainInterface.encodeFunctionData("execute", [
-        signedTransactions.transactions,
-        nonce,
-        signature,
-      ]);
+      data = moduleMainInterface.encodeFunctionData("execute", [signedTransactions.transactions, nonce, signature]);
       estimateGas = await this.provider.estimateGas({
         to: this.context.moduleGuest,
         data,
@@ -449,16 +375,18 @@ export class Wallet extends Signer {
   }
 
   async isSyncKeysetHash(): Promise<boolean> {
-    const contract = this.getContract();
-    const [keysetHash] = await contract.getKeysetHash();
+    if (!(await isContractDeployed(this.address, this.provider))) {
+      return false;
+    }
 
-    return (
-      keysetHash === constants.HashZero || keysetHash === this.keyset.hash()
-    );
+    const contract = this.getContract();
+    const keysetHash = await contract.getKeysetHash();
+
+    return keysetHash === constants.HashZero || keysetHash === this.keyset.hash();
   }
 
   getContract(): Contract {
-    const contract = new Contract(this.address, moduleMain.abi, this.provider!);
+    const contract = new Contract(this.address, moduleMain.abi, this.callWallet);
 
     return contract;
   }
@@ -467,15 +395,12 @@ export class Wallet extends Signer {
 export function getWalletDeployTransaction(
   context: UnipassWalletContext,
   keysetHash: BytesLike,
-  creatationGasLimit: BigNumber
+  creatationGasLimit: BigNumber,
 ): Transaction {
   return {
     _isUnipassWalletTransaction: true,
     target: SingletonFactoryAddress,
-    data: SingletonFactoryInterface.encodeFunctionData("deploy", [
-      getWalletCode(context.moduleMain),
-      keysetHash,
-    ]),
+    data: SingletonFactoryInterface.encodeFunctionData("deploy", [getWalletCode(context.moduleMain), keysetHash]),
     gasLimit: creatationGasLimit,
     value: constants.Zero,
     revertOnError: true,
