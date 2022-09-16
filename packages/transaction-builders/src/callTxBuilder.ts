@@ -1,7 +1,7 @@
 import { BigNumber, BytesLike, utils } from "ethers";
 import { RoleWeight } from "@unipasswallet/keys";
 import { BaseTxBuilder } from "./baseTxBuilder";
-import { CallType, Transaction } from "../transaction";
+import { Transaction, CallType } from "@unipasswallet/transactions";
 
 export class CallTxBuilder extends BaseTxBuilder {
   public readonly target: string;
@@ -32,6 +32,7 @@ export class CallTxBuilder extends BaseTxBuilder {
 
   public build(): Transaction {
     return {
+      _isUnipassWalletTransaction: true,
       callType: CallType.Call,
       revertOnError: this.revertOnError,
       gasLimit: this.gasLimit,

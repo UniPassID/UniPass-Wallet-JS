@@ -8,49 +8,23 @@ import {
   Signer,
   utils,
 } from "ethers";
-import { getCreate2Address, Interface, keccak256 } from "ethers/lib/utils";
+import { keccak256 } from "ethers/lib/utils";
+import {
+  CreationCode,
+  SingletonFactoryAddress,
+  SingletonFactoryInterface,
+  getAddressDeployedBySingletonFactory,
+  isContractDeployed,
+} from "@unipasswallet/utils";
 import { Transaction } from "@ethereumjs/tx";
-
-const CreationCode: string =
-  "0x603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3";
-
-const SingleFactoryAddress = "0xce0042b868300000d44a59004da54a005ffdcf9f";
-const SingleFactoryInterface = new Interface(`[
-  {
-      "constant": false,
-      "inputs": [
-          {
-              "internalType": "bytes",
-              "name": "_initCode",
-              "type": "bytes"
-          },
-          {
-              "internalType": "bytes32",
-              "name": "_salt",
-              "type": "bytes32"
-          }
-      ],
-      "name": "deploy",
-      "outputs": [
-          {
-              "internalType": "address payable",
-              "name": "createdContract",
-              "type": "address"
-          }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-  }
-]`);
 
 export class Deployer {
   public readonly singleFactoryContract: Contract;
 
   constructor(private _signer: Signer) {
     this.singleFactoryContract = new Contract(
-      SingleFactoryAddress,
-      SingleFactoryInterface,
+      SingletonFactoryAddress,
+      SingletonFactoryInterface,
       _signer
     );
 
@@ -76,7 +50,12 @@ export class Deployer {
   public async deployEip2470() {
     let ret;
 
-    if (await this.isDeployed(this.singleFactoryContract.address)) {
+    if (
+      await isContractDeployed(
+        this.singleFactoryContract.address,
+        this._signer.provider!
+      )
+    ) {
       return;
     }
     const balance = await this._signer.provider.getBalance(
@@ -120,7 +99,12 @@ export class Deployer {
       throw error;
     }
 
-    if (!(await this.isDeployed(this.singleFactoryContract.address))) {
+    if (
+      !(await isContractDeployed(
+        SingletonFactoryAddress,
+        this._signer.provider!
+      ))
+    ) {
       const error: any = new Error("Contract Deployed Failed");
       error.ret = ret;
       throw error;
@@ -129,34 +113,6 @@ export class Deployer {
 
   public static getInitCode(addr: BytesLike): string {
     return utils.solidityPack(["bytes", "uint256"], [CreationCode, addr]);
-  }
-
-  public getDeployedContractAddr(
-    salt: BytesLike,
-    initCodeHash: BytesLike
-  ): string {
-    return getCreate2Address(
-      this.singleFactoryContract.address,
-      salt,
-      initCodeHash
-    );
-  }
-
-  public async isDeployed(addr: string): Promise<boolean> {
-    return (await this._signer.provider.getCode(addr)) !== "0x";
-  }
-
-  public getProxyContractAddress(
-    contractAddr: BytesLike,
-    salt: BytesLike
-  ): string {
-    const code = Deployer.getInitCode(contractAddr);
-
-    return utils.getCreate2Address(
-      this.singleFactoryContract.address,
-      salt,
-      keccak256(code)
-    );
   }
 
   public async deployContract<T extends ContractFactory>(
@@ -171,12 +127,14 @@ export class Deployer {
       throw new Error("Expected Data For Deploy Tx");
     }
     const salt = utils.hexZeroPad(BigNumber.from(instance).toHexString(), 32);
-    const deployedContractAddr = this.getDeployedContractAddr(
+    const deployedContractAddr = getAddressDeployedBySingletonFactory(
       salt,
       keccak256(deployTx.data)
     );
 
-    if (await this.isDeployed(deployedContractAddr)) {
+    if (
+      await isContractDeployed(deployedContractAddr, this._signer.provider!)
+    ) {
       return new Contract(
         deployedContractAddr,
         contractFactory.interface,
@@ -193,7 +151,9 @@ export class Deployer {
       throw error;
     }
 
-    if (!(await this.isDeployed(deployedContractAddr))) {
+    if (
+      !(await isContractDeployed(deployedContractAddr, this._signer.provider!))
+    ) {
       const error: any = new Error(
         `Contract Deployed Failed: ${JSON.stringify(ret)}`
       );
@@ -215,12 +175,14 @@ export class Deployer {
     txParams: Overrides
   ): Promise<Contract> {
     const initCode = Deployer.getInitCode(contractAddr);
-    const deployedContractAddr = this.getDeployedContractAddr(
+    const deployedContractAddr = getAddressDeployedBySingletonFactory(
       salt,
       keccak256(initCode)
     );
 
-    if (await this.isDeployed(deployedContractAddr)) {
+    if (
+      await isContractDeployed(deployedContractAddr, this._signer.provider!)
+    ) {
       return new Contract(deployedContractAddr, contractInterface, this.signer);
     }
     const ret = await (
@@ -233,7 +195,9 @@ export class Deployer {
       throw error;
     }
 
-    if (!(await this.isDeployed(deployedContractAddr))) {
+    if (
+      !(await isContractDeployed(deployedContractAddr, this._signer.provider!))
+    ) {
       const error: any = new Error("Contract Deployed Failed");
       error.ret = ret;
       throw error;

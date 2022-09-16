@@ -1,5 +1,5 @@
 {
-  "name": "@unipasswallet/abi",
+  "name": "@unipasswallet/network",
   "version": "0.0.1-alpha.3",
   "main": "dist/index",
   "types": "dist/index",
@@ -7,8 +7,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run prebuild && pnpm run compile",
-    "prebuild": "ts-node ./build.ts",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"

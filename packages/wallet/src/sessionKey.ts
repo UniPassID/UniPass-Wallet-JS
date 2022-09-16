@@ -10,9 +10,8 @@ export class SessionKey {
   constructor(
     public readonly wallet: WalletEOA,
     public readonly signType: SignType,
-    public readonly chainId: number,
     _userAddr: BytesLike,
-    public permit?: IPermit
+    public permit?: IPermit,
   ) {
     this.userAddr = utils.hexlify(_userAddr);
   }
@@ -21,12 +20,7 @@ export class SessionKey {
     return subDigest(
       0,
       this.userAddr,
-      utils.keccak256(
-        utils.solidityPack(
-          ["address", "uint32", "uint32"],
-          [this.wallet.address, timestamp, weight]
-        )
-      )
+      utils.keccak256(utils.solidityPack(["address", "uint32", "uint32"], [this.wallet.address, timestamp, weight])),
     );
   }
 
@@ -34,11 +28,11 @@ export class SessionKey {
     timestamp: number,
     weight: number,
     wallet: Wallet,
-    signerIndexes: number[]
+    signerIndexes: number[],
   ): Promise<SessionKey> {
     const permitDigestHash = this.digestPermitMessage(timestamp, weight);
 
-    const permit = await wallet.signMessage(permitDigestHash, signerIndexes);
+    const permit = await wallet.signPermit(permitDigestHash, signerIndexes);
 
     this.permit = {
       timestamp,
@@ -57,7 +51,7 @@ export class SessionKey {
         this.permit!.weight,
         await sign(digestHash, this.wallet, this.signType),
         this.permit!.permit,
-      ]
+      ],
     );
   }
 }
