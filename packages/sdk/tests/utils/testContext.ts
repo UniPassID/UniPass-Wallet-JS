@@ -1,5 +1,5 @@
 import { BigNumber, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
-import { formatBytes32String, Interface, parseEther, solidityPack } from "ethers/lib/utils";
+import { BytesLike, formatBytes32String, hexlify, Interface, parseEther, solidityPack } from "ethers/lib/utils";
 import { Deployer } from "../../../deployer/src/deployer";
 import * as dotenv from "dotenv";
 import NodeRSA from "node-rsa";
@@ -13,8 +13,9 @@ import TestERC20Artifact from "../../../../artifacts/contracts/tests/TestERC20.s
 import GreeterArtifact from "../../../../artifacts/contracts/tests/Greeter.sol/Greeter.json";
 import { randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { Wallet as UnipassWallet } from "@unipasswallet/wallet";
+import { FakeWallet, Wallet as UnipassWallet } from "@unipasswallet/wallet";
 import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
+import { EmailType } from "@unipasswallet/dkim-base";
 
 export interface TestContext {
   provider: providers.JsonRpcProvider;
@@ -145,6 +146,7 @@ export interface WalletContext {
   testERC20Token: Contract;
   greeter: Contract;
   wallet: UnipassWallet;
+  fakeWallet: FakeWallet;
   metaNonce: number;
   nonce: number;
 }
@@ -186,5 +188,15 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
   const nonce = 1;
   const metaNonce = 1;
 
-  return { testERC20Token, wallet, nonce, metaNonce, greeter };
+  const options = wallet.options();
+  const fakeWallet = new FakeWallet({
+    ...options,
+    provider: options.provider as providers.JsonRpcProvider,
+    rsaEncryptor: async (input: BytesLike) => {
+      return hexlify(context.unipassPrivateKey.encrypt(input));
+    },
+    emailType: EmailType.None,
+  });
+
+  return { testERC20Token, wallet, nonce, metaNonce, greeter, fakeWallet };
 }

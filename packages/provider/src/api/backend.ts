@@ -52,24 +52,15 @@ function sign(data: SignInput) {
 }
 
 function signUpAccount(data: SignUpAccountInput) {
-  return getAxiosInstance().post<any, SignUpAccountOutput>(
-    "/account/signup",
-    data
-  );
+  return getAxiosInstance().post<any, SignUpAccountOutput>("/account/signup", data);
 }
 
 function getPasswordToken(data: GetPasswordTokenInput) {
-  return getAxiosInstance().post<any, PasswordTokenOutput>(
-    "/account/password.token",
-    data
-  );
+  return getAxiosInstance().post<any, PasswordTokenOutput>("/account/password.token", data);
 }
 
 function queryAccountKeyset(data: QueryAccountKeysetInput) {
-  return getAxiosInstance().post<any, QueryAccountKeysetOutput>(
-    "/account/keyset",
-    data
-  );
+  return getAxiosInstance().post<any, QueryAccountKeysetOutput>("/account/keyset", data);
 }
 
 function loign(data: LoginInput) {
@@ -89,10 +80,7 @@ function finishKeygen(data: FinishKeygenInput) {
 }
 
 function accountStatus(data: AccountStatusInput) {
-  return getAxiosInstance().post<any, AccountStatusOutput>(
-    "/sync/status",
-    data
-  );
+  return getAxiosInstance().post<any, AccountStatusOutput>("/sync/status", data);
 }
 
 function syncEmail(data: SyncEmailInput) {
@@ -100,10 +88,7 @@ function syncEmail(data: SyncEmailInput) {
 }
 
 function syncTransaction(data: SyncTransactionInput) {
-  return getAxiosInstance().post<any, SyncTransactionOutput>(
-    "/sync/status",
-    data
-  );
+  return getAxiosInstance().post<any, SyncTransactionOutput>("/sync/status", data);
 }
 
 export default {

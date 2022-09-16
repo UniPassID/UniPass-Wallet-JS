@@ -1,10 +1,4 @@
-import {
-  formatEther,
-  hexlify,
-  parseEther,
-  randomBytes,
-  toUtf8Bytes,
-} from "ethers/lib/utils";
+import { formatEther, hexlify, parseEther, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
 import { BigNumber, constants, Wallet as WalletEOA } from "ethers";
 import {
   CallTxBuilder,
@@ -21,12 +15,7 @@ import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
 import { SessionKey, generateEmailSubject } from "@unipasswallet/wallet";
 import { SignType } from "@unipasswallet/keys";
 
-import {
-  initTestContext,
-  initWalletContext,
-  TestContext,
-  WalletContext,
-} from "./utils/testContext";
+import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
 
 describe("Test ModuleMain", () => {
@@ -46,7 +35,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           newKeysetHash,
-          true
+          true,
         );
         let signerIndexes: number[];
         [walletContext.wallet, signerIndexes] = await selectKeys(
@@ -55,19 +44,15 @@ describe("Test ModuleMain", () => {
           txBuilder.digestMessage(),
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Owner,
-          100
+          100,
         );
-        const tx = (
-          await txBuilder.generateSignature(walletContext.wallet, signerIndexes)
-        ).build();
+        const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-        const ret = await (
-          await walletContext.wallet.sendTransaction([tx])
-        ).wait();
+        expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(toDeploy);
+        const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
-        expect(
-          await walletContext.wallet.getContract().getKeysetHash()
-        ).toEqual(hexlify(newKeysetHash));
+        expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
+        expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(false);
       });
 
       it("Updating KeysetHash With TimeLock Should Success", async () => {
@@ -77,7 +62,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           newKeysetHash,
-          true
+          true,
         );
 
         const subject = txBuilder.digestMessage();
@@ -88,41 +73,28 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Guardian,
-          50
+          50,
         );
-        const tx = (
-          await txBuilder.generateSignature(walletContext.wallet, signerIndexes)
-        ).build();
+        const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-        const ret = await (
-          await walletContext.wallet.sendTransaction([tx])
-        ).wait();
+        const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
         const lockInfo = await walletContext.wallet.getContract().getLockInfo();
-        expect(lockInfo.lockedKeysetHashRet).toEqual(
-          `0x${newKeysetHash.toString("hex")}`
-        );
+        expect(lockInfo.lockedKeysetHashRet).toEqual(`0x${newKeysetHash.toString("hex")}`);
       });
 
       it("Transfer ERC20 Should Success", async () => {
         const to = WalletEOA.createRandom();
-        const data = walletContext.testERC20Token.interface.encodeFunctionData(
-          "transfer",
-          [to.address, 10]
-        );
+        const data = walletContext.testERC20Token.interface.encodeFunctionData("transfer", [to.address, 10]);
         const tx = new CallTxBuilder(
           true,
           constants.Zero,
           walletContext.testERC20Token.address,
           constants.Zero,
-          data
+          data,
         ).build();
 
-        let sessionKey = new SessionKey(
-          WalletEOA.createRandom(),
-          SignType.EthSign,
-          walletContext.wallet.address
-        );
+        let sessionKey = new SessionKey(WalletEOA.createRandom(), SignType.EthSign, walletContext.wallet.address);
         const timestamp = Math.ceil(Date.now() / 1000) + 5000;
         const weight = 100;
 
@@ -133,40 +105,21 @@ describe("Test ModuleMain", () => {
           sessionKey.digestPermitMessage(timestamp, weight),
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.AssetsOp,
-          weight
-        );
-
-        sessionKey = await sessionKey.generatePermit(
-          timestamp,
           weight,
-          walletContext.wallet,
-          signerIndexes
         );
 
-        const ret = await (
-          await walletContext.wallet.sendTransaction([tx], sessionKey)
-        ).wait();
+        sessionKey = await sessionKey.generatePermit(timestamp, weight, walletContext.wallet, signerIndexes);
+
+        const ret = await (await walletContext.wallet.sendTransaction([tx], sessionKey)).wait();
         expect(ret.status).toEqual(1);
 
-        expect(
-          await walletContext.testERC20Token.balanceOf(to.address)
-        ).toEqual(BigNumber.from(10));
+        expect(await walletContext.testERC20Token.balanceOf(to.address)).toEqual(BigNumber.from(10));
       });
 
       it("Transfer ETH Should Success", async () => {
         const to = WalletEOA.createRandom();
-        const tx = new CallTxBuilder(
-          true,
-          constants.Zero,
-          to.address,
-          parseEther("10"),
-          "0x"
-        ).build();
-        let sessionKey = new SessionKey(
-          WalletEOA.createRandom(),
-          SignType.EthSign,
-          walletContext.wallet.address
-        );
+        const tx = new CallTxBuilder(true, constants.Zero, to.address, parseEther("10"), "0x").build();
+        let sessionKey = new SessionKey(WalletEOA.createRandom(), SignType.EthSign, walletContext.wallet.address);
 
         const timestamp = Math.ceil(Date.now() / 1000) + 5000;
         const weight = 100;
@@ -179,44 +132,26 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.AssetsOp,
-          weight
-        );
-
-        sessionKey = await sessionKey.generatePermit(
-          timestamp,
           weight,
-          walletContext.wallet,
-          signerIndexes
         );
 
-        const ret = await (
-          await walletContext.wallet.sendTransaction([tx], sessionKey)
-        ).wait();
+        sessionKey = await sessionKey.generatePermit(timestamp, weight, walletContext.wallet, signerIndexes);
+
+        const ret = await (await walletContext.wallet.sendTransaction([tx], sessionKey)).wait();
         expect(ret.status).toEqual(1);
-        expect(
-          Number.parseInt(
-            formatEther(await context.provider.getBalance(to.address)),
-            10
-          )
-        ).toEqual(10);
+        expect(Number.parseInt(formatEther(await context.provider.getBalance(to.address)), 10)).toEqual(10);
       });
 
       it("Dkim Verify Should Success", async function () {
         const digestHash = constants.HashZero;
-        const emailFrom = `${Buffer.from(randomBytes(10)).toString(
-          "hex"
-        )}@unipass.com`;
+        const emailFrom = `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`;
         const email = await generateDkimParams(
           emailFrom,
           generateEmailSubject(EmailType.CallOtherContract, digestHash),
-          context.unipassPrivateKey.exportKey("pkcs1")
+          context.unipassPrivateKey.exportKey("pkcs1"),
         );
         const pepper = hexlify(randomBytes(32));
-        const ret = await context.dkimKeys.dkimVerify(
-          pepper,
-          0,
-          email.serialize()
-        );
+        const ret = await context.dkimKeys.dkimVerify(pepper, 0, email.serialize());
         expect(ret[0]).toBe(true);
         expect(ret[1]).toBe(EmailType.CallOtherContract);
         expect(ret[2]).toBe(pureEmailHash(emailFrom, pepper));
@@ -229,7 +164,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           newDelay,
-          true
+          true,
         );
         const subject = txBuilder.digestMessage();
         let signerIndexes;
@@ -239,15 +174,11 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Owner,
-          100
+          100,
         );
-        const tx = (
-          await txBuilder.generateSignature(walletContext.wallet, signerIndexes)
-        ).build();
+        const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-        const ret = await (
-          await walletContext.wallet.sendTransaction([tx])
-        ).wait();
+        const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
 
         expect(ret.status).toBe(1);
@@ -262,7 +193,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           newTimelockDuring,
-          true
+          true,
         );
         let subject = txBuilder1.digestMessage();
         let signerIndexes;
@@ -272,17 +203,10 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Owner,
-          100
+          100,
         );
-        let tx = (
-          await txBuilder1.generateSignature(
-            walletContext.wallet,
-            signerIndexes
-          )
-        ).build();
-        let ret = await (
-          await walletContext.wallet.sendTransaction([tx])
-        ).wait();
+        let tx = (await txBuilder1.generateSignature(walletContext.wallet, signerIndexes)).build();
+        let ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
 
         let lockInfo = await walletContext.wallet.getContract().getLockInfo();
@@ -296,7 +220,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           newKeysetHash,
-          true
+          true,
         );
         subject = txBuilder2.digestMessage();
         [walletContext.wallet, signerIndexes] = await selectKeys(
@@ -305,47 +229,32 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Guardian,
-          50
+          50,
         );
-        tx = (
-          await txBuilder2.generateSignature(
-            walletContext.wallet,
-            signerIndexes
-          )
-        ).build();
+        tx = (await txBuilder2.generateSignature(walletContext.wallet, signerIndexes)).build();
 
         ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
         lockInfo = await walletContext.wallet.getContract().getLockInfo();
-        expect(lockInfo.lockedKeysetHashRet).toEqual(
-          `0x${newKeysetHash.toString("hex")}`
-        );
+        expect(lockInfo.lockedKeysetHashRet).toEqual(`0x${newKeysetHash.toString("hex")}`);
         walletContext.metaNonce++;
         walletContext.nonce++;
 
         // Step3 Unlock TimeLock
-        tx = new UnlockKeysetHashTxBuilder(
-          walletContext.wallet.address,
-          walletContext.metaNonce,
-          true
-        ).build();
+        tx = new UnlockKeysetHashTxBuilder(walletContext.wallet.address, walletContext.metaNonce, true).build();
 
-        await expect(
-          walletContext.wallet.sendTransaction([tx])
-        ).rejects.toThrow();
+        await expect(walletContext.wallet.sendTransaction([tx])).rejects.toThrow();
 
         await new Promise((resolve) =>
           // eslint-disable-next-line no-promise-executor-return
-          setTimeout(resolve, newTimelockDuring * 1000 + 1000)
+          setTimeout(resolve, newTimelockDuring * 1000 + 1000),
         );
 
         ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
         lockInfo = await walletContext.wallet.getContract().getLockInfo();
         expect(lockInfo.isLockedRet).toBe(false);
-        expect(
-          await walletContext.wallet.getContract().getKeysetHash()
-        ).toEqual(hexlify(newKeysetHash));
+        expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
       });
 
       it("Cancel KeysetHash TimeLock Should Success", async () => {
@@ -355,7 +264,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           newKeysetHash,
-          true
+          true,
         );
         let subject = txBuilder1.digestMessage();
         let signerIndexes;
@@ -365,23 +274,14 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Guardian,
-          50
+          50,
         );
-        let tx = (
-          await txBuilder1.generateSignature(
-            walletContext.wallet,
-            signerIndexes
-          )
-        ).build();
+        let tx = (await txBuilder1.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-        let ret = await (
-          await walletContext.wallet.sendTransaction([tx])
-        ).wait();
+        let ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
         let lockInfo = await walletContext.wallet.getContract().getLockInfo();
-        expect(lockInfo.lockedKeysetHashRet).toEqual(
-          `0x${newKeysetHash.toString("hex")}`
-        );
+        expect(lockInfo.lockedKeysetHashRet).toEqual(`0x${newKeysetHash.toString("hex")}`);
         walletContext.metaNonce++;
         walletContext.nonce++;
 
@@ -389,7 +289,7 @@ describe("Test ModuleMain", () => {
         const txBuilder2 = await new CancelLockKeysetHashTxBuilder(
           walletContext.wallet.address,
           walletContext.metaNonce,
-          true
+          true,
         );
         subject = txBuilder2.digestMessage();
         [walletContext.wallet, signerIndexes] = await selectKeys(
@@ -398,22 +298,15 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Owner,
-          1
+          1,
         );
-        tx = (
-          await txBuilder2.generateSignature(
-            walletContext.wallet,
-            signerIndexes
-          )
-        ).build();
+        tx = (await txBuilder2.generateSignature(walletContext.wallet, signerIndexes)).build();
 
         ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
         lockInfo = await walletContext.wallet.getContract().getLockInfo();
         expect(lockInfo.isLockedRet).toBe(false);
-        expect(
-          await walletContext.wallet.getContract().getKeysetHash()
-        ).toEqual(constants.HashZero);
+        expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(constants.HashZero);
       });
 
       it("Update Implemenation Should Success", async () => {
@@ -429,7 +322,7 @@ describe("Test ModuleMain", () => {
           walletContext.wallet.address,
           walletContext.metaNonce,
           walletContext.greeter.address,
-          true
+          true,
         );
         const subject = txBuilder.digestMessage();
         let signerIndexes;
@@ -439,17 +332,13 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Owner,
-          100
+          100,
         );
 
-        const tx = (
-          await txBuilder.generateSignature(walletContext.wallet, signerIndexes)
-        ).build();
+        const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
         ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
-        const greeter = walletContext.greeter.attach(
-          walletContext.wallet.address
-        );
+        const greeter = walletContext.greeter.attach(walletContext.wallet.address);
         expect(await greeter.ret1()).toEqual(BigNumber.from(1));
       });
 
@@ -464,7 +353,7 @@ describe("Test ModuleMain", () => {
           newKeysetHash,
           newTimelockDuring,
           newImplementation,
-          true
+          true,
         );
         const subject = txBuilder.digestMessage();
         let signerIndexes;
@@ -474,25 +363,15 @@ describe("Test ModuleMain", () => {
           subject,
           context.unipassPrivateKey.exportKey("pkcs1"),
           Role.Owner,
-          100
+          100,
         );
-        const tx = (
-          await txBuilder.generateSignature(walletContext.wallet, signerIndexes)
-        ).build();
+        const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-        const ret = await (
-          await walletContext.wallet.sendTransaction([tx])
-        ).wait();
+        const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
         expect(ret.status).toEqual(1);
-        expect(
-          await walletContext.wallet.getContract().getKeysetHash()
-        ).toEqual(`0x${newKeysetHash.toString("hex")}`);
-        expect(await walletContext.wallet.getContract().getMetaNonce()).toEqual(
-          BigNumber.from(metaNonce)
-        );
-        expect(
-          await walletContext.wallet.getContract().getImplementation()
-        ).toEqual(newImplementation);
+        expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(`0x${newKeysetHash.toString("hex")}`);
+        expect(await walletContext.wallet.getContract().getMetaNonce()).toEqual(BigNumber.from(metaNonce));
+        expect(await walletContext.wallet.getContract().getImplementation()).toEqual(newImplementation);
         const lockInfo = await walletContext.wallet.getContract().getLockInfo();
         expect(lockInfo.lockDuringRet).toEqual(newTimelockDuring);
       });

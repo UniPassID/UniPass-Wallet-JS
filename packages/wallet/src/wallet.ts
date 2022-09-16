@@ -256,6 +256,7 @@ export class Wallet extends Signer {
     sessionKeyOrSignerIndexes: SessionKey | number[],
   ): Promise<SignedTransactions | GuestTransactions> {
     let transactions = toTransactions(await resolveArrayProperties<Transactionish>(transactionish));
+    transactions = await this.feeOptions(...transactions);
 
     if (this.bundleCreatation && !(await isContractDeployed(this.address, this.provider!))) {
       const deployTx = getWalletDeployTransaction(this.context, this.keyset.hash(), this.creatationGasLimit);
@@ -267,6 +268,8 @@ export class Wallet extends Signer {
 
         transactions = [deployTx, executeTx];
       }
+
+      transactions = await this.feeOptions(...transactions);
 
       return {
         _isGuestTransaction: true,
@@ -389,6 +392,42 @@ export class Wallet extends Signer {
     const contract = new Contract(this.address, moduleMain.abi, this.callWallet);
 
     return contract;
+  }
+
+  async feeOptions(...transactions: Transaction[]): Promise<Transaction[]> {
+    // const ret = await Promise.all(
+    //   transactions.map(async (transaction) => {
+    //     if (
+    //       !transaction.revertOnError &&
+    //       transaction.gasLimit.eq(constants.Zero) &&
+    //       transaction.callType === CallType.Call
+    //     ) {
+    //       if (this.provider instanceof providers.JsonRpcProvider) {
+    //         const tx = transaction;
+    //         const params = [
+    //           {
+    //             from: this.address,
+    //             to: tx.target,
+    //             data: tx.data,
+    //           },
+    //           "latest",
+    //         ];
+
+    //         const result = await this.provider.send("eth_estimateGas", params);
+    //         tx.gasLimit = BigNumber.from(result);
+
+    //         return tx;
+    //       }
+
+    //       return Promise.reject(new Error("Expect JsonRpcProvider"));
+    //     }
+
+    //     return transaction;
+    //   }),
+    // );
+
+    // return ret;
+    return transactions;
   }
 }
 

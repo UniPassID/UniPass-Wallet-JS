@@ -190,7 +190,6 @@ export interface LoginInput {
   upAuthToken: string;
   auth2FaToken: Auth2FaCodeToken[];
 }
-
 export interface LoginOutput extends ApiResponse {
   data: {
     address: string;
@@ -205,7 +204,6 @@ export interface QueryAccountKeysetInput {
   upAuthToken: string;
   sessionKeyPermit: SessionKeyPermit | Record<string, never>;
 }
-
 export interface QueryAccountKeysetOutput extends ApiResponse {
   data: {
     masterKeyAddress: string;

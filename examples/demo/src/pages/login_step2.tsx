@@ -1,14 +1,13 @@
 import { useUnipass } from "@/hooks/useUnipass";
 import { Button, Form, Input } from "antd";
+import { useEffect } from "react";
 import { history } from "umi";
 
 const LoginStep2: React.FC = () => {
-  const { login, loading, unipassWallet } = useUnipass();
+  const { login, loading } = useUnipass();
 
   const onFinish = async (values: any) => {
     const res = await login(values.code);
-    // @ts-ignore
-    window.wallet = unipassWallet;
     if (res) history.push("/success");
   };
 
