@@ -1,0 +1,39 @@
+{
+  "name": "@unipasswallet/provider",
+  "version": "0.0.1-alpha.3",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run compile",
+    "clean": "rimraf -rf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
+    "test": "jest --testTimeout 30000",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@unipasswallet/keys": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.4",
+    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.4",
+    "@unipasswallet/transaction-builders": "workspace:^0.0.1",
+    "axios": "^0.27.2",
+    "dayjs": "^1.11.5",
+    "dexie": "^3.2.2",
+    "ethers": "^5.7.1",
+    "lindell-ecdsa-wasm": "^0.2.0",
+    "scrypt-js": "3.0.1"
+  },
+  "devDependencies": {
+    "@jest/types": "~28.1.3",
+    "@types/jest": "~27.5.2",
+    "@types/node": "^18.7.18",
+    "jest": "~28.1.3",
+    "rimraf": "~3.0.2",
+    "ts-jest": "~28.0.8",
+    "typescript": "~4.7.4"
+  }
+}
