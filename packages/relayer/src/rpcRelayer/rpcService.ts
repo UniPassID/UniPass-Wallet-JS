@@ -112,25 +112,25 @@ export class RpcService implements RpcService {
 
   txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult> {
     return this.fetch(this.url(`/tx_receipt/${txHash}`), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => _data),
+      buildResponse(res).then((_data) => <TxnReciptResult>_data.data),
     );
   }
 
   estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
     return this.fetch(this.url(`/estimate_gas`), createPostHTTPRequest(pendingExecuteCallArgs, headers)).then((res) =>
-      buildResponse(res).then((_data) => _data),
+      buildResponse(res).then((_data) => _data.data),
     );
   }
 
   nonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
     return this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => _data),
+      buildResponse(res).then((_data) => _data.data),
     );
   }
 
   metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
     return this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => _data),
+      buildResponse(res).then((_data) => _data.data),
     );
   }
 }
