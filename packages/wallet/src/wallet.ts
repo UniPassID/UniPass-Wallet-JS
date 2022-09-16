@@ -375,8 +375,12 @@ export class Wallet extends Signer {
   }
 
   async isSyncKeysetHash(): Promise<boolean> {
+    if (!(await isContractDeployed(this.address, this.provider))) {
+      return false;
+    }
+
     const contract = this.getContract();
-    const [keysetHash] = await contract.getKeysetHash();
+    const keysetHash = await contract.getKeysetHash();
 
     return keysetHash === constants.HashZero || keysetHash === this.keyset.hash();
   }
