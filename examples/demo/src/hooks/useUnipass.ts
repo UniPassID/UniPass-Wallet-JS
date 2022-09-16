@@ -8,8 +8,8 @@ export function useUnipass() {
 
   useEffect(() => {
     try {
-      const wallet = UnipassWalletProvider.getInstance({ chainName: "polygon-mumbai", env: "dev" });
-      setUnipassWallet(wallet);
+      const provider = UnipassWalletProvider.getInstance({ chainName: "polygon-mumbai", env: "dev" });
+      setUnipassWallet(provider);
     } catch (e: any) {
       message.error(e.message);
     }

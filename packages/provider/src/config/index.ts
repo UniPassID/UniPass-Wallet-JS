@@ -3,36 +3,24 @@ import { Environment, ChainName } from "../interface/unipassWalletProvider";
 const chain_config = {
   "polygon-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/polygon-mainnet",
-    chainId: 137,
-    symbol: "Matic",
   },
   "bsc-mainnet": {
-    rpc_url: "https://node.wallet.unipass.id/polygon-mainnet",
-    chainId: 56,
-    symbol: "BNB",
+    rpc_url: "https://node.wallet.unipass.id/polygon-mumbai",
   },
   "rangers-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/rangers-mainnet",
-    chainId: 2025,
-    symbol: "RPG",
   },
 };
 
 const dev_chain_config = {
   "polygon-mumbai": {
-    rpc_url: "https://node.wallet.unipass.id/polygon-mainnet",
-    chainId: 137,
-    symbol: "Matic",
+    rpc_url: "https://node.wallet.unipass.id/polygon-mumbai",
   },
   "bsc-testnet": {
-    rpc_url: "https://node.wallet.unipass.id/polygon-mainnet",
-    chainId: 56,
-    symbol: "BNB",
+    rpc_url: "https://node.wallet.unipass.id/bsc-testnet",
   },
   "rangers-robin": {
-    rpc_url: "https://node.wallet.unipass.id/rangers-mainnet",
-    chainId: 2025,
-    symbol: "RPG",
+    rpc_url: "https://node.wallet.unipass.id/rangers-robin",
   },
 };
 

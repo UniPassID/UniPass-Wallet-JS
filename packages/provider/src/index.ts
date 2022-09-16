@@ -1,5 +1,7 @@
 import { providers } from "ethers";
 import { SessionKey, Wallet } from "@unipasswallet/wallet";
+import { RpcRelayer } from "@unipasswallet/relayer";
+import { unipassWalletContext } from "@unipasswallet/network";
 import TssWorker from "./utils/tss-worker";
 import { ChainName, UnipassWalletProps, UniTransaction, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
@@ -17,6 +19,8 @@ import {
   genTransaction,
   checkLocalStatus,
 } from "./operate";
+
+export * from "./interface/unipassWalletProvider";
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
@@ -37,9 +41,11 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private password: string | undefined;
 
-  private wallet: Wallet;
+  public wallet: Wallet;
 
   private provider: providers.JsonRpcProvider;
+
+  private relayer: RpcRelayer;
 
   static getInstance(props: UnipassWalletProps) {
     if (!UnipassWalletProvider.instance) {
@@ -54,17 +60,18 @@ export default class UnipassWalletProvider implements WalletProvider {
     const { chainName, url, env, network } = props;
 
     if (chainName) {
-      const { rpc_url, chainId } = getChainConfig(env, chainName);
-      this.provider = new providers.JsonRpcProvider(rpc_url, { name: chainName, chainId });
+      const { rpc_url } = getChainConfig(env, chainName);
+      this.provider = new providers.JsonRpcProvider(rpc_url);
     } else {
       this.provider = new providers.JsonRpcProvider(url, network);
     }
-    const { backend } = getApiConfig(env);
-    this.init(backend);
+    const { backend, relayer } = getApiConfig(env);
+    this.init(backend, relayer);
     this.authChainNode = chainName;
   }
 
-  private async init(backend: string) {
+  private async init(backend: string, relayer: string) {
+    this.relayer = new RpcRelayer(relayer, unipassWalletContext, this.provider);
     UnipassWalletProvider.request = requestFactory(backend);
     await TssWorker.initLindellEcdsaWasm();
     const { data } = await api.getSuffixes();
@@ -95,7 +102,14 @@ export default class UnipassWalletProvider implements WalletProvider {
    * @params password
    * * */
   public async register(password: string) {
-    const wallet = await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this.provider);
+    const wallet = await doRegister(
+      password,
+      this.email,
+      this.upAuthToken,
+      this.policyAddress,
+      this.provider,
+      this.relayer,
+    );
     this.wallet = wallet;
   }
 
@@ -124,7 +138,7 @@ export default class UnipassWalletProvider implements WalletProvider {
    * * */
   public async login(code: string) {
     const upAuthToken = await verifyOtpCode(this.email, code, "auth2Fa", this.mailServices);
-    const wallet = await doLogin(this.email, this.password, upAuthToken, this.pwsToken, this.provider);
+    const wallet = await doLogin(this.email, this.password, upAuthToken, this.pwsToken, this.provider, this.relayer);
     this.upAuthToken = upAuthToken;
     this.wallet = wallet;
   }
@@ -138,12 +152,6 @@ export default class UnipassWalletProvider implements WalletProvider {
     const txs = await genTransaction(tx, this.email, chain);
     if (this.wallet) {
       await this.wallet.sendTransaction(txs);
-    }
-  }
-
-  public wallte(): Wallet | undefined {
-    if (this.wallet) {
-      return this.wallet;
     }
   }
 
@@ -161,9 +169,11 @@ export default class UnipassWalletProvider implements WalletProvider {
    * isLoggedIn
    */
   public async isLoggedIn() {
-    const wallet = await checkLocalStatus(this.provider);
-    if (wallet) {
+    const status = await checkLocalStatus(this.provider, this.relayer);
+    if (status) {
+      const { wallet, email } = status;
       this.wallet = wallet;
+      this.email = email;
       return true;
     }
     return false;

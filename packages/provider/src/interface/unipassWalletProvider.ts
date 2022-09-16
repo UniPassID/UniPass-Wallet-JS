@@ -1,5 +1,4 @@
-import { Transaction } from "@unipasswallet/transactions";
-import { providers } from "ethers";
+import { BigNumber, BytesLike, providers } from "ethers";
 import type { ConnectionInfo } from "ethers/src.ts/utils";
 
 type ChainName =
@@ -19,7 +18,13 @@ interface UnipassWalletProps {
   network?: providers.Networkish;
 }
 
-type UniTransaction = Omit<Transaction, "_isUnipassWalletTransaction">;
+interface UniTransaction {
+  revertOnError?: boolean;
+  gasLimit?: BigNumber;
+  target: BytesLike;
+  value: BigNumber;
+  data?: BytesLike;
+}
 
 abstract class WalletProvider {}
 
