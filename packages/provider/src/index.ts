@@ -161,7 +161,14 @@ export default class UnipassWalletProvider implements WalletProvider {
     isDigest: boolean = true,
   ) {
     if (this.wallet) {
-      this.wallet.signMessage(message, sessionKeyOrSignerIndexes, isDigest);
+      const utf8Encode = new TextEncoder();
+      utf8Encode.encode(message);
+      const signedMseeage = await this.wallet.signMessage(
+        utf8Encode.encode(message),
+        sessionKeyOrSignerIndexes,
+        isDigest,
+      );
+      return signedMseeage;
     }
   }
 

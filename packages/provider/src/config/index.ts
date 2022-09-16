@@ -31,7 +31,7 @@ const api_config = {
 
 const dev_api_config = {
   backend: "https://d.wallet.unipass.vip/wallet",
-  relayer: "https://d.wallet.unipass.vip/relayer",
+  relayer: "https://d.wallet.unipass.vip/relayer-rs",
 };
 
 const test_api_config = {
