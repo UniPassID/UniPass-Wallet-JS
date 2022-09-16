@@ -1,4 +1,4 @@
-import { Bytes, Signer, providers, BigNumber, constants, Contract } from "ethers";
+import { Bytes, Signer, providers, BigNumber, constants, Contract, Wallet as WalletEOA } from "ethers";
 import {
   concat,
   Deferrable,
@@ -55,6 +55,8 @@ export class Wallet extends Signer {
 
   public readonly bundleCreatation: boolean = true;
 
+  public readonly callWallet: WalletEOA;
+
   public readonly provider?: providers.Provider;
 
   public readonly relayer?: Relayer;
@@ -92,6 +94,8 @@ export class Wallet extends Signer {
     if (creatationGasLimit) {
       this.creatationGasLimit = creatationGasLimit;
     }
+
+    this.callWallet = WalletEOA.createRandom().connect(this.provider);
   }
 
   static create(options: WalletOptions): Wallet {
@@ -378,7 +382,7 @@ export class Wallet extends Signer {
   }
 
   getContract(): Contract {
-    const contract = new Contract(this.address, moduleMain.abi, this.provider!);
+    const contract = new Contract(this.address, moduleMain.abi, this.callWallet);
 
     return contract;
   }
