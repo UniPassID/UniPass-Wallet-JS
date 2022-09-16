@@ -12,6 +12,8 @@ export * from "./keyERC1271";
 
 export * from "./roleWeight";
 
+export * from "./keyset";
+
 export enum KeyType {
   Secp256k1,
   ERC1271Wallet,

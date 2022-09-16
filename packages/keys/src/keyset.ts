@@ -5,7 +5,7 @@ import {
   KeyBase,
   KeySecp256k1Wallet,
   KeyERC1271,
-} from "@unipasswallet/keys";
+} from ".";
 import { BytesLike } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 
@@ -21,11 +21,6 @@ export function getKeysetHash(keys: KeyBase[]): string {
 }
 
 export class Keyset {
-  /**
-   * @dev This class is used for Unipass-Wallet. If users changed their keysetHashs, this class may lose efficacy.
-   *      Keys are sorted by `[MasterKey, RegisterEmailKey, Guardians, Policy]`
-   * @param keys Inner Keys.
-   */
   constructor(public readonly keys: KeyBase[]) {}
 
   static create(

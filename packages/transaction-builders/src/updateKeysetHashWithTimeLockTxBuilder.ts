@@ -2,35 +2,35 @@ import { BytesLike, constants, utils } from "ethers";
 import { keccak256, solidityPack } from "ethers/lib/utils";
 import { RoleWeight } from "@unipasswallet/keys";
 import { subDigest } from "@unipasswallet/utils";
+import { Transaction, CallType } from "@unipasswallet/transactions";
 import { AccountLayerActionType } from ".";
-import { Transaction, CallType } from "../transaction";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
-export class UpdateImplementationTxBuilder extends BaseTxBuilder {
-  public readonly OWNER_THRESHOLD = 100;
+export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
+  public readonly GUARDIAN_THRESHOLD = 50;
 
-  public readonly userAddr: string;
+  public readonly userAddr;
 
-  public readonly implementation: string;
+  public readonly keysetHash;
 
   /**
    *
    * @param userAddr The Address Of User's Smart Contract Address
    * @param metaNonce The meta nonce of Account Layer
-   * @param implemenation The New Implemenation
+   * @param keysetHash New KeysetHash to Update
    * @param revertOnError Whether revert when transaction failed
    * @param signature Signature, default undefined
    */
   constructor(
     userAddr: BytesLike,
     public readonly metaNonce: number,
-    implemenation: BytesLike,
+    keysetHash: BytesLike,
     public readonly revertOnError: boolean,
     signature?: BytesLike
   ) {
     super(signature);
     this.userAddr = utils.hexlify(userAddr);
-    this.implementation = utils.hexlify(implemenation);
+    this.keysetHash = utils.hexlify(keysetHash);
   }
 
   /**
@@ -43,11 +43,11 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
       this.userAddr,
       keccak256(
         solidityPack(
-          ["uint8", "uint32", "address"],
+          ["uint8", "uint32", "bytes32"],
           [
-            AccountLayerActionType.UpdateImplementation,
+            AccountLayerActionType.UpdateKeysetHash,
             this.metaNonce,
-            this.implementation,
+            this.keysetHash,
           ]
         )
       )
@@ -55,18 +55,19 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
   }
 
   validateRoleWeight(roleWeight: RoleWeight): boolean {
-    return roleWeight.ownerWeight >= this.OWNER_THRESHOLD;
+    return roleWeight.guardianWeight >= this.GUARDIAN_THRESHOLD;
   }
 
   public build(): Transaction {
     const data = this.contractInterface.encodeFunctionData(
-      "updateImplementation",
-      [this.metaNonce, this.implementation, this.signature]
+      "updateKeysetHashWithTimeLock",
+      [this.metaNonce, this.keysetHash, this.signature]
     );
 
     return {
-      callType: CallType.Call,
+      _isUnipassWalletTransaction: true,
       revertOnError: this.revertOnError,
+      callType: CallType.Call,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,

@@ -7,10 +7,11 @@ import {
 import { DkimParams } from "@unipasswallet/dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
-import { BigNumber, ethers, Wallet as WalletEOA } from "ethers";
+import { BigNumber, ethers, Signer, Wallet as WalletEOA } from "ethers";
 import { EmailType } from "@unipasswallet/dkim-base";
-import { Keyset, Wallet } from "@unipasswallet/wallet";
+import { Wallet, generateEmailSubject } from "@unipasswallet/wallet";
 import {
+  Keyset,
   KeyBase,
   KeyEmailDkim,
   KeySecp256k1Wallet,
@@ -137,45 +138,6 @@ export async function selectKeys(
   return [wallet.setKeyset(new Keyset(keys)), indexes];
 }
 
-export function generateEmailSubject(
-  emailType: EmailType,
-  digestHash: string
-): string {
-  switch (emailType) {
-    case EmailType.UpdateKeysetHash: {
-      return `UniPass-Update-Account-${digestHash}`;
-    }
-
-    case EmailType.LockKeysetHash: {
-      return `UniPass-Start-Recovery-${digestHash}`;
-    }
-
-    case EmailType.CancelLockKeysetHash: {
-      return `UniPass-Cancel-Recovery-${digestHash}`;
-    }
-
-    case EmailType.UpdateTimeLockDuring: {
-      return `UniPass-Update-Timelock-${digestHash}`;
-    }
-
-    case EmailType.UpdateImplementation: {
-      return `UniPass-Update-Implementation-${digestHash}`;
-    }
-
-    case EmailType.SyncAccount: {
-      return `UniPass-Deploy-Account-${digestHash}`;
-    }
-
-    case EmailType.CallOtherContract: {
-      return `UniPass-Call-Contract-${digestHash}`;
-    }
-
-    default: {
-      throw new Error(`Invalid EmailType: ${emailType}`);
-    }
-  }
-}
-
 export function getKeysetHash(keys: KeyBase[]): string {
   let keysetHash = "0x";
   keys.forEach((key) => {
@@ -261,11 +223,7 @@ export async function generateDkimParams(
   return dkims;
 }
 
-export async function transferEth(
-  from: WalletEOA,
-  to: string,
-  amount: BigNumber
-) {
+export async function transferEth(from: Signer, to: string, amount: BigNumber) {
   const ret = await (
     await from.sendTransaction({
       to,
