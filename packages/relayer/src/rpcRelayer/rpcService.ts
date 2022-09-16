@@ -64,19 +64,10 @@ export interface EstimateGasResult {
 
 export interface RpcService {
   feeTokens(headers?: object): Promise<FeeTokensReturn>;
-  feeOptions(
-    feeOptionArgs: FeeOptionArgs,
-    headers?: object
-  ): Promise<FeeOptionsReturn>;
-  sendTransaction(
-    args: PendingExecuteCallArgs,
-    headers?: object
-  ): Promise<string>;
+  feeOptions(feeOptionArgs: FeeOptionArgs, headers?: object): Promise<FeeOptionsReturn>;
+  sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string>;
   txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult>;
-  estimateGas(
-    pendingExecuteCallArgs: PendingExecuteCallArgs,
-    headers?: object
-  ): Promise<EstimateGasResult>;
+  estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult>;
   nonce(walletAddr: string, headers?: object): Promise<BigNumberish>;
   metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish>;
 }
@@ -96,69 +87,51 @@ export class RpcService implements RpcService {
   }
 
   feeTokens(headers?: object): Promise<FeeTokensReturn> {
-    return this.fetch(this.url("fee_tokens"), createHTTPRequest(headers)).then(
-      (res) =>
-        buildResponse(res).then((_data) => ({
-          isFeeRequired: <boolean>_data.isFeeRequired,
-          tokens: <FeeToken[]>_data.tokens,
-        }))
+    return this.fetch(this.url("fee_tokens"), createGetPostHTTPRequest(headers)).then((res) =>
+      buildResponse(res).then((_data) => ({
+        isFeeRequired: <boolean>_data.isFeeRequired,
+        tokens: <FeeToken[]>_data.tokens,
+      })),
     );
   }
 
-  feeOptions(
-    feeOptionArgs: FeeOptionArgs,
-    headers?: object
-  ): Promise<FeeOptionsReturn> {
-    return this.fetch(
-      this.url("/fee_options"),
-      createHTTPRequest(feeOptionArgs, headers)
-    ).then((res) =>
+  feeOptions(feeOptionArgs: FeeOptionArgs, headers?: object): Promise<FeeOptionsReturn> {
+    return this.fetch(this.url("/fee_options"), createPostHTTPRequest(feeOptionArgs, headers)).then((res) =>
       buildResponse(res).then((_data) => ({
         currentGasPrice: _data.currentGasPrice,
         options: _data.options,
-      }))
+      })),
     );
   }
 
-  sendTransaction(
-    args: PendingExecuteCallArgs,
-    headers?: object
-  ): Promise<string> {
-    return this.fetch(
-      this.url("/send_transaction"),
-      createHTTPRequest(args, headers)
-    ).then((res) => buildResponse(res).then((_data) => <string>_data.data));
+  sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string> {
+    return this.fetch(this.url("/send_transaction"), createPostHTTPRequest(args, headers)).then((res) =>
+      buildResponse(res).then((_data) => <string>_data.data),
+    );
   }
 
   txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult> {
-    return this.fetch(
-      this.url(`/tx_receipt/${txHash}`),
-      createHTTPRequest(headers)
-    ).then((res) => buildResponse(res).then((_data) => _data));
+    return this.fetch(this.url(`/tx_receipt/${txHash}`), createGetPostHTTPRequest(headers)).then((res) =>
+      buildResponse(res).then((_data) => _data),
+    );
   }
 
-  estimateGas(
-    pendingExecuteCallArgs: PendingExecuteCallArgs,
-    headers?: object
-  ): Promise<EstimateGasResult> {
-    return this.fetch(
-      this.url(`/estimate_gas`),
-      createHTTPRequest(pendingExecuteCallArgs, headers)
-    ).then((res) => buildResponse(res).then((_data) => _data));
+  estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
+    return this.fetch(this.url(`/estimate_gas`), createPostHTTPRequest(pendingExecuteCallArgs, headers)).then((res) =>
+      buildResponse(res).then((_data) => _data),
+    );
   }
 
   nonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
-    return this.fetch(
-      this.url(`/nonce/${walletAddr}`),
-      createHTTPRequest(headers)
-    ).then((res) => buildResponse(res).then((_data) => _data));
+    return this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers)).then((res) =>
+      buildResponse(res).then((_data) => _data),
+    );
   }
 
   metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
-    return this.fetch(
-      this.url(`/meta_nonce/${walletAddr}`),
-      createHTTPRequest(headers)
-    ).then((res) => buildResponse(res).then((_data) => _data));
+    return this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers)).then((res) =>
+      buildResponse(res).then((_data) => _data),
+    );
   }
 }
 
@@ -168,13 +141,15 @@ export interface WebRPCError extends Error {
   status: number;
 }
 
-const createHTTPRequest = (
-  body: object = {},
-  headers: object = {}
-): object => ({
+const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",
   headers: { ...headers, "Content-Type": "application/json" },
   body: JSON.stringify(body || {}),
+});
+
+const createGetPostHTTPRequest = (headers: object = {}): object => ({
+  method: "GET",
+  headers: { ...headers },
 });
 
 const buildResponse = (res: Response): Promise<any> =>
@@ -199,7 +174,4 @@ const buildResponse = (res: Response): Promise<any> =>
     return data;
   });
 
-export type Fetch = (
-  input: RequestInfo,
-  init?: RequestInit
-) => Promise<Response>;
+export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
