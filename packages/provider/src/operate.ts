@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { BigNumber, providers } from "ethers";
-import { Wallet } from "@unipasswallet/wallet";
+import { Wallet, SessionKey } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { RpcRelayer } from "@unipasswallet/relayer";
 import { Transaction } from "@unipasswallet/transactions";
@@ -120,6 +120,7 @@ const doRegister = async (
       aesKey: sessionKey.aesKey,
       authorization: permit,
       expires: timestamp,
+      weight: 100,
     },
     committed: false,
     step: "register",
@@ -210,6 +211,7 @@ const doLogin = async (
       aesKey: sessionKey.aesKey,
       authorization: permit,
       expires: timestamp,
+      weight: 100,
     },
     committed: true,
   };
@@ -258,32 +260,43 @@ const checkAccountStatus = async (email: string, authChainNode: ChainName) => {
   throw new WalletError(402007);
 };
 
-const genTransaction = async (
-  tx: UniTransaction,
-  email: string,
-  authChainNode: ChainName,
-): Promise<Array<Transaction>> => {
-  const txs: Array<Transaction> = [];
-  const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
-  console.log("[genTransaction 1]");
-  console.log(tx);
+const genTransaction = async (tx: UniTransaction, wallet: Wallet, _email: string, authChainNode: ChainName) => {
+  const users = await DB.getUsers();
+  const email = _email || window.localStorage.getItem("email");
+  if (users.length > 0) {
+    const user = email ? users.find((e) => e.email === email) : users[0];
 
-  txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
-  console.log("[genTransaction 1]");
-  console.log(txs);
+    if (user) {
+      const txs: Array<Transaction> = [];
+      const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
 
-  if (authChainNode !== "polygon-mainnet" && authChainNode !== "polygon-mumbai") {
-    const { syncStatus, sessionKeyPermit } = await checkAccountStatus(email, authChainNode);
-    if (syncStatus === SyncStatusEnum.ServerSynced) {
-      // TODO
-      const { data: syncTransaction } = await api.syncTransaction({ email, sessionKeyPermit });
-      const { revertOnError, gasLimit, target, value, data } = syncTransaction;
       txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
+
+      if (authChainNode !== "polygon-mainnet" && authChainNode !== "polygon-mumbai") {
+        const { syncStatus, sessionKeyPermit } = await checkAccountStatus(email, authChainNode);
+        if (syncStatus === SyncStatusEnum.ServerSynced) {
+          // TODO
+          const { data: syncTransaction } = await api.syncTransaction({ email, sessionKeyPermit });
+          const { revertOnError, gasLimit, target, value, data } = syncTransaction;
+          txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
+        }
+      }
+      const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
+      return { txs, sessionkey };
     }
   }
-  console.log("[genTransaction 3]");
-  console.log(txs);
-  return txs;
+};
+
+const genSessionKey = async (_email: string, wallet: Wallet) => {
+  const users = await DB.getUsers();
+  const email = _email || window.localStorage.getItem("email");
+  if (users.length > 0) {
+    const user = email ? users.find((e) => e.email === email) : users[0];
+    if (user) {
+      const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
+      return sessionkey;
+    }
+  }
 };
 
 const checkLocalStatus = async (provider: providers.JsonRpcProvider, relayer: RpcRelayer) => {
@@ -314,5 +327,6 @@ export {
   doLogout,
   syncEmail,
   genTransaction,
+  genSessionKey,
   checkLocalStatus,
 };

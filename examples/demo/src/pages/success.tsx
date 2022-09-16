@@ -1,6 +1,7 @@
 import { useUnipass } from "@/hooks/useUnipass";
 import { etherToWei, weiToEther } from "@/utils/format_bignumber";
 import { Button, Form, Input, message } from "antd";
+import { BigNumber } from "ethers";
 import { useEffect, useState } from "react";
 import { history } from "umi";
 
@@ -40,6 +41,7 @@ const LoginStep2: React.FC = () => {
       await unipassWallet.transaction({
         target: values.address,
         value: etherToWei(values.value),
+        gasLimit: BigNumber.from("0"),
       });
       message.success("send successfully");
       setSendLoading(false);

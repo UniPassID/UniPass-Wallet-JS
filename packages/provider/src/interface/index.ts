@@ -276,6 +276,7 @@ export interface User {
     aesKey: CryptoKey;
     authorization: string;
     expires: number;
+    weight: number;
   };
   committed: boolean;
   step?: StepType;

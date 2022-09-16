@@ -18,6 +18,7 @@ import {
   syncEmail,
   genTransaction,
   checkLocalStatus,
+  genSessionKey,
 } from "./operate";
 
 export * from "./interface/unipassWalletProvider";
@@ -149,25 +150,23 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   public async transaction(tx: UniTransaction, chainName?: ChainName) {
     const chain = chainName || this.authChainNode;
-    const txs = await genTransaction(tx, this.email, chain);
-    if (this.wallet) {
-      await this.wallet.sendTransaction(txs);
+    const txsResult = await genTransaction(tx, this.wallet, this.email, chain);
+    if (txsResult && this.wallet) {
+      const { txs, sessionkey } = txsResult;
+      console.log(txsResult);
+
+      await this.wallet.sendTransaction(txs, sessionkey);
     }
   }
 
-  public async signMessage(
-    message: string,
-    sessionKeyOrSignerIndexes: number[] | SessionKey = [],
-    isDigest: boolean = true,
-  ) {
+  public async signMessage(message: string) {
     if (this.wallet) {
       const utf8Encode = new TextEncoder();
       utf8Encode.encode(message);
-      const signedMseeage = await this.wallet.signMessage(
-        utf8Encode.encode(message),
-        sessionKeyOrSignerIndexes,
-        isDigest,
-      );
+      const sessionKey = await genSessionKey(this.email, this.wallet);
+      console.log(sessionKey);
+
+      const signedMseeage = await this.wallet.signMessage(utf8Encode.encode(message), sessionKey);
       return signedMseeage;
     }
   }
