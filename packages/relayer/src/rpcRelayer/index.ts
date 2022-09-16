@@ -1,12 +1,8 @@
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { FeeOption, Relayer } from "..";
 import fetchPonyfill from "fetch-ponyfill";
-import {
-  PendingExecuteCallArgs,
-  RpcService,
-  TxnReciptResult,
-} from "./rpcService";
-import { BigNumberish, providers } from "ethers";
+import { PendingExecuteCallArgs, RpcService, TxnReciptResult } from "./rpcService";
+import { BigNumber, BigNumberish, providers } from "ethers";
 
 export * from "./rpcService";
 
@@ -16,7 +12,7 @@ export class RpcRelayer implements Relayer {
   constructor(
     relayerUrl: string,
     public readonly context: UnipassWalletContext,
-    public readonly provider: providers.Provider
+    public readonly provider: providers.Provider,
   ) {
     this.rpcService = new RpcService(relayerUrl, fetchPonyfill().fetch);
   }
@@ -41,7 +37,8 @@ export class RpcRelayer implements Relayer {
 
   async getNonce(walletAddr: string): Promise<BigNumberish> {
     if (await this.isWalletDeployed(walletAddr)) {
-      return this.rpcService.nonce(walletAddr);
+      const nonce = BigNumber.from(await this.rpcService.nonce(walletAddr)).add(1);
+      return nonce;
     }
 
     return 1;
@@ -49,7 +46,8 @@ export class RpcRelayer implements Relayer {
 
   async getMetaNonce(walletAddr: string): Promise<BigNumberish> {
     if (await this.isWalletDeployed(walletAddr)) {
-      return this.rpcService.metaNonce(walletAddr);
+      const metaNonce = BigNumber.from(this.rpcService.metaNonce(walletAddr)).add(1);
+      return metaNonce;
     }
 
     return 1;
