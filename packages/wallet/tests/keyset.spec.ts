@@ -6,8 +6,8 @@ import {
   SignType,
   KeyERC1271,
   RoleWeight,
+  Keyset,
 } from "@unipasswallet/keys";
-import { Keyset } from "../src/keyset";
 import { BytesLike, Wallet, utils } from "ethers";
 
 describe("Test Keyset", () => {

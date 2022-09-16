@@ -3,23 +3,29 @@ import { keccak256, solidityPack } from "ethers/lib/utils";
 import { RoleWeight } from "@unipasswallet/keys";
 import { subDigest } from "@unipasswallet/utils";
 import { AccountLayerActionType } from ".";
-import { CallType, Transaction } from "../transaction";
+import { Transaction, CallType } from "@unipasswallet/transactions";
 import { BaseTxBuilder } from "./baseTxBuilder";
 
-export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
-  public readonly OWNER_THRESHOLD = 100;
+export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
+  public readonly OWNER_THRESHOLD = 1;
 
   public readonly userAddr: string;
 
+  /**
+   *
+   * @param userAddr The Address Of User Wallet
+   * @param metaNonce MetaNonce
+   * @param revertOnError Whether revert when transaction failed
+   * @param signature The Signature Of Transaction
+   */
   constructor(
-    userAddr: BytesLike,
+    _userAddr: BytesLike,
     public readonly metaNonce: number,
-    public readonly timeLockDuring: number,
     public readonly revertOnError: boolean,
-    signature?: BytesLike
+    signature?: string
   ) {
     super(signature);
-    this.userAddr = utils.hexlify(userAddr);
+    this.userAddr = utils.hexlify(_userAddr);
   }
 
   /**
@@ -32,12 +38,8 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
       this.userAddr,
       keccak256(
         solidityPack(
-          ["uint8", "uint32", "uint32"],
-          [
-            AccountLayerActionType.UpdateTimeLockDuring,
-            this.metaNonce,
-            this.timeLockDuring,
-          ]
+          ["uint8", "uint32"],
+          [AccountLayerActionType.CancelLockKeysetHash, this.metaNonce]
         )
       )
     );
@@ -49,13 +51,14 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
 
   public build(): Transaction {
     const data = this.contractInterface.encodeFunctionData(
-      "updateTimeLockDuring",
-      [this.metaNonce, this.timeLockDuring, this.signature]
+      "cancelLockKeysetHash",
+      [this.metaNonce, this.signature]
     );
 
     return {
-      revertOnError: this.revertOnError,
+      _isUnipassWalletTransaction: true,
       callType: CallType.Call,
+      revertOnError: this.revertOnError,
       gasLimit: constants.Zero,
       target: this.userAddr,
       value: constants.Zero,
