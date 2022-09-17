@@ -2,6 +2,7 @@ import TssWorker from "./utils/tss-worker";
 import {
   ChainType,
   Environment,
+  TransactionFee,
   UnipassWalletProps,
   UniTransaction,
   WalletProvider,
@@ -20,6 +21,7 @@ import {
   genTransaction,
   checkLocalStatus,
   genSignMessage,
+  getWallet,
 } from "./operate";
 import { getApiConfig } from "./config";
 
@@ -36,7 +38,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private email: string | undefined;
 
-  private authChainNode: ChainType = "polygon";
+  private chainType: ChainType = "polygon";
 
   private upAuthToken: string | undefined;
 
@@ -126,16 +128,22 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async sendSyncEmail() {
-    await syncEmail(this.email, this.upAuthToken, this.authChainNode);
+    await syncEmail(this.email, this.chainType, this.env);
   }
 
-  public async transaction(tx: UniTransaction, chain: ChainType = "polygon") {
-    await genTransaction(tx, this.email, chain, this.env);
+  public async transaction(tx: UniTransaction, fee?: TransactionFee, chain?: ChainType) {
+    const _chain = chain ?? "polygon";
+    await genTransaction(tx, this.email, _chain, this.env, fee);
   }
 
   public async signMessage(message: string) {
     const result = await genSignMessage(message, this.email, this.env);
     return result;
+  }
+
+  public async wallet(chain: ChainType = "polygon") {
+    const wallet = await getWallet(this.email, this.env, chain);
+    return wallet;
   }
 
   /**

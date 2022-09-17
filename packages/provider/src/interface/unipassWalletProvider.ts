@@ -1,5 +1,13 @@
 import { BigNumber, BytesLike } from "ethers";
 
+type AuthChainNode =
+  | "polygon-mumbai"
+  | "bsc-testnet"
+  | "rangers-robin"
+  | "polygon-mainnet"
+  | "bsc-mainnet"
+  | "rangers-mainnet";
+
 type Environment = "dev" | "test" | "prod";
 
 type ChainType = "polygon" | "bsc" | "rangers";
@@ -16,6 +24,11 @@ interface UniTransaction {
   data?: BytesLike;
 }
 
+interface TransactionFee {
+  value: BigNumber;
+  token: string;
+}
+
 abstract class WalletProvider {}
 
-export { ChainType, Environment, UnipassWalletProps, WalletProvider, UniTransaction };
+export { ChainType, Environment, AuthChainNode, UnipassWalletProps, WalletProvider, UniTransaction, TransactionFee };

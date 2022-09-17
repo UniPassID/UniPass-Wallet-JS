@@ -84,11 +84,11 @@ function accountStatus(data: AccountStatusInput) {
 }
 
 function syncEmail(data: SyncEmailInput) {
-  return getAxiosInstance().post<any, SyncEmailOutput>("/sync/status", data);
+  return getAxiosInstance().post<any, SyncEmailOutput>("/sync/send/auth.email", data);
 }
 
 function syncTransaction(data: SyncTransactionInput) {
-  return getAxiosInstance().post<any, SyncTransactionOutput>("/sync/status", data);
+  return getAxiosInstance().post<any, SyncTransactionOutput>("/sync/transaction", data);
 }
 
 export default {

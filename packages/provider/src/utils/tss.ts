@@ -29,6 +29,8 @@ export const SIG_PREFIX = {
   BIND_2FA: "bind 2FA:",
   UNBIND_2FA: "unbind 2FA:",
   UPDATE_2FA: "update 2FA:",
+  QUERY_SYNC_STATUS: "query sync status:",
+  GET_SYNC_TRANSACTION: "get sync transaction:",
 };
 
 const startKeygen = async (data: StartKeyGenInput): Promise<StartKeygenData> => {

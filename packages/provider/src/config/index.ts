@@ -5,19 +5,19 @@ export const chain_config = {
     rpc_url: "https://node.wallet.unipass.id/polygon-mainnet",
   },
   "bsc-mainnet": {
-    rpc_url: "https://node.wallet.unipass.id/polygon-mumbai",
+    rpc_url: "https://node.wallet.unipass.id/bsc-mainnet",
   },
   "rangers-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/rangers-mainnet",
   },
   "polygon-mumbai": {
-    rpc_url: "https://node.wallet.unipass.id/polygon-mumbai",
+    rpc_url: "https://polygon-testnet.public.blastapi.io",
   },
   "bsc-testnet": {
-    rpc_url: "https://node.wallet.unipass.id/bsc-testnet",
+    rpc_url: "https://data-seed-prebsc-1-s1.binance.org:8545",
   },
   "rangers-robin": {
-    rpc_url: "https://node.wallet.unipass.id/rangers-robin",
+    rpc_url: "https://robin.rangersprotocol.com/api/jsonrpc",
   },
 };
 

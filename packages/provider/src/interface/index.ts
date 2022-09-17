@@ -1,5 +1,5 @@
 import { Transaction } from "@unipasswallet/transactions";
-import { ChainType } from "./unipassWalletProvider";
+import { AuthChainNode, ChainType } from "./unipassWalletProvider";
 
 // --- tss input output ----
 export interface StartKeyGenInput {
@@ -285,7 +285,7 @@ export interface User {
 
 export interface AccountStatusInput {
   email: string;
-  authChainNode: ChainType;
+  authChainNode: AuthChainNode;
   sessionKeyPermit: SessionKeyPermit;
 }
 
@@ -298,14 +298,16 @@ export enum SyncStatusEnum {
 }
 
 export interface AccountStatusOutput {
-  upAuthToken: string;
-  syncStatus: SyncStatusEnum;
+  data: {
+    upAuthToken: string;
+    syncStatus: SyncStatusEnum;
+  };
 }
 
 export interface SyncEmailInput {
   email: string;
-  upAuthToken: string;
-  authChainNode: string;
+  sessionKeyPermit: SessionKeyPermit;
+  authChainNode: AuthChainNode;
 }
 
 export interface SyncEmailOutput {
@@ -315,8 +317,13 @@ export interface SyncEmailOutput {
 export interface SyncTransactionInput {
   email: string;
   sessionKeyPermit: SessionKeyPermit;
+  authChainNode: AuthChainNode;
 }
 
 export interface SyncTransactionOutput {
-  data: Transaction;
+  data: {
+    isNeedDeploy: boolean;
+    transactions: Array<Transaction>;
+    initKeysetHash: string;
+  };
 }

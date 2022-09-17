@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { BigNumber } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { SessionKey } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { Transaction } from "@unipasswallet/transactions";
@@ -13,9 +13,9 @@ import WalletError from "./constant/error_map";
 import { decryptSessionKey, generateSessionKey } from "./utils/session-key";
 import { getAccountKeysetJson } from "./utils/rbac";
 import DB from "./utils/db";
-import { ChainType, UniTransaction } from "./interface/unipassWalletProvider";
-import { Environment } from "../dist";
-import { genWallets } from "./utils/unipass";
+import { ChainType, Environment, TransactionFee, UniTransaction } from "./interface/unipassWalletProvider";
+import { genSessionKeyPermit, genWallets, getAuthNodeChain } from "./utils/unipass";
+import { ADDRESS_ZERO } from "./constant";
 
 const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
   checkEmailFormat(email, mailServices);
@@ -214,67 +214,102 @@ const doLogout = async (email: string) => {
   await DB.delUser(email ?? "");
 };
 
-const syncEmail = async (email: string, upAuthToken: string, authChainNode: ChainType) => {
-  if (!email || !upAuthToken) throw new WalletError(402004);
-  await api.syncEmail({ email, upAuthToken, authChainNode });
-};
-
-const checkAccountStatus = async (email: string, authChainNode: ChainType) => {
+const syncEmail = async (email: string, chainType: ChainType, env: Environment) => {
+  if (!email) throw new WalletError(402004);
   checkEmailFormat(email);
   const user = await DB.getUser(email ?? "");
   if (user) {
-    const timestamp = user.sessionKey.expires;
-    const sessionKeyAddress = user.sessionKey.localKey.address;
-    const permit = user.sessionKey.authorization;
-    const sessionKeyPrivateKey = await decryptSessionKey(user.sessionKey.aesKey, user.sessionKey.localKey.keystore);
-    const sig = await signMsg(SIG_PREFIX.UPDATE_2FA + timestamp, sessionKeyPrivateKey, false);
-    const sessionKeyPermit = {
-      timestamp,
-      timestampNow: timestamp,
-      permit,
-      sessionKeyAddress,
-      sig,
-      weight: 100,
-    };
-    const { syncStatus } = await api.accountStatus({
+    const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
+    await api.syncEmail({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
+  } else {
+    throw new WalletError(402007);
+  }
+};
+
+const checkAccountStatus = async (email: string, chainType: ChainType, env: Environment) => {
+  checkEmailFormat(email);
+  const user = await DB.getUser(email ?? "");
+  if (user) {
+    const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
+    const {
+      data: { syncStatus, upAuthToken },
+    } = await api.accountStatus({
       email,
-      authChainNode,
+      authChainNode: getAuthNodeChain(env, chainType),
       sessionKeyPermit,
     });
     if (syncStatus === SyncStatusEnum.NotReceived) throw new WalletError(403001);
     if (syncStatus === SyncStatusEnum.NotSynced) throw new WalletError(403002);
-
-    return { syncStatus, sessionKeyPermit };
+    console.log(syncStatus);
+    console.log(SyncStatusEnum.NotSynced);
+    window.localStorage.setItem("upAuthToken", upAuthToken);
+    return syncStatus;
   }
 
   throw new WalletError(402007);
 };
 
-const genTransaction = async (tx: UniTransaction, _email: string, authChainNode: ChainType, env: Environment) => {
+const genTransaction = async (
+  tx: UniTransaction,
+  _email: string,
+  chainType: ChainType,
+  env: Environment,
+  fee?: TransactionFee,
+) => {
   const users = await DB.getUsers();
   const email = _email || window.localStorage.getItem("email");
   if (users.length > 0) {
     const user = email ? users.find((e) => e.email === email) : users[0];
     if (user) {
+      let isServerSynced = false;
       const txs: Array<Transaction> = [];
       const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
       txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
-      if (authChainNode !== "polygon") {
-        const { syncStatus, sessionKeyPermit } = await checkAccountStatus(email, authChainNode);
+      if (chainType !== "polygon") {
+        const syncStatus = await checkAccountStatus(email, chainType, env);
+        const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
         if (syncStatus === SyncStatusEnum.ServerSynced) {
-          // TODO
-          const { data: syncTransaction } = await api.syncTransaction({ email, sessionKeyPermit });
-          const { revertOnError, gasLimit, target, value, data } = syncTransaction;
-          txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
+          const {
+            data: { transactions = [], isNeedDeploy, initKeysetHash },
+          } = await api.syncTransaction({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
+          if (isNeedDeploy) {
+            transactions.shift();
+          }
+          transactions.reverse().forEach((tx) => {
+            const { revertOnError, gasLimit, target, value, data } = tx;
+            txs.unshift(
+              new CallTxBuilder(
+                revertOnError,
+                BigNumber.from(gasLimit._hex),
+                target,
+                BigNumber.from(value._hex),
+                data,
+              ).build(),
+            );
+          });
+          isServerSynced = transactions.length > 0;
         }
       }
+      if (fee) {
+        const { token, value: tokenValue } = fee;
+        if (token !== ADDRESS_ZERO) {
+          const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
+          // Encode an ERC-20 token transfer to recipient of the specified amount
+          const tokenData = erc20Interface.encodeFunctionData("transfer", [token, tokenValue]);
+          txs.push(new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build());
+        } else {
+          txs.push(new CallTxBuilder(true, BigNumber.from(0), token, tokenValue, "0x00").build());
+        }
+      }
+
       console.log(`[genTransaction]`);
       console.log(txs);
-
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = genWallets(keyset, env)[authChainNode];
+      const wallet = genWallets(keyset, env, user.account)[chainType];
       const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
-      await wallet.sendTransaction(txs, sessionkey);
+      const transaction = await wallet.sendTransaction(txs, sessionkey, isServerSynced);
+      const hash = await transaction.wait();
+      console.log(hash);
     }
   } else {
     throw new WalletError(402007);
@@ -288,11 +323,26 @@ const genSignMessage = async (message: string, _email: string, env: Environment)
     const user = email ? users.find((e) => e.email === email) : users[0];
     if (user) {
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = genWallets(keyset, env).polygon;
+      const wallet = genWallets(keyset, env, user.account).polygon;
       const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
       const utf8Encode = new TextEncoder();
       const signedMessage = await wallet.signMessage(utf8Encode.encode(message), sessionkey);
       return signedMessage;
+    }
+  } else {
+    throw new WalletError(402007);
+  }
+};
+
+const getWallet = async (_email: string, env: Environment, authChainNode: ChainType) => {
+  const users = await DB.getUsers();
+  const email = _email || window.localStorage.getItem("email");
+  if (users.length > 0) {
+    const user = email ? users.find((e) => e.email === email) : users[0];
+    if (user) {
+      const keyset = Keyset.fromJson(user.keyset.keysetJson);
+      const wallet = genWallets(keyset, env, user.account)[authChainNode];
+      return wallet;
     }
   } else {
     throw new WalletError(402007);
@@ -307,8 +357,11 @@ const checkLocalStatus = async (env: Environment) => {
     if (user) {
       if (dayjs.unix(user.sessionKey.expires).isAfter(dayjs())) {
         const keyset = Keyset.fromJson(user.keyset.keysetJson);
-        const wallet = genWallets(keyset, env).polygon;
+        const wallet = genWallets(keyset, env, user.account).polygon;
         const isLogged = await wallet.isSyncKeysetHash();
+        console.log("isLogged");
+        console.log(isLogged);
+
         if (isLogged) {
           return user.email;
         }
@@ -328,4 +381,5 @@ export {
   genTransaction,
   genSignMessage,
   checkLocalStatus,
+  getWallet,
 };
