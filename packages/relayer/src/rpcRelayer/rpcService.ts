@@ -86,52 +86,52 @@ export class RpcService implements RpcService {
     return this.hostname + name;
   }
 
-  feeTokens(headers?: object): Promise<FeeTokensReturn> {
-    return this.fetch(this.url("fee_tokens"), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => ({
-        isFeeRequired: <boolean>_data.isFeeRequired,
-        tokens: <FeeToken[]>_data.tokens,
-      })),
-    );
+  async feeTokens(headers?: object): Promise<FeeTokensReturn> {
+    const res = await this.fetch(this.url("fee_tokens"), createGetPostHTTPRequest(headers));
+    const _data = await buildResponse(res);
+    return {
+      isFeeRequired: <boolean>_data.isFeeRequired,
+      tokens: <FeeToken[]>_data.tokens,
+    };
   }
 
-  feeOptions(feeOptionArgs: FeeOptionArgs, headers?: object): Promise<FeeOptionsReturn> {
-    return this.fetch(this.url("/fee_options"), createPostHTTPRequest(feeOptionArgs, headers)).then((res) =>
-      buildResponse(res).then((_data) => ({
-        currentGasPrice: _data.currentGasPrice,
-        options: _data.options,
-      })),
-    );
+  async feeOptions(feeOptionArgs: FeeOptionArgs, headers?: object): Promise<FeeOptionsReturn> {
+    const res = await this.fetch(this.url("/fee_options"), createPostHTTPRequest(feeOptionArgs, headers));
+    const _data = await buildResponse(res);
+    return {
+      currentGasPrice: _data.currentGasPrice,
+      options: _data.options,
+    };
   }
 
-  sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string> {
-    return this.fetch(this.url("/send_transaction"), createPostHTTPRequest(args, headers)).then((res) =>
-      buildResponse(res).then((_data) => <string>_data.data),
-    );
+  async sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string> {
+    const res = await this.fetch(this.url("/send_transaction"), createPostHTTPRequest(args, headers));
+    const _data = await buildResponse(res);
+    return <string>_data.data;
   }
 
-  txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult> {
-    return this.fetch(this.url(`/tx_receipt/${txHash}`), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => <TxnReciptResult>_data.data),
-    );
+  async txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult> {
+    const res = await this.fetch(this.url(`/tx_receipt/${txHash}`), createGetPostHTTPRequest(headers));
+    const _data = await buildResponse(res);
+    return <TxnReciptResult>_data.data;
   }
 
-  estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
-    return this.fetch(this.url(`/estimate_gas`), createPostHTTPRequest(pendingExecuteCallArgs, headers)).then((res) =>
-      buildResponse(res).then((_data) => _data.data),
-    );
+  async estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
+    const res = await this.fetch(this.url(`/estimate_gas`), createPostHTTPRequest(pendingExecuteCallArgs, headers));
+    const _data = await buildResponse(res);
+    return _data.data;
   }
 
-  nonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
-    return this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => _data.data),
-    );
+  async nonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
+    const res = await this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
+    const _data = await buildResponse(res);
+    return _data.data;
   }
 
-  metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
-    return this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers)).then((res) =>
-      buildResponse(res).then((_data) => _data.data),
-    );
+  async metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
+    const res = await this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
+    const _data = await buildResponse(res);
+    return _data.data;
   }
 }
 
