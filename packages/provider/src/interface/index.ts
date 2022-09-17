@@ -1,5 +1,5 @@
 import { Transaction } from "@unipasswallet/transactions";
-import { ChainName } from "./unipassWalletProvider";
+import { ChainType } from "./unipassWalletProvider";
 
 // --- tss input output ----
 export interface StartKeyGenInput {
@@ -285,7 +285,7 @@ export interface User {
 
 export interface AccountStatusInput {
   email: string;
-  authChainNode: ChainName;
+  authChainNode: ChainType;
   sessionKeyPermit: SessionKeyPermit;
 }
 
