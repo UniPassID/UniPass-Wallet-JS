@@ -130,12 +130,7 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async transaction(tx: UniTransaction, chain: ChainType = "polygon") {
-    const txsResult = await genTransaction(tx, this.email, chain, this.env);
-    if (txsResult) {
-      const { txs, sessionkey, wallet } = txsResult;
-      console.log(txsResult);
-      await wallet.sendTransaction(txs, sessionkey);
-    }
+    await genTransaction(tx, this.email, chain, this.env);
   }
 
   public async signMessage(message: string) {

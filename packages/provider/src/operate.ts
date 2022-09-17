@@ -255,13 +255,10 @@ const genTransaction = async (tx: UniTransaction, _email: string, authChainNode:
   const email = _email || window.localStorage.getItem("email");
   if (users.length > 0) {
     const user = email ? users.find((e) => e.email === email) : users[0];
-
     if (user) {
       const txs: Array<Transaction> = [];
       const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
-
       txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
-
       if (authChainNode !== "polygon") {
         const { syncStatus, sessionKeyPermit } = await checkAccountStatus(email, authChainNode);
         if (syncStatus === SyncStatusEnum.ServerSynced) {
@@ -271,11 +268,16 @@ const genTransaction = async (tx: UniTransaction, _email: string, authChainNode:
           txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
         }
       }
+      console.log(`[genTransaction]`);
+      console.log(txs);
+
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
       const wallet = genWallets(keyset, env)[authChainNode];
       const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
-      return { txs, sessionkey, wallet };
+      await wallet.sendTransaction(txs, sessionkey);
     }
+  } else {
+    throw new WalletError(402007);
   }
 };
 
@@ -292,6 +294,8 @@ const genSignMessage = async (message: string, _email: string, env: Environment)
       const signedMessage = await wallet.signMessage(utf8Encode.encode(message), sessionkey);
       return signedMessage;
     }
+  } else {
+    throw new WalletError(402007);
   }
 };
 
