@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@unipasswallet/utils": "workspace:0.0.1-alpha.3",
+    "@unipasswallet/abi": "workspace:0.0.1-alpha.3",
     "ethers": "^5.7.1"
   },
   "devDependencies": {

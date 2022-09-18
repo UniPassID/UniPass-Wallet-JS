@@ -158,6 +158,7 @@ const buildResponse = (res: Response): Promise<any> =>
 
     try {
       data = JSON.parse(text);
+      console.log(text);
     } catch (err) {
       // eslint-disable-next-line no-throw-literal
       throw {

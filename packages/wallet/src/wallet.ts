@@ -10,11 +10,12 @@ import {
   solidityPack,
   BytesLike,
   parseEther,
+  defaultAbiCoder,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
 import { Relayer, PendingExecuteCallArgs, ExecuteCall } from "@unipasswallet/relayer";
 import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
-import { moduleMain } from "@unipasswallet/abi";
+import { moduleMain, gasEstimator } from "@unipasswallet/abi";
 import {
   isSignedTransactions,
   Transaction,
@@ -40,10 +41,8 @@ export interface WalletOptions {
   address?: string;
   keyset: Keyset;
   context?: UnipassWalletContext;
-  bundleCreatation?: boolean;
   provider?: providers.Provider;
   relayer?: Relayer;
-  creatationGasLimit?: BigNumber;
 }
 
 export class Wallet extends Signer {
@@ -53,20 +52,16 @@ export class Wallet extends Signer {
 
   public readonly context: UnipassWalletContext = unipassWalletContext;
 
-  public readonly bundleCreatation: boolean = true;
-
   public readonly callWallet: WalletEOA;
 
   public readonly provider?: providers.Provider;
 
   public readonly relayer?: Relayer;
 
-  public creatationGasLimit?: BigNumber;
-
   constructor(options: WalletOptions) {
     super();
 
-    const { address, keyset, context, bundleCreatation, provider, relayer, creatationGasLimit } = options;
+    const { address, keyset, context, provider, relayer } = options;
 
     if (!address) {
       throw new Error("address should not be undefined");
@@ -79,20 +74,12 @@ export class Wallet extends Signer {
       this.context = context;
     }
 
-    if (bundleCreatation) {
-      this.bundleCreatation = bundleCreatation;
-    }
-
     if (provider) {
       this.provider = provider;
     }
 
     if (relayer) {
       this.relayer = relayer;
-    }
-
-    if (creatationGasLimit) {
-      this.creatationGasLimit = creatationGasLimit;
     }
 
     this.callWallet = WalletEOA.createRandom().connect(this.provider);
@@ -103,14 +90,15 @@ export class Wallet extends Signer {
 
     const { keyset, context = unipassWalletContext } = createOptions;
 
-    const address = getCreate2Address(
-      SingletonFactoryAddress,
-      keyset.hash(),
-      keccak256(solidityPack(["bytes", "uint256"], [CreationCode, context.moduleMain])),
-    );
+    if (!createOptions.address) {
+      const address = getCreate2Address(
+        SingletonFactoryAddress,
+        keyset.hash(),
+        keccak256(solidityPack(["bytes", "uint256"], [CreationCode, context.moduleMain])),
+      );
 
-    createOptions.address = address;
-
+      createOptions.address = address;
+    }
     return new Wallet(createOptions);
   }
 
@@ -119,10 +107,8 @@ export class Wallet extends Signer {
       address: this.address,
       keyset: this.keyset,
       context: this.context,
-      bundleCreatation: this.bundleCreatation,
       provider: this.provider,
       relayer: this.relayer,
-      creatationGasLimit: this.creatationGasLimit,
     };
   }
 
@@ -253,24 +239,16 @@ export class Wallet extends Signer {
 
   async signTransactions(
     transactionish: Deferrable<Transactionish>,
-    sessionKeyOrSignerIndexes: SessionKey | number[],
+    sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED",
   ): Promise<SignedTransactions | GuestTransactions> {
     let transactions = toTransactions(await resolveArrayProperties<Transactionish>(transactionish));
-    transactions = await this.feeOptions(...transactions);
+    if (transactions.length === 0) {
+      throw new Error("Transactinos is Empty");
+    }
 
-    if (this.bundleCreatation && !(await isContractDeployed(this.address, this.provider!))) {
-      const deployTx = getWalletDeployTransaction(this.context, this.keyset.hash(), this.creatationGasLimit);
+    transactions = await this.estimateGasLimits(...transactions);
 
-      if (transactions.length === 0) {
-        transactions = [deployTx];
-      } else {
-        const executeTx = await this.getExecuteTransaction(transactions, sessionKeyOrSignerIndexes);
-
-        transactions = [deployTx, executeTx];
-      }
-
-      transactions = await this.feeOptions(...transactions);
-
+    if (sessionKeyOrSignerIndexes === "BUNDLED") {
       return {
         _isGuestTransaction: true,
         transactions,
@@ -278,16 +256,12 @@ export class Wallet extends Signer {
       };
     }
 
-    if (transactions.length === 0) {
-      throw new Error("Transactinos is Empty");
-    }
-
     return this.getExecuteSignedTransaction(transactions, sessionKeyOrSignerIndexes);
   }
 
   async sendTransaction(
     transaction: Deferrable<Transactionish>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
+    sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED" = [],
   ): Promise<providers.TransactionResponse> {
     const signedTransactions = await this.signTransactions(transaction, sessionKeyOrSignerIndexes);
 
@@ -296,9 +270,9 @@ export class Wallet extends Signer {
     const { chainId } = await this.provider!.getNetwork();
     const moduleMainInterface = new Interface(moduleMain.abi);
 
-    let nonce;
-    let estimateGas;
-    let data;
+    let nonce: BigNumber;
+    let estimateGas: BigNumber;
+    let data: string;
 
     if (isSignedTransactions(signedTransactions)) {
       nonce = BigNumber.from(signedTransactions.nonce);
@@ -328,7 +302,7 @@ export class Wallet extends Signer {
         call: JSON.stringify(call),
       };
     } else {
-      nonce = BigNumber.from(1);
+      nonce = constants.Zero;
       const signature = "0x";
       const call: ExecuteCall = {
         txs: signedTransactions.transactions.map((v) => ({
@@ -364,12 +338,29 @@ export class Wallet extends Signer {
       confirmations: 1,
       from: this.address,
       chainId,
-      nonce,
+      nonce: nonce.toNumber(),
       gasLimit: estimateGas,
       data,
       value: constants.Zero,
       wait: async () => {
-        const ret = await this.relayer.wait(hash);
+        let ret = await this.relayer.wait(hash);
+        const timeout = 30;
+        let i = 0;
+        while (ret === undefined || ret === null) {
+          if (i < timeout) {
+            // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // eslint-disable-next-line no-await-in-loop
+            ret = await this.relayer.wait(hash);
+          } else {
+            return Promise.reject(new Error("Timeout Error"));
+          }
+          i++;
+        }
+
+        if (ret.txHash === constants.HashZero) {
+          return Promise.reject(new Error(`transactions revert: ${ret.revertReason}`));
+        }
         const recipt = await this.provider.waitForTransaction(ret.txHash);
 
         return recipt;
@@ -394,47 +385,47 @@ export class Wallet extends Signer {
     return contract;
   }
 
-  async feeOptions(...transactions: Transaction[]): Promise<Transaction[]> {
-    // const ret = await Promise.all(
-    //   transactions.map(async (transaction) => {
-    //     if (
-    //       !transaction.revertOnError &&
-    //       transaction.gasLimit.eq(constants.Zero) &&
-    //       transaction.callType === CallType.Call
-    //     ) {
-    //       if (this.provider instanceof providers.JsonRpcProvider) {
-    //         const tx = transaction;
-    //         const params = [
-    //           {
-    //             from: this.address,
-    //             to: tx.target,
-    //             data: tx.data,
-    //           },
-    //           "latest",
-    //         ];
+  async estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]> {
+    const txs = transactions;
+    if (this.provider instanceof providers.JsonRpcProvider) {
+      const gasLimits = await Promise.all(
+        [...txs.keys()].map(async (index) => {
+          const data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
+            this.address,
+            new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions.slice(0, index), 0, "0x"]),
+          ]);
 
-    //         const result = await this.provider.send("eth_estimateGas", params);
-    //         tx.gasLimit = BigNumber.from(result);
+          const params = [
+            {
+              from: this.address,
+              to: this.context.gasEstimator,
+              data,
+            },
+            "latest",
+          ];
+          const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
+          const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
+          return gas;
+        }),
+      );
 
-    //         return tx;
-    //       }
+      gasLimits.reduce((pre, current, i) => {
+        if (!txs[i].revertOnError && txs[i].gasLimit.eq(constants.Zero) && txs[i].callType === CallType.Call) {
+          txs[i].gasLimit = current.sub(pre);
+        }
+        return current;
+      }, 0);
 
-    //       return Promise.reject(new Error("Expect JsonRpcProvider"));
-    //     }
-
-    //     return transaction;
-    //   }),
-    // );
-
-    // return ret;
-    return transactions;
+      return txs;
+    }
+    return Promise.reject(new Error("Expect JsonRpcProvider"));
   }
 }
 
 export function getWalletDeployTransaction(
   context: UnipassWalletContext,
   keysetHash: BytesLike,
-  creatationGasLimit: BigNumber,
+  creatationGasLimit: BigNumber = constants.Zero,
 ): Transaction {
   return {
     _isUnipassWalletTransaction: true,

@@ -5,6 +5,8 @@ export interface UnipassWalletContext {
 
   dkimKeys?: string;
   moduleWhiteList?: string;
+
+  gasEstimator?: string;
 }
 
 export const unipassWalletContext: UnipassWalletContext = {
@@ -14,4 +16,6 @@ export const unipassWalletContext: UnipassWalletContext = {
 
   dkimKeys: "0xe59C516F6eaE143B2563f8006D69dDC1f417bba3",
   moduleWhiteList: "0x6b688e748AeA655EF5d950dDd62d92BD8613B88b",
+
+  gasEstimator: "0x6041ae26F00BCec8c04a27190cB75f400a6582d3",
 };
