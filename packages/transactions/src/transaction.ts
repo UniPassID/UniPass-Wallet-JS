@@ -1,6 +1,7 @@
-import { BigNumber, BytesLike, providers } from "ethers";
+import { BigNumber, BytesLike, constants, providers } from "ethers";
 import { subDigest } from "@unipasswallet/utils";
-import { defaultAbiCoder, keccak256 } from "ethers/lib/utils";
+import { moduleMain } from "@unipasswallet/abi";
+import { defaultAbiCoder, Interface, keccak256 } from "ethers/lib/utils";
 
 export enum CallType {
   Call,
@@ -43,7 +44,7 @@ export function digestTxHash(
   chainId: number,
   walletAddr: BytesLike,
   nonce: number,
-  transactions: Transaction[]
+  transactions: Transaction[],
 ): string {
   return subDigest(
     chainId,
@@ -54,17 +55,13 @@ export function digestTxHash(
           "uint256",
           "tuple(uint8 callType,bool revertOnError,address target,uint256 gasLimit,uint256 value,bytes data)[]",
         ],
-        [nonce, transactions]
-      )
-    )
+        [nonce, transactions],
+      ),
+    ),
   );
 }
 
-export function digestGuestTxHash(
-  chainId: number,
-  moduleGuestAddress: BytesLike,
-  transactions: Transaction[]
-): string {
+export function digestGuestTxHash(chainId: number, moduleGuestAddress: BytesLike, transactions: Transaction[]): string {
   return subDigest(
     chainId,
     moduleGuestAddress,
@@ -74,9 +71,9 @@ export function digestGuestTxHash(
           "string",
           "tuple(uint8 callType,bool revertOnError,address target,uint256 gasLimit,uint256 value,bytes data)[]",
         ],
-        ["guest:", transactions]
-      )
-    )
+        ["guest:", transactions],
+      ),
+    ),
   );
 }
 
@@ -88,38 +85,49 @@ export type Transactionish =
 
 export function toTransactions(transactionish: Transactionish): Transaction[] {
   if (Array.isArray(transactionish)) {
-    return transactionish.map((v): Transaction => {
-      if (isUnipassWalletTransaction(v)) {
-        return v;
-      }
-
-      return {
-        _isUnipassWalletTransaction: true,
-        callType: CallType.Call,
-        revertOnError: false,
-        gasLimit: BigNumber.from(v.gasLimit),
-        target: v.to,
-        value: BigNumber.from(v.value),
-        data: v.data,
-      };
-    });
+    return transactionish.map((v) => toTransaction(v));
   }
 
-  if (isUnipassWalletTransaction(transactionish)) {
-    return [transactionish];
+  return [toTransaction(transactionish)];
+}
+
+export function toTransaction(
+  transaction: providers.TransactionRequest | Transaction | SignedTransactions,
+  walletAddr?: string,
+): Transaction {
+  if (isUnipassWalletTransaction(transaction)) {
+    return transaction;
   }
 
-  return [
-    {
+  if (isSignedTransactions(transaction)) {
+    if (walletAddr === undefined) {
+      throw new Error("Expected Wallet Address");
+    }
+
+    return {
       _isUnipassWalletTransaction: true,
       callType: CallType.Call,
       revertOnError: false,
-      gasLimit: BigNumber.from(transactionish.gasLimit),
-      target: transactionish.to,
-      value: BigNumber.from(transactionish.value),
-      data: transactionish.data,
-    },
-  ];
+      gasLimit: constants.Zero,
+      target: walletAddr,
+      value: constants.Zero,
+      data: new Interface(moduleMain.abi).encodeFunctionData("execute", [
+        transaction.transactions,
+        transaction.nonce,
+        transaction.signature,
+      ]),
+    };
+  }
+
+  return {
+    _isUnipassWalletTransaction: true,
+    callType: CallType.Call,
+    revertOnError: false,
+    gasLimit: BigNumber.from(transaction.gasLimit),
+    target: transaction.to,
+    value: BigNumber.from(transaction.value),
+    data: transaction.data,
+  };
 }
 
 export function isUnipassWalletTransaction(v: any): v is Transaction {

@@ -1,4 +1,4 @@
-import { BigNumber, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
+import { BigNumber, constants, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
 import { BytesLike, formatBytes32String, hexlify, Interface, parseEther, solidityPack } from "ethers/lib/utils";
 import { Deployer } from "../../../deployer/src/deployer";
 import * as dotenv from "dotenv";
@@ -11,10 +11,11 @@ import DkimKeysArtifact from "../../../../artifacts/unipass-wallet-contracts/con
 import WhiteListArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol/ModuleWhiteList.json";
 import TestERC20Artifact from "../../../../artifacts/contracts/tests/TestERC20.sol/TestERC20.json";
 import GreeterArtifact from "../../../../artifacts/contracts/tests/Greeter.sol/Greeter.json";
+import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/GasEstimator.sol/GasEstimator.json";
 import { randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { FakeWallet, Wallet as UnipassWallet } from "@unipasswallet/wallet";
-import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
+import { FakeWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
+import { LocalRelayer, Relayer, RpcRelayer } from "@unipasswallet/relayer";
 import { EmailType } from "@unipasswallet/dkim-base";
 
 export interface TestContext {
@@ -31,6 +32,7 @@ export interface TestContext {
   moduleGuest: Contract;
   whiteList: Contract;
   whiteListAdmin: Wallet;
+  gasEstimator: Contract;
   unipassWalletContext: UnipassWalletContext;
   relayer: Relayer;
 }
@@ -71,7 +73,7 @@ export async function initTestContext(): Promise<TestContext> {
     WhiteListArtifact.bytecode,
     provider.getSigner(),
   );
-  const whiteListAdmin = Wallet.createRandom().connect(provider);
+  const whiteListAdmin = dkimKeysAdmin;
   const whiteList = await deployer.deployContract(WhiteList, instance, txParams, whiteListAdmin.address);
 
   const ModuleMainUpgradable = new ContractFactory(
@@ -103,25 +105,32 @@ export async function initTestContext(): Promise<TestContext> {
 
   await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), whiteListAdmin.address, parseEther("10"));
 
-  await transferEth(
-    new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider),
-    "0xe605b64e3688f0f0c21bb0fd65aa10186f4b4f36",
-    parseEther("10"),
-  );
+  await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), dkimKeysAdmin.address, parseEther("100"));
 
-  ret = await (
-    await whiteList.connect(whiteListAdmin).updateImplementationWhiteList(moduleMainUpgradable.address, true)
-  ).wait();
-  expect(ret.status).toEqual(1);
+  if (!(await whiteList.connect(whiteListAdmin).isImplementationWhiteList(moduleMainUpgradable.address))) {
+    ret = await (
+      await whiteList.connect(whiteListAdmin).updateImplementationWhiteList(moduleMainUpgradable.address, true)
+    ).wait();
+    expect(ret.status).toEqual(1);
+  }
+
+  const GasEstimator = new ContractFactory(
+    new Interface(GasEstimatorArtiface.abi),
+    GasEstimatorArtiface.bytecode,
+    signer,
+  );
+  const gasEstimator = await deployer.deployContract(GasEstimator, instance, txParams);
 
   const unipassWalletContext: UnipassWalletContext = {
     moduleMain: moduleMain.address,
     moduleMainUpgradable: moduleMainUpgradable.address,
     dkimKeys: dkimKeys.address,
     moduleGuest: moduleGuest.address,
+    gasEstimator: gasEstimator.address,
   };
 
   const relayer = new LocalRelayer(unipassWalletContext, signer);
+  // const relayer = new RpcRelayer("http://localhost:3050", unipassWalletContext, provider);
 
   return {
     provider,
@@ -139,6 +148,7 @@ export async function initTestContext(): Promise<TestContext> {
     relayer,
     whiteList,
     whiteListAdmin,
+    gasEstimator,
   };
 }
 
@@ -172,7 +182,6 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
     context: context.unipassWalletContext,
     provider: context.provider,
     relayer: context.relayer,
-    creatationGasLimit: BigNumber.from(10_000_000),
   });
 
   let ret = await (await testERC20Token.mint(wallet.address, 100)).wait();
@@ -182,7 +191,9 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
   await transferEth(context.provider.getSigner(), wallet.address, parseEther("100"));
 
   if (toDeploy) {
-    ret = await (await wallet.sendTransaction([])).wait();
+    const deployTx = getWalletDeployTransaction(context.unipassWalletContext, wallet.keyset.hash(), constants.Zero);
+    deployTx.revertOnError = true;
+    ret = await (await wallet.sendTransaction(deployTx, "BUNDLED")).wait();
     expect(ret.status).toEqual(1);
   }
   const nonce = 1;
@@ -197,6 +208,13 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
     },
     emailType: EmailType.None,
   });
+
+  if (!(await context.whiteList.connect(context.whiteListAdmin).isImplementationWhiteList(greeter.address))) {
+    ret = await (
+      await context.whiteList.connect(context.whiteListAdmin).updateImplementationWhiteList(greeter.address, true)
+    ).wait();
+    expect(ret.status).toEqual(1);
+  }
 
   return { testERC20Token, wallet, nonce, metaNonce, greeter, fakeWallet };
 }
