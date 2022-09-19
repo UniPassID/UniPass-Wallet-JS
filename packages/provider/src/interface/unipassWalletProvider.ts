@@ -1,4 +1,5 @@
-import { BigNumber, BytesLike } from "ethers";
+import { Wallet } from "@unipasswallet/wallet";
+import { BigNumber, BytesLike, providers } from "ethers";
 
 type AuthChainNode =
   | "polygon-mumbai"
@@ -29,6 +30,77 @@ interface TransactionFee {
   token: string;
 }
 
-abstract class WalletProvider {}
+interface TransactionProps {
+  tx: UniTransaction;
+  fee?: TransactionFee;
+  chain?: ChainType;
+}
 
-export { ChainType, Environment, AuthChainNode, UnipassWalletProps, WalletProvider, UniTransaction, TransactionFee };
+abstract class WalletProvider {
+  private constructor() {}
+
+  /**
+   * get email verify code when registry
+   * @params email
+   * * */
+  public abstract registerCode(email: string): Promise<void | never>;
+
+  /**
+   * verify your code when register
+   * @params code
+   * * */
+  public abstract verifyRegisterCode(code: string): Promise<void | never>;
+
+  /**
+   * register
+   * @params password
+   * * */
+  public abstract register(password: string): Promise<void | never>;
+
+  /**
+   * check password
+   * @params password
+   * * */
+  public abstract passwordToken(email: string, password: string): Promise<void | never>;
+
+  /**
+   * get email verify code when login
+   * @params email
+   * * */
+  public abstract loginCode(email: string): Promise<void | never>;
+
+  /**
+   * login
+   * @params login
+   * * */
+  public abstract login(code: string): Promise<void | never>;
+
+  /**
+   * send a sync email when transaction function throw a sync error
+   * * */
+  public abstract sendSyncEmail(): Promise<void | never>;
+
+  public abstract transaction(props: TransactionProps): Promise<providers.TransactionReceipt>;
+
+  public abstract signMessage(message: string): Promise<string>;
+
+  public abstract wallet(chain: ChainType): Promise<Wallet>;
+
+  /**
+   * isLoggedIn
+   */
+  public abstract isLoggedIn(): Promise<boolean>;
+
+  public abstract logout(): Promise<void | never>;
+}
+
+export {
+  ChainType,
+  Environment,
+  AuthChainNode,
+  UnipassWalletProps,
+  WalletProvider,
+  UniTransaction,
+  TransactionFee,
+  TransactionProps,
+};

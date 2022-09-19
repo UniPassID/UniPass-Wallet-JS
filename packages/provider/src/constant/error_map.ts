@@ -28,6 +28,8 @@ const error_map = {
 };
 
 export default class WalletError extends Error {
+  public readonly code: number;
+
   constructor(code: keyof typeof error_map | number, message?: string) {
     if (code < 40000) {
       super(message);
@@ -35,5 +37,6 @@ export default class WalletError extends Error {
       super(error_map[code] || "unknow error");
     }
     this.name = `Unipass Wallet Error, code: ${code}`;
+    this.code = code;
   }
 }

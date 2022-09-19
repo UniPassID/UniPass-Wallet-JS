@@ -11,7 +11,6 @@ import {
   BytesLike,
   defaultAbiCoder,
   parseEther,
-  defaultAbiCoder,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
 import { Relayer, PendingExecuteCallArgs, ExecuteCall } from "@unipasswallet/relayer";
@@ -202,9 +201,17 @@ export class Wallet extends Signer {
   async getExecuteSignedTransaction(
     transactions: Transaction[],
     sessionKeyOrSignIndexes: SessionKey | number[],
+    index: number = 0,
   ): Promise<SignedTransactions> {
     const { chainId } = await this.provider!.getNetwork();
-    const nonce = BigNumber.from(await this.relayer.getNonce(this.address)).toNumber();
+    const a = await this.relayer.getNonce(this.address);
+    console.log(a);
+
+    const nonce = BigNumber.from(a).toNumber() + index;
+    console.log("index:");
+    console.log(index);
+    console.log("nonce:");
+    console.log(nonce);
 
     const txHash = await digestTxHash(chainId, this.address, nonce, transactions);
 
@@ -247,6 +254,7 @@ export class Wallet extends Signer {
   async signTransactions(
     transactionish: Deferrable<Transactionish>,
     sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED",
+    index: number = 0,
   ): Promise<SignedTransactions | GuestTransactions> {
     let transactions = toTransactions(await resolveArrayProperties<Transactionish>(transactionish));
     if (transactions.length === 0) {
@@ -263,7 +271,7 @@ export class Wallet extends Signer {
       };
     }
 
-    return this.getExecuteSignedTransaction(transactions, sessionKeyOrSignerIndexes);
+    return this.getExecuteSignedTransaction(transactions, sessionKeyOrSignerIndexes, index);
   }
 
   txBaseCost(data: BytesLike): BigNumber {
@@ -347,9 +355,10 @@ export class Wallet extends Signer {
   async sendTransaction(
     transaction: Deferrable<Transactionish>,
     sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED" = [],
+    index?: number,
     feeToken?: string,
   ): Promise<providers.TransactionResponse> {
-    const signedTransactions = await this.signTransactions(transaction, sessionKeyOrSignerIndexes);
+    const signedTransactions = await this.signTransactions(transaction, sessionKeyOrSignerIndexes, index);
 
     let args: PendingExecuteCallArgs;
 

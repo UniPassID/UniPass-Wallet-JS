@@ -78,8 +78,6 @@ export class FakeWallet extends Wallet {
     return new FakeWallet(options);
   }
 
-<<<<<<< HEAD
-=======
   async unipassEstimateGas(signedTransactions: SignedTransactions | GuestTransactions): Promise<BigNumber> {
     let data;
     if (isSignedTransactions(signedTransactions)) {
@@ -120,7 +118,6 @@ export class FakeWallet extends Wallet {
     return gas.add(this.txBaseCost(data));
   }
 
->>>>>>> master
   async estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]> {
     const txs = transactions;
     if (this.provider instanceof providers.JsonRpcProvider) {

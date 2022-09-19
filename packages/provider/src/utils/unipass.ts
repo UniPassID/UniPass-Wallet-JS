@@ -54,9 +54,18 @@ export const genRelayers = (env: Environment) => {
   // const bsc = new RpcRelayer(relayer_url, unipassWalletContext, genProviders(env).bsc);
   // const rangers = new RpcRelayer(relayer_url, unipassWalletContext, genProviders(env).rangers);
 
-  const polygonwallet = new WalletEOA("", genProviders(env).polygon);
-  const bscwallet = new WalletEOA("", genProviders(env).bsc);
-  const rangerswallet = new WalletEOA("", genProviders(env).rangers);
+  const polygonwallet = new WalletEOA(
+    "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
+    genProviders(env).polygon,
+  );
+  const bscwallet = new WalletEOA(
+    "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
+    genProviders(env).bsc,
+  );
+  const rangerswallet = new WalletEOA(
+    "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
+    genProviders(env).rangers,
+  );
   const polygon = new LocalRelayer(unipassWalletContext, polygonwallet);
   const bsc = new LocalRelayer(unipassWalletContext, bscwallet);
   const rangers = new LocalRelayer(unipassWalletContext, rangerswallet);

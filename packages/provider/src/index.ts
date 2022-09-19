@@ -1,10 +1,10 @@
+import { providers } from "ethers";
 import TssWorker from "./utils/tss-worker";
 import {
   ChainType,
   Environment,
-  TransactionFee,
+  TransactionProps,
   UnipassWalletProps,
-  UniTransaction,
   WalletProvider,
 } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
@@ -22,6 +22,7 @@ import {
   checkLocalStatus,
   genSignMessage,
   getWallet,
+  ckeckSyncStatus,
 } from "./operate";
 import { getApiConfig } from "./config";
 
@@ -119,7 +120,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   /**
    * login
-   * @params login
+   * @params code
    * * */
   public async login(code: string) {
     const upAuthToken = await verifyOtpCode(this.email, code, "auth2Fa", this.mailServices);
@@ -131,9 +132,11 @@ export default class UnipassWalletProvider implements WalletProvider {
     await syncEmail(this.email, this.chainType, this.env);
   }
 
-  public async transaction(tx: UniTransaction, fee?: TransactionFee, chain?: ChainType) {
+  public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
+    const { tx, fee, chain } = props;
     const _chain = chain ?? "polygon";
-    await genTransaction(tx, this.email, _chain, this.env, fee);
+    const transactionReceipt = await genTransaction(tx, this.email, _chain, this.env, fee);
+    return transactionReceipt;
   }
 
   public async signMessage(message: string) {
@@ -156,6 +159,14 @@ export default class UnipassWalletProvider implements WalletProvider {
       return true;
     }
     return false;
+  }
+
+  /**
+   * isSynced
+   */
+  public async isSynced(chain: Exclude<ChainType, "polygon">) {
+    const status = await ckeckSyncStatus(this.email, chain, this.env);
+    return status;
   }
 
   public async logout() {
