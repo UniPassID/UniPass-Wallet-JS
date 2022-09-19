@@ -10,9 +10,14 @@
     "@unipasswallet/sdk": "0.0.1-alpha.2",
     "@unipasswallet/transactions": "0.0.1-alpha.1",
     "@unipasswallet/utils": "0.0.1-alpha.1",
-    "@unipasswallet/wallet": "0.0.1-alpha.2"
+    "@unipasswallet/wallet": "0.0.1-alpha.2",
+    "@unipasswallet/deployer": "0.0.0",
+    "@unipasswallet/provider": "0.0.1-alpha.3",
+    "@unipasswallet/relayer": "0.0.0",
+    "@unipasswallet/transaction-builders": "0.0.0"
   },
   "changesets": [
+    "funny-experts-repeat",
     "healthy-points-serve",
     "tricky-squids-join"
   ]
