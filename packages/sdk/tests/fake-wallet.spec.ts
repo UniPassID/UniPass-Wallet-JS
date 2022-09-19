@@ -33,8 +33,8 @@ describe("Test Fake Wallet", () => {
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
     const fakeTx = (await txBuilder.generateSignature(walletContext.fakeWallet, signerIndexes)).build();
 
-    const txs = await walletContext.wallet.feeOptions(tx);
-    const fakeTxs = await walletContext.fakeWallet.feeOptions(fakeTx);
+    const txs = await walletContext.wallet.estimateGasLimits(tx);
+    const fakeTxs = await walletContext.fakeWallet.estimateGasLimits(fakeTx);
 
     txs.forEach((tx, i) => {
       expect(tx.gasLimit).toEqual(fakeTxs[i].gasLimit);

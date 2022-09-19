@@ -9,13 +9,14 @@ import {
   getCreate2Address,
   solidityPack,
   BytesLike,
+  defaultAbiCoder,
   parseEther,
   defaultAbiCoder,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
 import { Relayer, PendingExecuteCallArgs, ExecuteCall } from "@unipasswallet/relayer";
 import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
-import { moduleMain, gasEstimator } from "@unipasswallet/abi";
+import { moduleMain, gasEstimator, moduleMainGasEstimator } from "@unipasswallet/abi";
 import {
   isSignedTransactions,
   Transaction,
@@ -44,6 +45,12 @@ export interface WalletOptions {
   provider?: providers.Provider;
   relayer?: Relayer;
 }
+
+export const OverwriterEstimatorDefaults = {
+  dataZeroCost: 4,
+  dataOneCost: 16,
+  baseCost: 21000,
+};
 
 export class Wallet extends Signer {
   public readonly address: string;
@@ -259,9 +266,88 @@ export class Wallet extends Signer {
     return this.getExecuteSignedTransaction(transactions, sessionKeyOrSignerIndexes);
   }
 
+  txBaseCost(data: BytesLike): BigNumber {
+    const bytes = arrayify(data);
+    return bytes
+      .reduce(
+        (p, c) =>
+          c === 0 ? p.add(OverwriterEstimatorDefaults.dataZeroCost) : p.add(OverwriterEstimatorDefaults.dataOneCost),
+        constants.Zero,
+      )
+      .add(OverwriterEstimatorDefaults.baseCost);
+  }
+
+  async isValidSignature(hash: BytesLike, sig: BytesLike): Promise<boolean> {
+    const contract = this.getContract();
+    const ret = await contract.isValidSignature(hash, sig);
+    return ret === "0x1626ba7e";
+  }
+
+  async unipassEstimateGas(signedTransactions: SignedTransactions | GuestTransactions): Promise<BigNumber> {
+    // let data: string;
+    // let transactions: Transaction[];
+    // let estimateData: string;
+    // if (isSignedTransactions(signedTransactions)) {
+    //   transactions = signedTransactions.transactions;
+    //   data = new Interface(moduleMain.abi).encodeFunctionData("execute", [
+    //     signedTransactions.transactions,
+    //     signedTransactions.nonce,
+    //     signedTransactions.signature,
+    //   ]);
+    //   estimateData = new Interface(moduleMain.abi).encodeFunctionData("execute", [
+    //     [],
+    //     signedTransactions.nonce,
+    //     signedTransactions.signature,
+    //   ]);
+    // } else {
+    //   transactions = signedTransactions.transactions;
+    //   data = new Interface(moduleMain.abi).encodeFunctionData("execute", [signedTransactions.transactions, 0, "0x"]);
+    //   estimateData = new Interface(moduleMain.abi).encodeFunctionData("execute", [[], 0, "0x"]);
+    // }
+
+    // const params = [
+    //   {
+    //     from: this.address,
+    //     to: this.context.gasEstimator,
+    //     gasLimit: parseEther("0.01").toHexString(),
+    //     data: new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
+    //       this.address,
+    //       // FIXME
+    //       estimateData,
+    //     ]),
+    //   },
+    //   "latest",
+    //   {
+    //     [this.context.moduleMain]: {
+    //       code: moduleMainGasEstimator.bytecode,
+    //     },
+    //     [this.context.moduleMainUpgradable]: {
+    //       code: moduleMainGasEstimator.bytecode,
+    //     },
+    //   },
+    // ];
+    // const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
+    // const [succ, reason, baseGas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
+    // if (!succ) {
+    //   throw new Error(`estimate gas Limit failed: ${reason}`);
+    // }
+
+    // const gas = transactions
+    //   .map((v) => {
+    //     if (v.gasLimit === constants.Zero) {
+    //       throw new Error("Got Transaction Gas Limit Zero");
+    //     }
+    //     return v.gasLimit;
+    //   })
+    //   .reduce((pre, cur) => pre.add(cur), constants.Zero);
+    // return gas.add(this.txBaseCost(data)).add(BigNumber.from(6000)).add(baseGas);
+    return BigNumber.from(10_000_000);
+  }
+
   async sendTransaction(
     transaction: Deferrable<Transactionish>,
     sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED" = [],
+    feeToken?: string,
   ): Promise<providers.TransactionResponse> {
     const signedTransactions = await this.signTransactions(transaction, sessionKeyOrSignerIndexes);
 
@@ -271,8 +357,8 @@ export class Wallet extends Signer {
     const moduleMainInterface = new Interface(moduleMain.abi);
 
     let nonce: BigNumber;
-    let estimateGas: BigNumber;
     let data: string;
+    const estimateGas = await this.unipassEstimateGas(signedTransactions);
 
     if (isSignedTransactions(signedTransactions)) {
       nonce = BigNumber.from(signedTransactions.nonce);
@@ -289,17 +375,13 @@ export class Wallet extends Signer {
         signature,
       };
       data = moduleMainInterface.encodeFunctionData("execute", [signedTransactions.transactions, nonce, signature]);
-      estimateGas = await this.provider.estimateGas({
-        to: this.address,
-        data,
-        gasLimit: parseEther("0.1"),
-      });
       args = {
         chainId: hexlify(chainId),
         txHash: hexlify(signedTransactions.txHash),
         walletAddress: this.address,
         estimateGas: estimateGas.toHexString(),
         call: JSON.stringify(call),
+        feeToken,
       };
     } else {
       nonce = constants.Zero;
@@ -316,11 +398,6 @@ export class Wallet extends Signer {
         signature,
       };
       data = moduleMainInterface.encodeFunctionData("execute", [signedTransactions.transactions, nonce, signature]);
-      estimateGas = await this.provider.estimateGas({
-        to: this.context.moduleGuest,
-        data,
-        gasLimit: parseEther("0.1"),
-      });
 
       args = {
         chainId: hexlify(chainId),
@@ -328,6 +405,7 @@ export class Wallet extends Signer {
         walletAddress: this.context.moduleGuest,
         estimateGas: estimateGas.toHexString(),
         call: JSON.stringify(call),
+        feeToken,
       };
     }
 
@@ -386,39 +464,53 @@ export class Wallet extends Signer {
   }
 
   async estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]> {
-    const txs = transactions;
-    if (this.provider instanceof providers.JsonRpcProvider) {
-      const gasLimits = await Promise.all(
-        [...txs.keys()].map(async (index) => {
-          const data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
-            this.address,
-            new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions.slice(0, index), 0, "0x"]),
-          ]);
+    //   const txs = transactions;
+    //   if (this.provider instanceof providers.JsonRpcProvider) {
+    //     const gasLimits = await Promise.all(
+    //       [...txs.keys(), txs.length].map(async (index) => {
+    //         const data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
+    //           this.address,
+    //           // FIXME
+    //           new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions.slice(0, index), 0, "0x"]),
+    //         ]);
 
-          const params = [
-            {
-              from: this.address,
-              to: this.context.gasEstimator,
-              data,
-            },
-            "latest",
-          ];
-          const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
-          const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
-          return gas;
-        }),
-      );
+    //         const params = [
+    //           {
+    //             from: this.address,
+    //             to: this.context.gasEstimator,
+    //             gasLimit: parseEther("0.01").toHexString(),
+    //             data,
+    //           },
+    //           "latest",
+    //           {
+    //             [this.context.moduleMain]: {
+    //               code: moduleMainGasEstimator.bytecode,
+    //             },
+    //             [this.context.moduleMainUpgradable]: {
+    //               code: moduleMainGasEstimator.bytecode,
+    //             },
+    //           },
+    //         ];
+    //         const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
+    //         const [succ, reason, gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
+    //         if (!succ) {
+    //           throw new Error(`estimate gas Limit failed: ${reason}`);
+    //         }
+    //         return gas;
+    //       }),
+    //     );
 
-      gasLimits.reduce((pre, current, i) => {
-        if (!txs[i].revertOnError && txs[i].gasLimit.eq(constants.Zero) && txs[i].callType === CallType.Call) {
-          txs[i].gasLimit = current.sub(pre);
-        }
-        return current;
-      }, 0);
+    //     gasLimits.reduce((pre, current, i) => {
+    //       if (i > 0 && txs[i - 1].gasLimit.eq(constants.Zero) && txs[i - 1].callType === CallType.Call) {
+    //         txs[i - 1].gasLimit = current.sub(pre);
+    //       }
+    //       return current;
+    //     }, 0);
 
-      return txs;
-    }
-    return Promise.reject(new Error("Expect JsonRpcProvider"));
+    //     return txs;
+    //   }
+    //   return Promise.reject(new Error("Expect JsonRpcProvider"));
+    return transactions;
   }
 }
 
