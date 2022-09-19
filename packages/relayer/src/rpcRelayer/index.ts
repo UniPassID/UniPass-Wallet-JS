@@ -1,5 +1,5 @@
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { FeeOption, Relayer } from "..";
+import { FeeOption, Relayer, SimulateResult } from "..";
 import fetchPonyfill from "fetch-ponyfill";
 import { PendingExecuteCallArgs, RpcService, TxnReciptResult } from "./rpcService";
 import { BigNumber, BigNumberish, providers } from "ethers";

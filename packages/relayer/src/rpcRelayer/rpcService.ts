@@ -36,6 +36,7 @@ export interface PendingExecuteCallArgs {
   txHash: string;
   walletAddress: string;
   estimateGas: string;
+  feeToken?: string;
   call: string;
 }
 

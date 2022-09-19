@@ -1,4 +1,4 @@
-import { BigNumberish } from "ethers";
+import { BigNumber, BigNumberish } from "ethers";
 import { Transaction } from "@unipasswallet/transactions";
 import { PendingExecuteCallArgs, TxnReciptResult } from "./rpcRelayer";
 
