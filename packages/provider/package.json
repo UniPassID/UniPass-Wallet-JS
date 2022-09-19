@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/provider",
-  "version": "0.0.1-alpha.3",
+  "version": "0.0.1-alpha.4",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,11 +14,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/keys": "workspace:^0.0.1-alpha.3",
-    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.4",
-    "@unipasswallet/utils": "workspace:^0.0.1-alpha.3",
-    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.4",
-    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/keys": "workspace:^0.0.1-alpha.5",
+    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.6",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.5",
+    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.6",
+    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.5",
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
     "dexie": "^3.2.2",
