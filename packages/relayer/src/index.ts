@@ -60,10 +60,7 @@ export interface Relayer {
 
   // estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]>;
 
-  getFeeOptions(
-    walletAddress: string,
-    ...transactions: Transaction[]
-  ): Promise<{ options: FeeOption[] }>;
+  getFeeOptions(walletAddress: string, ...transactions: Transaction[]): Promise<{ options: FeeOption[] }>;
 
   // gasRefundOptions(...transactions: Transaction[]): Promise<FeeOption[]>;
 
@@ -73,5 +70,5 @@ export interface Relayer {
 
   relay(args: PendingExecuteCallArgs): Promise<string>;
 
-  wait(txHash: string): Promise<TxnReciptResult>;
+  wait(txHash: string): Promise<TxnReciptResult | undefined>;
 }

@@ -57,7 +57,7 @@ export class RpcRelayer implements Relayer {
     return this.rpcService.sendTransaction(transactions);
   }
 
-  wait(txHash: string): Promise<TxnReciptResult> {
+  wait(txHash: string): Promise<TxnReciptResult | undefined> {
     return this.rpcService.txRecipt(txHash);
   }
 }

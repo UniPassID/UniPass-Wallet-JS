@@ -1,8 +1,8 @@
-import { providers, BigNumber, Wallet as WalletEOA, Bytes, constants } from "ethers";
-import { BytesLike, concat, hexlify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import { providers, Wallet as WalletEOA, Bytes, constants } from "ethers";
+import { BytesLike, concat, defaultAbiCoder, hexlify, Interface, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import { KeyEmailDkim, KeyERC1271, KeySecp256k1, KeySecp256k1Wallet, Keyset, SignType } from "@unipasswallet/keys";
 import { Relayer } from "@unipasswallet/relayer";
-import { moduleMainGasEstimator } from "@unipasswallet/abi";
+import { moduleMainGasEstimator, gasEstimator, moduleMain } from "@unipasswallet/abi";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { DkimParamsBase, EmailType } from "@unipasswallet/dkim-base";
 import { CallType, Transaction } from "@unipasswallet/transactions";
@@ -12,10 +12,8 @@ export interface FakeWalletOptions extends WalletOptions {
   address?: string;
   keyset: Keyset;
   context?: UnipassWalletContext;
-  bundleCreatation?: boolean;
   provider?: providers.JsonRpcProvider;
   relayer?: Relayer;
-  creatationGasLimit?: BigNumber;
   rsaEncryptor?: (input: BytesLike) => Promise<string>;
   emailType: EmailType;
 }
@@ -61,10 +59,8 @@ export class FakeWallet extends Wallet {
       address: this.address,
       keyset: this.keyset,
       context: this.context,
-      bundleCreatation: this.bundleCreatation,
       provider: this.provider === undefined ? undefined : (this.provider as providers.JsonRpcProvider),
       relayer: this.relayer,
-      creatationGasLimit: this.creatationGasLimit,
       rsaEncryptor: this.rsaEncryptor,
       emailType: this.emailType,
     };
@@ -76,44 +72,49 @@ export class FakeWallet extends Wallet {
     return new FakeWallet(options);
   }
 
-  async feeOptions(...transactions: Transaction[]): Promise<Transaction[]> {
-    const ret = await Promise.all(
-      transactions.map(async (transaction) => {
-        if (
-          !transaction.revertOnError &&
-          transaction.gasLimit.eq(constants.Zero) &&
-          transaction.callType === CallType.Call
-        ) {
-          if (this.provider instanceof providers.JsonRpcProvider) {
-            const tx = transaction;
-            const params = [
-              {
-                from: this.address,
-                to: tx.target,
-                data: tx.data,
+  async estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]> {
+    const txs = transactions;
+    if (this.provider instanceof providers.JsonRpcProvider) {
+      const gasLimits = await Promise.all(
+        [...txs.keys()].map(async (index) => {
+          const data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
+            this.address,
+            new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions.slice(0, index), 0, "0x"]),
+          ]);
+
+          const params = [
+            {
+              from: this.address,
+              to: this.context.gasEstimator,
+              data,
+            },
+            "latest",
+            {
+              [this.context.moduleMain]: {
+                code: moduleMainGasEstimator.bytecode,
               },
-              "latest",
-              {
-                [this.address]: {
-                  code: moduleMainGasEstimator.bytecode,
-                },
+              [this.context.moduleMainUpgradable]: {
+                code: moduleMainGasEstimator.bytecode,
               },
-            ];
+            },
+          ];
+          const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
+          const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
+          return gas;
+        }),
+      );
 
-            const result = await this.provider.send("eth_estimateGas", params);
-            tx.gasLimit = BigNumber.from(result);
-
-            return tx;
-          }
-
-          return Promise.reject(new Error("Expect JsonRpcProvider"));
+      gasLimits.reduce((pre, current, i) => {
+        if (!txs[i].revertOnError && txs[i].gasLimit.eq(constants.Zero) && txs[i].callType === CallType.Call) {
+          txs[i].gasLimit = current.sub(pre);
         }
+        return current;
+      }, 0);
 
-        return transaction;
-      }),
-    );
+      return txs;
+    }
 
-    return ret;
+    return Promise.reject(new Error("Expect JsonRpcProvider"));
   }
 
   async signMessage(message: Bytes | string, signerIndexes: number[] = [], isDigest: boolean = true): Promise<string> {
