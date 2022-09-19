@@ -13,6 +13,7 @@
     "hardhat:start": "pnpm hardhat node --port 7547",
     "hardhat:compile": "pnpm hardhat compile",
     "publish": "pnpm run hardhat:compile && pnpm publish -r",
+    "ganache:start": "ganache-cli --account='0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80,1000000000000000000000000000000000000000' --port 7547 --chain.chainId 10086 --gasLimit 30000000 --logging.verbose --logging.debug --chain.vmErrorsOnRPCResponse",
     "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile && git add .",
     "ci:publish": "pnpm run hardhat:compile && pnpm publish -r && pnpm changeset tag"
   },

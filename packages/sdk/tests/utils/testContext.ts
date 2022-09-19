@@ -193,6 +193,7 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
   if (toDeploy) {
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, wallet.keyset.hash(), constants.Zero);
     deployTx.revertOnError = true;
+    deployTx.gasLimit = BigNumber.from("1000000");
     ret = await (await wallet.sendTransaction(deployTx, "BUNDLED")).wait();
     expect(ret.status).toEqual(1);
   }
