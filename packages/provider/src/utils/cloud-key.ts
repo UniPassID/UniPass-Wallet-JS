@@ -2,7 +2,11 @@ import { Wallet } from "ethers";
 import { syncScrypt } from "scrypt-js";
 import { concat, hexlify, arrayify } from "ethers/lib/utils";
 
-export async function signMsg(msg: string, privkey: string, isArrayify: boolean): Promise<string> {
+export async function signMsg(
+  msg: string,
+  privkey: string,
+  isArrayify: boolean
+): Promise<string> {
   const w = new Wallet(privkey);
   const sig = await w.signMessage(isArrayify ? arrayify(msg) : msg);
   return sig;
@@ -17,5 +21,7 @@ export const generateKdfPassword = (password: string): string => {
   const passwordBuffer = Buffer.from(password, "utf-8");
   const saltBuffer = Buffer.from(salt, "utf-8");
   const derivedKey = syncScrypt(passwordBuffer, saltBuffer, N, r, p, dkLen);
-  return hexlify(concat([hexlify(new Uint8Array(saltBuffer)), hexlify(derivedKey)]));
+  return hexlify(
+    concat([hexlify(new Uint8Array(saltBuffer)), hexlify(derivedKey)])
+  );
 };

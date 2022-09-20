@@ -22,12 +22,8 @@ export default function requestFactory(backendUrl: string) {
   //     };
   //   });
   instance.interceptors.response.use(
-    (response) => {
-      return initResponse(response);
-    },
-    (error) => {
-      return initResponse(error.response);
-    },
+    (response) => initResponse(response),
+    (error) => initResponse(error.response),
   );
 
   return instance;

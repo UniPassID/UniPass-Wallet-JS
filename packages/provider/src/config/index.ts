@@ -1,43 +1,42 @@
-const chain_config = {
-  polygon: { rpc_url: "https://polygon-rpc.com", chainId: 137, symbol: "Matic" },
-  bsc: { rpc_url: "https://bsc-dataseed1.binance.org/", chainId: 56, symbol: "BNB" },
-  rangers: { rpc_url: "https://mainnet.rangersprotocol.com/api/jsonrpc", chainId: 2025, symbol: "RPG" },
+import { Environment } from "../interface/unipassWalletProvider";
+
+export const chain_config = {
+  "polygon-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/polygon-mainnet",
+  },
+  "bsc-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/bsc-mainnet",
+  },
+  "rangers-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/rangers-mainnet",
+  },
+  "polygon-mumbai": {
+    rpc_url: "https://polygon-testnet.public.blastapi.io",
+  },
+  "bsc-testnet": {
+    rpc_url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+  },
+  "rangers-robin": {
+    rpc_url: "https://robin.rangersprotocol.com/api/jsonrpc",
+  },
 };
 
-const dev_chain_config = {
-  polygon: { rpc_url: "https://polygon-rpc.com", chainId: 137, symbol: "Matic" },
-  bsc: { rpc_url: "https://bsc-dataseed1.binance.org/", chainId: 56, symbol: "BNB" },
-  rangers: { rpc_url: "https://mainnet.rangersprotocol.com/api/jsonrpc", chainId: 2025, symbol: "RPG" },
-};
-
-const api_config = {
+export const api_config = {
   backend: "https://poc-api.wallet.unipass.id",
   relayer: "https://poc-api.wallet.unipass.id/relayer",
 };
 
-const dev_api_config = {
+export const dev_api_config = {
   backend: "https://d.wallet.unipass.vip/wallet",
-  relayer: "https://d.wallet.unipass.vip/relayer",
+  relayer: "https://d.wallet.unipass.vip/relayer-rs",
 };
 
-const test_api_config = {
+export const test_api_config = {
   backend: "https://t.wallet.unipass.vip/wallet",
-  relayer: "https://t.wallet.unipass.vip/relayer",
+  relayer: "https://d.wallet.unipass.vip/relayer-rs",
 };
 
-export const getChainConfig = (env: "dev" | "test" | "prod", chainName: "polygon" | "bsc" | "rangers") => {
-  switch (env) {
-    case "dev":
-      return dev_chain_config[chainName];
-    case "test":
-      return dev_chain_config[chainName];
-    case "prod":
-      return chain_config[chainName];
-    default:
-  }
-};
-
-export const getApiConfig = (env: "dev" | "test" | "prod") => {
+export const getApiConfig = (env: Environment) => {
   switch (env) {
     case "dev":
       return dev_api_config;

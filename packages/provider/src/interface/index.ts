@@ -1,3 +1,6 @@
+import { Transaction } from "@unipasswallet/transactions";
+import { AuthChainNode, ChainType } from "./unipassWalletProvider";
+
 // --- tss input output ----
 export interface StartKeyGenInput {
   email: string;
@@ -273,17 +276,54 @@ export interface User {
     aesKey: CryptoKey;
     authorization: string;
     expires: number;
+    weight: number;
   };
   committed: boolean;
   step?: StepType;
   stepData?: any;
 }
 
-// export interface Transaction {
-//   callType: CallType;
-//   revertOnError: boolean;
-//   gasLimit: BigNumber;
-//   target: BytesLike;
-//   value: BigNumber;
-//   data: BytesLike;
-// }
+export interface AccountStatusInput {
+  email: string;
+  authChainNode: AuthChainNode;
+  sessionKeyPermit: SessionKeyPermit;
+}
+
+// 0=synced,1:server synced, 2:not received sync email, 3:not synced
+export enum SyncStatusEnum {
+  Synced,
+  ServerSynced,
+  NotReceived,
+  NotSynced,
+}
+
+export interface AccountStatusOutput {
+  data: {
+    upAuthToken: string;
+    syncStatus: SyncStatusEnum;
+  };
+}
+
+export interface SyncEmailInput {
+  email: string;
+  sessionKeyPermit: SessionKeyPermit;
+  authChainNode: AuthChainNode;
+}
+
+export interface SyncEmailOutput {
+  statusCode: string;
+}
+
+export interface SyncTransactionInput {
+  email: string;
+  sessionKeyPermit: SessionKeyPermit;
+  authChainNode: AuthChainNode;
+}
+
+export interface SyncTransactionOutput {
+  data: {
+    isNeedDeploy: boolean;
+    transactions: Array<Transaction>;
+    initKeysetHash: string;
+  };
+}

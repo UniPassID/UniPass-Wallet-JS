@@ -1,5 +1,4 @@
-import { Keyset } from "@unipasswallet/wallet";
-import { KeyEmailDkim, KeySecp256k1, SignType, RoleWeight } from "@unipasswallet/keys";
+import { Keyset, KeyEmailDkim, KeySecp256k1, SignType, RoleWeight } from "@unipasswallet/keys";
 
 import { Weight } from "./weight";
 
