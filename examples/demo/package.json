@@ -2,7 +2,7 @@
   "private": true,
   "author": "lx70770@lay2.com",
   "scripts": {
-    "build:dev": "umi build",
+    "build": "umi build",
     "dev": "umi dev",
     "postinstall": "umi setup",
     "setup": "umi setup",
