@@ -94,10 +94,15 @@ await unipassWallet.transaction({
 ```
 
 ## Sign message
-
 ```typescript
 // sign mseeage
-await unipassWallet.signMessage()
+const signature = await unipassWallet.signMessage()
+```
+
+## Verify message
+```typescript
+// verify mseeage
+const isValid = await unipassWallet.verifySignMessage(values.message, values.signature);
 ```
 
 ## Get wallet instance
