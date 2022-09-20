@@ -75,12 +75,28 @@ abstract class WalletProvider {
    * * */
   public abstract login(code: string): Promise<void | never>;
 
+  /**
+   * send a transaction
+   * @params props: TransactionProps
+   * * */
   public abstract transaction(props: TransactionProps): Promise<providers.TransactionReceipt>;
 
+  /**
+   * signMessage
+   * @params message: string
+   * * */
   public abstract signMessage(message: string): Promise<string>;
 
+  /**
+   * verifySignMessage
+   * @params message: string
+   * * */
   public abstract verifySignMessage(message: string, signature: string): Promise<boolean>;
 
+  /**
+   * get wallet instance
+   * @params chain: ChainType
+   * * */
   public abstract wallet(chain: ChainType): Promise<Wallet>;
 
   /**
@@ -88,6 +104,9 @@ abstract class WalletProvider {
    */
   public abstract isLoggedIn(): Promise<boolean>;
 
+  /**
+   * logout
+   */
   public abstract logout(): Promise<void | never>;
 }
 

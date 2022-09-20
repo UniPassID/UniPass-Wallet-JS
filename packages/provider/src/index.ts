@@ -38,8 +38,6 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private email: string | undefined;
 
-  private chainType: ChainType = "polygon";
-
   private upAuthToken: string | undefined;
 
   private pwsToken: string | undefined;
@@ -72,55 +70,31 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.policyAddress = data.policyAddress;
   }
 
-  /**
-   * get email verify code when registry
-   * @params email
-   * * */
   public async registerCode(email: string) {
     await getVerifyCode(email, "signUp", this.mailServices);
     this.email = email;
   }
 
-  /**
-   * verify your code when register
-   * @params code
-   * * */
   public async verifyRegisterCode(code: string) {
     const upAuthToken = await verifyOtpCode(this.email, code, "signUp", this.mailServices);
     this.upAuthToken = upAuthToken;
   }
 
-  /**
-   * register
-   * @params password
-   * * */
   public async register(password: string) {
     await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this.env);
   }
 
-  /**
-   * check password
-   * @params password
-   * * */
   public async passwordToken(email: string, password: string) {
     const pwsToken = await getPasswordToken(email, password);
     this.pwsToken = pwsToken;
     this.password = password;
   }
 
-  /**
-   * get email verify code when login
-   * @params email
-   * * */
   public async loginCode(email: string) {
     await getVerifyCode(email, "auth2Fa", this.mailServices);
     this.email = email;
   }
 
-  /**
-   * login
-   * @params code
-   * * */
   public async login(code: string) {
     const upAuthToken = await verifyOtpCode(this.email, code, "auth2Fa", this.mailServices);
     await doLogin(this.email, this.password, upAuthToken, this.pwsToken);
@@ -149,9 +123,6 @@ export default class UnipassWalletProvider implements WalletProvider {
     return wallet;
   }
 
-  /**
-   * isLoggedIn
-   */
   public async isLoggedIn() {
     const email = await checkLocalStatus(this.env);
     if (email) {
