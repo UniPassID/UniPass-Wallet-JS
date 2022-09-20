@@ -278,19 +278,25 @@ const genTransaction = async (
         if (syncStatus === SyncStatusEnum.ServerSynced) {
           const serverTxs: Array<Transaction | SignedTransactions> = [];
           const {
-            data: { transactions = [] },
+            data: { transactions = [], isNeedDeploy },
           } = await api.syncTransaction({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
+          let needServerSync: boolean = false;
           if (transactions.length === 1) {
             const { revertOnError, gasLimit, target, value, data } = transactions[0];
-            const syncBuilder = new CallTxBuilder(
+            const builder = new CallTxBuilder(
               revertOnError,
               BigNumber.from(gasLimit._hex),
               target,
               BigNumber.from(value._hex),
               data,
             ).build();
-            const signedBuilder = (await wallet.signTransactions([syncBuilder], [])) as SignedTransactions;
-            serverTxs.push(toTransaction(signedBuilder, wallet.address));
+            if (isNeedDeploy) {
+              serverTxs.push(builder);
+            } else {
+              const signedBuilder = (await wallet.signTransactions([builder], [])) as SignedTransactions;
+              serverTxs.push(toTransaction(signedBuilder, wallet.address));
+              needServerSync = true;
+            }
           } else if (transactions.length === 2) {
             const { revertOnError, gasLimit, target, value, data } = transactions[0];
             const deployBuilder = new CallTxBuilder(
@@ -311,9 +317,10 @@ const genTransaction = async (
             ).build();
             const signedBuilder = (await wallet.signTransactions([syncBuilder], [])) as SignedTransactions;
             serverTxs.push(toTransaction(signedBuilder, wallet.address));
+            needServerSync = true;
           }
 
-          const txBundle = await wallet.signTransactions(txs, sessionkey, 1);
+          const txBundle = await wallet.signTransactions(txs, sessionkey, needServerSync ? 1 : 0);
           console.log(wallet);
           console.log(wallet.address);
 
@@ -331,7 +338,7 @@ const genTransaction = async (
         if (syncStatus === SyncStatusEnum.NotReceived) {
           throw new WalletError(403001);
         } else if (syncStatus === SyncStatusEnum.NotSynced) {
-          throw new WalletError(403002);
+          throw new WalletError(403001);
         }
       }
       console.log("[genTransaction1]");

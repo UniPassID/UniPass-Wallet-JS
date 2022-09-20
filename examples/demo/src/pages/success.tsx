@@ -3,7 +3,7 @@ import { etherToWei, weiToEther } from "@/utils/format_bignumber";
 import MutilTasks from "@/utils/mutil_task";
 import { TransactionProps } from "@unipasswallet/provider";
 import { Button, Descriptions, Form, Input, message, PageHeader, Select, Spin, Divider, Typography } from "antd";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { history } from "umi";
 
@@ -19,37 +19,33 @@ const LoginStep2: React.FC = () => {
   const [signedMessage, setSignedMessage] = useState("");
   const [sendLoading, setSendLoading] = useState(false);
   const [signLoading, setSignLoading] = useState(false);
-  const [isBscSynced, setBscSynced] = useState(true);
-  const [isRangersSynced, setRangersSynced] = useState(true);
   const { unipassWallet, logout, loading } = useUnipass();
 
   const queryBaseInfo = async () => {
     if (unipassWallet) {
-      setSendLoading(true);
+      try {
+        setSendLoading(true);
 
-      const syncMutilTask = new MutilTasks();
-      syncMutilTask.add(unipassWallet.isSynced("bsc"));
-      syncMutilTask.add(unipassWallet.isSynced("rangers"));
-      const [bscStatus, rangersStatus] = await syncMutilTask.run();
-      setBscSynced(bscStatus);
-      setRangersSynced(rangersStatus);
+        const polygonWallet = await unipassWallet.wallet("polygon");
+        const bscWallet = await unipassWallet.wallet("bsc");
+        const rangersWallet = await unipassWallet.wallet("rangers");
 
-      const polygonWallet = await unipassWallet.wallet("polygon");
-      const bscWallet = await unipassWallet.wallet("bsc");
-      const rangersWallet = await unipassWallet.wallet("rangers");
+        const balanceMutilTask = new MutilTasks();
+        balanceMutilTask.add(polygonWallet?.getAddress());
+        balanceMutilTask.add(polygonWallet?.getBalance());
+        balanceMutilTask.add(bscWallet?.getBalance());
+        balanceMutilTask.add(rangersWallet?.getBalance());
+        const [address, balanceRaw1, balanceRaw2, balanceRaw3] = await balanceMutilTask.run();
 
-      const balanceMutilTask = new MutilTasks();
-      balanceMutilTask.add(polygonWallet?.getAddress());
-      balanceMutilTask.add(polygonWallet?.getBalance());
-      balanceMutilTask.add(bscWallet?.getBalance());
-      balanceMutilTask.add(rangersWallet?.getBalance());
-      const [address, balanceRaw1, balanceRaw2, balanceRaw3] = await balanceMutilTask.run();
-
-      setBalance(weiToEther(balanceRaw1));
-      setbscBalance(weiToEther(balanceRaw2));
-      setrangersBalance(weiToEther(balanceRaw3));
-      setAddress(address);
-      setSendLoading(false);
+        setBalance(weiToEther(balanceRaw1));
+        setbscBalance(weiToEther(balanceRaw2));
+        setrangersBalance(weiToEther(balanceRaw3));
+        setAddress(address);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setSendLoading(false);
+      }
     }
   };
 
@@ -83,7 +79,10 @@ const LoginStep2: React.FC = () => {
         params.chain = chain;
         await unipassWallet.transaction(params);
         message.success("send native token successfully");
-      } catch (e) {
+      } catch (e: any) {
+        if (e.code === 403001) {
+          message.info("Please check your email");
+        }
         console.log(e);
       } finally {
         setSendLoading(false);
@@ -98,7 +97,7 @@ const LoginStep2: React.FC = () => {
         const { address, erc20TokenAddress, erc20TokenValue, feeAddress, feeValue, chain } = values;
 
         const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
-        const erc20TokenData = erc20Interface.encodeFunctionData("transfer", [address, erc20TokenValue]);
+        const erc20TokenData = erc20Interface.encodeFunctionData("transfer", [address, etherToWei(erc20TokenValue)]);
         const params = {} as TransactionProps;
         params.tx = {
           target: erc20TokenAddress,
@@ -113,9 +112,13 @@ const LoginStep2: React.FC = () => {
           };
         }
         params.chain = chain;
+        console.log(params);
         await unipassWallet.transaction(params);
         message.success("send erc20 token successfully");
-      } catch (e) {
+      } catch (e: any) {
+        if (e.code === 403001) {
+          message.info("Please check your email");
+        }
         console.log(e);
       } finally {
         setSendLoading(false);
@@ -133,32 +136,10 @@ const LoginStep2: React.FC = () => {
     }
   };
 
-  const syncEmail = async () => {
-    if (unipassWallet) {
-      await unipassWallet.sendSyncEmail();
-      message.success("sendSyncEmail successfully");
-    }
-  };
-
   return (
     <Spin spinning={sendLoading}>
       <h3>login successfully</h3>
       <h4>Address: {address}</h4>
-      <Divider />
-      <PageHeader ghost={false} title="Sync status">
-        <Descriptions
-          size="small"
-          column={3}
-          extra={[
-            <Button key="1" disabled={isBscSynced && isRangersSynced} onClick={syncEmail}>
-              sync email
-            </Button>,
-          ]}
-        >
-          <Descriptions.Item label="Status">{isBscSynced && isRangersSynced ? "Synced" : "Not Synced"}</Descriptions.Item>
-        </Descriptions>
-      </PageHeader>
-
       <Divider />
       <PageHeader ghost={false} title="polygon info">
         <Descriptions size="small" column={3}>

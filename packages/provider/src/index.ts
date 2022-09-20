@@ -128,10 +128,6 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.upAuthToken = upAuthToken;
   }
 
-  public async sendSyncEmail() {
-    await syncEmail(this.email, this.chainType, this.env);
-  }
-
   public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
     const { tx, fee, chain } = props;
     const _chain = chain ?? "polygon";
@@ -159,14 +155,6 @@ export default class UnipassWalletProvider implements WalletProvider {
       return true;
     }
     return false;
-  }
-
-  /**
-   * isSynced
-   */
-  public async isSynced(chain: Exclude<ChainType, "polygon">) {
-    const status = await ckeckSyncStatus(this.email, chain, this.env);
-    return status;
   }
 
   public async logout() {

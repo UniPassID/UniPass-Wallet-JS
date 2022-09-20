@@ -4,7 +4,6 @@
 
 ```typescript
 // init provider
-
 type Environment = "dev" | "test" | "prod";
 
 const provider = UnipassWalletProvider.getInstance({ env: "dev" });
@@ -15,7 +14,7 @@ const provider = UnipassWalletProvider.getInstance({ env: "dev" });
 ```typescript
 // 1. send verify code to email
 await unipassWallet.registerCode(email);
-// 2. verify code from email box
+// 2. verify code from email
 await unipassWallet.verifyRegisterCode(code);
 // 3. pass password to register
 await unipassWallet.register(password);
@@ -32,7 +31,7 @@ await unipassWallet.loginCode(email);
 await unipassWallet.login(code);
 ```
 
-## isLoggedIn
+## IsLoggedIn
 
 ```typescript
 // Check if local user information is valid, if not valid, you need register or login again
@@ -69,32 +68,31 @@ interface TransactionProps {
   chain?: ChainType;
 }
 
-const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
-const erc20TokenData = erc20Interface.encodeFunctionData("transfer", [erc20TokenAddress, tokenValue]);
+// send native token
 await unipassWallet.transaction({
   tx: {
     target: "0x1234..",
-    value: etherToWei("1"),
+    value: etherToWei("0.1"),
+  }, fee: {
+    token: erc20TokenContractAddress,
+    value: etherToWei("0.001"),
+  }, "polygon"})
+
+// send erc20 token
+const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
+const erc20TokenData = erc20Interface.encodeFunctionData("transfer", [erc20TokenAddress, etherToWei(tokenValue)]);
+await unipassWallet.transaction({
+  tx: {
+    target: "0x1234..",
+    value: etherToWei("0"),
     revertOnError: true,
     data: erc20TokenData
   }, fee: {
-    token: "0x7890..",
+    token: erc20TokenContractAddress,
     value: etherToWei("0.001"),
   }, "polygon"})
 ```
 
-
-## Get account sync status
-```typescript
-// get the sync status of bsc chain or rangers chain
-const status = await unipassWallet.isSynced("bsc")
-const status = await unipassWallet.isSynced("rangers")
-```
-## Send sync email
-```typescript
-// when isSynced function return false, call this function to get an sync email
-await unipassWallet.sendSyncEmail()
-```
 ## Sign message
 
 ```typescript
@@ -102,7 +100,7 @@ await unipassWallet.sendSyncEmail()
 await unipassWallet.signMessage()
 ```
 
-## get wallet instance
+## Get wallet instance
 
 ```typescript
 // get the wallet instance, extend ethers.Signer

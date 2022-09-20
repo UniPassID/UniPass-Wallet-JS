@@ -75,11 +75,6 @@ abstract class WalletProvider {
    * * */
   public abstract login(code: string): Promise<void | never>;
 
-  /**
-   * send a sync email when transaction function throw a sync error
-   * * */
-  public abstract sendSyncEmail(): Promise<void | never>;
-
   public abstract transaction(props: TransactionProps): Promise<providers.TransactionReceipt>;
 
   public abstract signMessage(message: string): Promise<string>;

@@ -23,8 +23,7 @@ const error_map = {
 
   // 2:not received sync email, 3:not synced
   // sync error
-  403001: "Not received sync email",
-  403002: "Account not synced",
+  403001: "Please check your email",
 };
 
 export default class WalletError extends Error {
