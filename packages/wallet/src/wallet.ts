@@ -286,9 +286,13 @@ export class Wallet extends Signer {
   }
 
   async isValidSignature(hash: BytesLike, sig: BytesLike): Promise<boolean> {
-    const contract = this.getContract();
-    const ret = await contract.isValidSignature(hash, sig);
-    return ret === "0x1626ba7e";
+    try {
+      const contract = this.getContract();
+      const ret = await contract.isValidSignature(hash, sig);
+      return ret === "0x1626ba7e";
+    } catch (e) {
+      return false;
+    }
   }
 
   async unipassEstimateGas(signedTransactions: SignedTransactions | GuestTransactions): Promise<BigNumber> {

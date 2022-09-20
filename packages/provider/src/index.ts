@@ -23,6 +23,7 @@ import {
   genSignMessage,
   getWallet,
   ckeckSyncStatus,
+  verifySignature,
 } from "./operate";
 import { getApiConfig } from "./config";
 
@@ -138,6 +139,11 @@ export default class UnipassWalletProvider implements WalletProvider {
   public async signMessage(message: string) {
     const result = await genSignMessage(message, this.email, this.env);
     return result;
+  }
+
+  public async verifySignMessage(message: string, signature: string): Promise<boolean> {
+    const isValid = await verifySignature(message, signature, this.email, this.env);
+    return isValid;
   }
 
   public async wallet(chain: ChainType = "polygon") {

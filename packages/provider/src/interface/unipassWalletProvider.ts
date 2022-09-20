@@ -79,6 +79,8 @@ abstract class WalletProvider {
 
   public abstract signMessage(message: string): Promise<string>;
 
+  public abstract verifySignMessage(message: string, signature: string): Promise<boolean>;
+
   public abstract wallet(chain: ChainType): Promise<Wallet>;
 
   /**

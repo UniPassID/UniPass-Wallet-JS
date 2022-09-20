@@ -11,7 +11,7 @@ const { TextArea } = Input;
 const { Option } = Select;
 const { Paragraph } = Typography;
 
-const LoginStep2: React.FC = () => {
+const LoginSuccess: React.FC = () => {
   const [balance, setBalance] = useState("0");
   const [bscbalance, setbscBalance] = useState("0");
   const [rangersbalance, setrangersBalance] = useState("0");
@@ -19,6 +19,7 @@ const LoginStep2: React.FC = () => {
   const [signedMessage, setSignedMessage] = useState("");
   const [sendLoading, setSendLoading] = useState(false);
   const [signLoading, setSignLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
   const { unipassWallet, logout, loading } = useUnipass();
 
   const queryBaseInfo = async () => {
@@ -136,6 +137,19 @@ const LoginStep2: React.FC = () => {
     }
   };
 
+  const verifySignMessage = async (values: any) => {
+    if (unipassWallet) {
+      setVerifyLoading(true);
+      const isValid = await unipassWallet.verifySignMessage(values.message, values.signature);
+      if (isValid) {
+        message.success("verify sign message successfully");
+      } else {
+        message.error("verify sign message failed");
+      }
+      setVerifyLoading(false);
+    }
+  };
+
   return (
     <Spin spinning={sendLoading}>
       <h3>login successfully</h3>
@@ -170,6 +184,24 @@ const LoginStep2: React.FC = () => {
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button loading={signLoading} type="primary" htmlType="submit">
             sign message
+          </Button>
+        </Form.Item>
+        <h5>signed message</h5>
+        <Paragraph copyable>{signedMessage || "--"}</Paragraph>
+      </Form>
+      <Divider />
+
+      <h3>verify sign message</h3>
+      <Form name="sign message" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} onFinish={verifySignMessage} autoComplete="off">
+        <Form.Item label="message" name="message" rules={[{ required: true, message: "Please input your message!" }]}>
+          <TextArea />
+        </Form.Item>
+        <Form.Item label="signature" name="signature" rules={[{ required: true, message: "Please input your message!" }]}>
+          <TextArea />
+        </Form.Item>
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          <Button loading={verifyLoading} type="primary" htmlType="submit">
+            verify sign message
           </Button>
         </Form.Item>
         <h5>signed message</h5>
@@ -245,4 +277,4 @@ const LoginStep2: React.FC = () => {
   );
 };
 
-export default LoginStep2;
+export default LoginSuccess;

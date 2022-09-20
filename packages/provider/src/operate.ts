@@ -1,3 +1,4 @@
+import { arrayify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
 import { BigNumber, ethers } from "ethers";
 import { SessionKey } from "@unipasswallet/wallet";
@@ -362,8 +363,23 @@ const genSignMessage = async (message: string, _email: string, env: Environment)
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
       const wallet = genWallets(keyset, env, user.account).polygon;
       const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
-      const utf8Encode = new TextEncoder();
-      const signedMessage = await wallet.signMessage(utf8Encode.encode(message), sessionkey);
+      const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), sessionkey);
+      return signedMessage;
+    }
+  } else {
+    throw new WalletError(402007);
+  }
+};
+
+const verifySignature = async (message: string, sig: string, _email: string, env: Environment) => {
+  const users = await DB.getUsers();
+  const email = _email || window.localStorage.getItem("email");
+  if (users.length > 0) {
+    const user = email ? users.find((e) => e.email === email) : users[0];
+    if (user) {
+      const keyset = Keyset.fromJson(user.keyset.keysetJson);
+      const wallet = genWallets(keyset, env, user.account).polygon;
+      const signedMessage = await wallet.isValidSignature(arrayify(keccak256(toUtf8Bytes(message))), sig);
       return signedMessage;
     }
   } else {
@@ -430,5 +446,6 @@ export {
   genSignMessage,
   checkLocalStatus,
   ckeckSyncStatus,
+  verifySignature,
   getWallet,
 };
