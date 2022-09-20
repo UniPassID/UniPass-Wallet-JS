@@ -17,12 +17,10 @@ import {
   getPasswordToken,
   doLogin,
   doLogout,
-  syncEmail,
   genTransaction,
   checkLocalStatus,
   genSignMessage,
   getWallet,
-  ckeckSyncStatus,
   verifySignature,
 } from "./operate";
 import { getApiConfig } from "./config";
