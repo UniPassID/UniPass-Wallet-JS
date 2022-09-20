@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/transaction-builders",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.1",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -13,11 +13,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/abi": "workspace:^0.0.1-alpha.4",
-    "@unipasswallet/keys": "workspace:0.0.1-alpha.4",
-    "@unipasswallet/transactions": "workspace:0.0.1-alpha.4",
-    "@unipasswallet/utils": "workspace:0.0.1-alpha.4",
-    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.5",
+    "@unipasswallet/abi": "workspace:^0.0.1-alpha.5",
+    "@unipasswallet/keys": "workspace:0.0.1-alpha.5",
+    "@unipasswallet/transactions": "workspace:0.0.1-alpha.5",
+    "@unipasswallet/utils": "workspace:0.0.1-alpha.5",
+    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.6",
     "ethers": "^5.7.1"
   },
   "devDependencies": {
