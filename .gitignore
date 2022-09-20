@@ -10,3 +10,4 @@ config.ts
 .npmrc
 .pnpm-store
 .secret
+*.DS_Store
