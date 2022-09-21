@@ -1,7 +1,7 @@
 import { arrayify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
-import { BigNumber, ethers, providers } from "ethers";
-import { SessionKey, Wallet } from "@unipasswallet/wallet";
+import { BigNumber, ethers } from "ethers";
+import { SessionKey } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { toTransaction, Transaction, SignedTransactions } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
