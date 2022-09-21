@@ -17,6 +17,7 @@
     "@unipasswallet/transaction-builders": "0.0.0"
   },
   "changesets": [
+    "empty-dots-juggle",
     "funny-experts-repeat",
     "healthy-points-serve",
     "proud-avocados-film",
