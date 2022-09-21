@@ -10,7 +10,7 @@ import { decryptSessionKey } from "./session-key";
 import { signMsg } from "./cloud-key";
 import { SIG_PREFIX } from "./tss";
 
-export const genProviders = (env: Environment) => {
+const genProviders = (env: Environment) => {
   let polygon_url = "";
   let bsc_url = "";
   let rangers_url = "";
@@ -37,7 +37,12 @@ export const genProviders = (env: Environment) => {
   return { polygon, bsc, rangers };
 };
 
-export const genRelayers = (env: Environment) => {
+const genRelayers = (
+  env: Environment,
+  polygonProvider: providers.JsonRpcProvider,
+  bcdProvider: providers.JsonRpcProvider,
+  rangersProvider: providers.JsonRpcProvider,
+) => {
   let relayer_url = "";
   switch (env) {
     case "dev":
@@ -56,38 +61,77 @@ export const genRelayers = (env: Environment) => {
 
   const polygonwallet = new WalletEOA(
     "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-    genProviders(env).polygon,
+    polygonProvider,
   );
-  const bscwallet = new WalletEOA(
-    "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-    genProviders(env).bsc,
-  );
+  const bscwallet = new WalletEOA("9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54", bcdProvider);
   const rangerswallet = new WalletEOA(
     "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-    genProviders(env).rangers,
+    rangersProvider,
   );
   const polygon = new LocalRelayer(unipassWalletContext, polygonwallet);
   const bsc = new LocalRelayer(unipassWalletContext, bscwallet);
   const rangers = new LocalRelayer(unipassWalletContext, rangerswallet);
   return { polygon, bsc, rangers };
 };
+export class WalletsCreator {
+  public static instance: WalletsCreator;
 
-export const genWallets = (keyset: Keyset, env: Environment, address?: string) => {
-  const polygon = Wallet.create({
-    keyset,
-    provider: genProviders(env).polygon,
-    relayer: genRelayers(env).polygon,
-    address,
-  });
-  const bsc = Wallet.create({ keyset, provider: genProviders(env).bsc, relayer: genRelayers(env).bsc, address });
-  const rangers = Wallet.create({
-    keyset,
-    provider: genProviders(env).rangers,
-    relayer: genRelayers(env).rangers,
-    address,
-  });
-  return { polygon, bsc, rangers };
-};
+  public polygon: Wallet;
+
+  public bsc: Wallet;
+
+  public rangers: Wallet;
+
+  static getInstance(keyset: Keyset, address: string, env: Environment) {
+    if (!WalletsCreator.instance) {
+      const ins = new WalletsCreator(keyset, address, env);
+      WalletsCreator.instance = ins;
+    }
+
+    return WalletsCreator.instance;
+  }
+
+  private constructor(keyset: Keyset, address: string, env: Environment) {
+    const { polygon: polygonProvider, bsc: bscProvider, rangers: rangersProvider } = genProviders(env);
+    const {
+      polygon: polygonRelayer,
+      bsc: bscRelayer,
+      rangers: rangersRelayer,
+    } = genRelayers(env, polygonProvider, bscProvider, rangersProvider);
+    this.polygon = Wallet.create({
+      keyset,
+      provider: polygonProvider,
+      relayer: polygonRelayer,
+      address,
+    });
+    this.bsc = Wallet.create({ keyset, provider: bscProvider, relayer: bscRelayer });
+    this.rangers = Wallet.create({
+      keyset,
+      provider: rangersProvider,
+      relayer: rangersRelayer,
+      address,
+    });
+  }
+
+  static getPolygonProvider(keyset: Keyset, env: Environment): Wallet {
+    let polygon_url = "";
+    switch (env) {
+      case "dev":
+      case "test":
+        polygon_url = chain_config["polygon-mumbai"].rpc_url;
+        break;
+      case "prod":
+        polygon_url = chain_config["polygon-mainnet"].rpc_url;
+        break;
+      default:
+        polygon_url = chain_config["polygon-mainnet"].rpc_url;
+    }
+    return Wallet.create({
+      keyset,
+      provider: new providers.JsonRpcProvider(polygon_url),
+    });
+  }
+}
 
 export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthChainNode => {
   if (env === "dev" || env === "test") {
