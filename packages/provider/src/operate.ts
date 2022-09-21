@@ -1,7 +1,7 @@
 import { arrayify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
-import { BigNumber, ethers } from "ethers";
-import { SessionKey } from "@unipasswallet/wallet";
+import { BigNumber, ethers, providers } from "ethers";
+import { SessionKey, Wallet } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { toTransaction, Transaction, SignedTransactions } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
@@ -15,7 +15,7 @@ import { decryptSessionKey, generateSessionKey } from "./utils/session-key";
 import { getAccountKeysetJson } from "./utils/rbac";
 import DB from "./utils/db";
 import { ChainType, Environment, TransactionFee, UniTransaction } from "./interface/unipassWalletProvider";
-import { genSessionKeyPermit, genWallets, getAuthNodeChain } from "./utils/unipass";
+import { genSessionKeyPermit, WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
 
 const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
@@ -61,7 +61,7 @@ const doRegister = async (
   const keyset = getAccountKeysetJson(email, localKeyData.localKeyAddress, policyAddress, pepper);
   const keysetHash = keyset.hash();
 
-  const wallet = genWallets(keyset, env).polygon;
+  const wallet = WalletsCreator.getPolygonProvider(keyset, env);
   const accountAddress = wallet.address;
   if (!accountAddress) throw new WalletError(402002);
   const timestamp = dayjs().add(4, "hour").unix();
@@ -271,7 +271,7 @@ const genTransaction = async (
         }
       }
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = genWallets(keyset, env, user.account)[chainType];
+      const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
       const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
       if (chainType !== "polygon") {
         const syncStatus = await checkAccountStatus(email, chainType, env);
@@ -361,7 +361,7 @@ const genSignMessage = async (message: string, _email: string, env: Environment)
     const user = email ? users.find((e) => e.email === email) : users[0];
     if (user) {
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = genWallets(keyset, env, user.account).polygon;
+      const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
       const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
       const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), sessionkey);
       return signedMessage;
@@ -378,7 +378,7 @@ const verifySignature = async (message: string, sig: string, _email: string, env
     const user = email ? users.find((e) => e.email === email) : users[0];
     if (user) {
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = genWallets(keyset, env, user.account).polygon;
+      const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
       const signedMessage = await wallet.isValidSignature(arrayify(keccak256(toUtf8Bytes(message))), sig);
       return signedMessage;
     }
@@ -387,14 +387,14 @@ const verifySignature = async (message: string, sig: string, _email: string, env
   }
 };
 
-const getWallet = async (_email: string, env: Environment, authChainNode: ChainType) => {
+const getWallet = async (_email: string, env: Environment, chainType: ChainType) => {
   const users = await DB.getUsers();
   const email = _email || window.localStorage.getItem("email");
   if (users.length > 0) {
     const user = email ? users.find((e) => e.email === email) : users[0];
     if (user) {
       const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = genWallets(keyset, env, user.account)[authChainNode];
+      const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
       return wallet;
     }
   } else {
@@ -410,7 +410,7 @@ const checkLocalStatus = async (env: Environment) => {
     if (user) {
       if (dayjs.unix(user.sessionKey.expires).isAfter(dayjs())) {
         const keyset = Keyset.fromJson(user.keyset.keysetJson);
-        const wallet = genWallets(keyset, env, user.account).polygon;
+        const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
         const isLogged = await wallet.isSyncKeysetHash();
         console.log("isLogged");
         console.log(isLogged);
