@@ -1,6 +1,7 @@
 import { FeeToken, FeeOption } from "..";
-import { CallType } from "@unipasswallet/transactions";
-import { BigNumberish } from "ethers";
+import { CallType, Transaction } from "@unipasswallet/transactions";
+import { BigNumber } from "ethers";
+import { hexlify } from "ethers/lib/utils";
 
 export interface FeeTokensReturn {
   isFeeRequired: boolean;
@@ -23,6 +24,16 @@ export interface UnipassTransaction {
   gasLimit: string;
   value: string;
   data: string;
+}
+
+export function toUnipassTransaction(tx: Transaction): UnipassTransaction {
+  return {
+    ...tx,
+    target: hexlify(tx.target),
+    gasLimit: tx.gasLimit.toHexString(),
+    value: tx.value.toHexString(),
+    data: hexlify(tx.data),
+  };
 }
 
 export interface ExecuteCall {
@@ -69,8 +80,8 @@ export interface RpcService {
   sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string>;
   txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult>;
   estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult>;
-  nonce(walletAddr: string, headers?: object): Promise<BigNumberish>;
-  metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish>;
+  nonce(walletAddr: string, headers?: object): Promise<BigNumber>;
+  metaNonce(walletAddr: string, headers?: object): Promise<BigNumber>;
 }
 
 export class RpcService implements RpcService {
@@ -123,16 +134,16 @@ export class RpcService implements RpcService {
     return _data.data;
   }
 
-  async nonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
+  async nonce(walletAddr: string, headers?: object): Promise<BigNumber> {
     const res = await this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
-    return _data.data;
+    return BigNumber.from(_data.data);
   }
 
-  async metaNonce(walletAddr: string, headers?: object): Promise<BigNumberish> {
+  async metaNonce(walletAddr: string, headers?: object): Promise<BigNumber> {
     const res = await this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
-    return _data.data;
+    return BigNumber.from(_data.data);
   }
 }
 
@@ -159,7 +170,6 @@ const buildResponse = (res: Response): Promise<any> =>
 
     try {
       data = JSON.parse(text);
-      console.log(text);
     } catch (err) {
       // eslint-disable-next-line no-throw-literal
       throw {

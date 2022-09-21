@@ -1,9 +1,9 @@
 import { arrayify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
-import { BigNumber, ethers } from "ethers";
-import { SessionKey } from "@unipasswallet/wallet";
+import { BigNumber, constants, ethers } from "ethers";
+import { ExecuteTransaction, SessionKey } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
-import { toTransaction, Transaction, SignedTransactions } from "@unipasswallet/transactions";
+import { Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
 import Tss, { SIG_PREFIX } from "./utils/tss";
 import api from "./api/backend";
@@ -276,62 +276,45 @@ const genTransaction = async (
       if (chainType !== "polygon") {
         const syncStatus = await checkAccountStatus(email, chainType, env);
         const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
+        const serverTxs: (ExecuteTransaction | Transactionish)[] = [];
         if (syncStatus === SyncStatusEnum.ServerSynced) {
-          const serverTxs: Array<Transaction | SignedTransactions> = [];
           const {
             data: { transactions = [], isNeedDeploy },
           } = await api.syncTransaction({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
-          let needServerSync: boolean = false;
+          transactions.forEach((v, i) => {
+            transactions[i] = { ...v, gasLimit: BigNumber.from(v.gasLimit._hex), value: BigNumber.from(v.value._hex) };
+          });
           if (transactions.length === 1) {
-            const { revertOnError, gasLimit, target, value, data } = transactions[0];
-            const builder = new CallTxBuilder(
-              revertOnError,
-              BigNumber.from(gasLimit._hex),
-              target,
-              BigNumber.from(value._hex),
-              data,
-            ).build();
             if (isNeedDeploy) {
-              serverTxs.push(builder);
+              serverTxs.push(transactions[0]);
             } else {
-              const signedBuilder = (await wallet.signTransactions([builder], [])) as SignedTransactions;
-              serverTxs.push(toTransaction(signedBuilder, wallet.address));
-              needServerSync = true;
+              serverTxs.push({
+                type: "Execute",
+                transactions,
+                sessionKeyOrSignerIndex: [],
+                gasLimit: constants.Zero,
+              });
             }
           } else if (transactions.length === 2) {
-            const { revertOnError, gasLimit, target, value, data } = transactions[0];
-            const deployBuilder = new CallTxBuilder(
-              revertOnError,
-              BigNumber.from(gasLimit._hex),
-              target,
-              BigNumber.from(value._hex),
-              data,
-            ).build();
-            serverTxs.push(deployBuilder);
-
-            const syncBuilder = new CallTxBuilder(
-              transactions[1].revertOnError,
-              BigNumber.from(transactions[1].gasLimit._hex),
-              transactions[1].target,
-              BigNumber.from(transactions[1].value._hex),
-              transactions[1].data,
-            ).build();
-            const signedBuilder = (await wallet.signTransactions([syncBuilder], [])) as SignedTransactions;
-            serverTxs.push(toTransaction(signedBuilder, wallet.address));
-            needServerSync = true;
+            serverTxs.push(transactions[0]);
+            serverTxs.push({
+              type: "Execute",
+              transactions: transactions[1],
+              sessionKeyOrSignerIndex: [],
+              gasLimit: constants.Zero,
+            });
           }
 
-          const txBundle = await wallet.signTransactions(txs, sessionkey, needServerSync ? 1 : 0);
-          console.log(wallet);
-          console.log(wallet.address);
-
-          const bundleTransaction = toTransaction(txBundle as SignedTransactions, wallet.address);
-          console.log("[bundleTransaction2]");
-          console.log(bundleTransaction);
-          serverTxs.push(bundleTransaction);
+          serverTxs.push({
+            type: "Execute",
+            transactions: txs,
+            sessionKeyOrSignerIndex: sessionkey,
+            gasLimit: constants.Zero,
+          });
           console.log("[genTransaction]");
+
           console.log(serverTxs);
-          const transaction = await wallet.sendTransaction(serverTxs, "BUNDLED");
+          const transaction = await wallet.sendTransaction({ type: "Bundled", transactions: serverTxs });
           const transactionReceipt = await transaction.wait();
           console.log(transactionReceipt);
           return transactionReceipt;

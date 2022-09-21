@@ -9,9 +9,9 @@ import { BaseTxBuilder } from "./baseTxBuilder";
 export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
   public readonly GUARDIAN_THRESHOLD = 50;
 
-  public readonly userAddr;
+  public readonly userAddr: string;
 
-  public readonly keysetHash;
+  public readonly keysetHash: string;
 
   /**
    *
@@ -26,7 +26,7 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
     public readonly metaNonce: number,
     keysetHash: BytesLike,
     public readonly revertOnError: boolean,
-    signature?: BytesLike
+    signature?: BytesLike,
   ) {
     super(signature);
     this.userAddr = utils.hexlify(userAddr);
@@ -44,13 +44,9 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
       keccak256(
         solidityPack(
           ["uint8", "uint32", "bytes32"],
-          [
-            AccountLayerActionType.UpdateKeysetHash,
-            this.metaNonce,
-            this.keysetHash,
-          ]
-        )
-      )
+          [AccountLayerActionType.UpdateKeysetHash, this.metaNonce, this.keysetHash],
+        ),
+      ),
     );
   }
 
@@ -59,10 +55,11 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData(
-      "updateKeysetHashWithTimeLock",
-      [this.metaNonce, this.keysetHash, this.signature]
-    );
+    const data = this.contractInterface.encodeFunctionData("updateKeysetHashWithTimeLock", [
+      this.metaNonce,
+      this.keysetHash,
+      this.signature,
+    ]);
 
     return {
       _isUnipassWalletTransaction: true,

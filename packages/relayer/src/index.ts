@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumber } from "ethers";
 import { Transaction } from "@unipasswallet/transactions";
 import { PendingExecuteCallArgs, TxnReciptResult } from "./rpcRelayer";
 
@@ -64,9 +64,9 @@ export interface Relayer {
 
   // gasRefundOptions(...transactions: Transaction[]): Promise<FeeOption[]>;
 
-  getNonce(walletAddr: string): Promise<BigNumberish>;
+  getNonce(walletAddr: string): Promise<BigNumber>;
 
-  getMetaNonce(walletAddr: string): Promise<BigNumberish>;
+  getMetaNonce(walletAddr: string): Promise<BigNumber>;
 
   relay(args: PendingExecuteCallArgs): Promise<string>;
 

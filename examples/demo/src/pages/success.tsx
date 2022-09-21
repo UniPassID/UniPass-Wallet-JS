@@ -204,8 +204,6 @@ const LoginSuccess: React.FC = () => {
             verify sign message
           </Button>
         </Form.Item>
-        <h5>signed message</h5>
-        <Paragraph copyable>{signedMessage || "--"}</Paragraph>
       </Form>
       <Divider />
 
