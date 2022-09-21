@@ -10,10 +10,11 @@ import {
   UpdateImplementationTxBuilder,
   SyncAccountTxBuilder,
 } from "@unipasswallet/transaction-builders";
-import { generateDkimParams, Role, selectKeys } from "./utils/common";
+import { generateDkimParams, randomKeyset, Role, selectKeys } from "./utils/common";
 import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
-import { SessionKey, generateEmailSubject } from "@unipasswallet/wallet";
+import { SessionKey, generateEmailSubject, getWalletDeployTransaction } from "@unipasswallet/wallet";
 import { SignType } from "@unipasswallet/keys";
+import { digestTxHash } from "@unipasswallet/transactions";
 
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
@@ -26,6 +27,77 @@ describe("Test Transactions", () => {
   });
   beforeEach(async () => {
     walletContext = await initWalletContext(context, true);
+  });
+  it("Test IsValidSignature", async () => {
+    let hash = randomBytes(32);
+    let signerIndexes: number[];
+    [walletContext.wallet, signerIndexes] = await selectKeys(
+      walletContext.wallet,
+      EmailType.CallOtherContract,
+      hexlify(hash),
+      context.unipassPrivateKey.exportKey("pkcs1"),
+      Role.AssetsOp,
+      100,
+    );
+    const sig = await walletContext.wallet.signMessage(hash, signerIndexes);
+    expect(await walletContext.wallet.isValidSignature(hash, sig)).toEqual(true);
+    hash = randomBytes(32);
+    expect(await walletContext.wallet.isValidSignature(hash, sig)).toEqual(false);
+  });
+  it("Test DeployTx + AccountTx + TransferTx", async () => {
+    walletContext = await initWalletContext(context, false);
+    const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
+    const newKeyset = randomKeyset(10);
+    let signerIndexes: number[];
+    const txBuilder = new SyncAccountTxBuilder(
+      walletContext.wallet.address,
+      10,
+      newKeyset.hash(),
+      10,
+      context.moduleMainUpgradable.address,
+      true,
+    );
+    [walletContext.wallet, signerIndexes] = await selectKeys(
+      walletContext.wallet,
+      EmailType.SyncAccount,
+      txBuilder.digestMessage(),
+      context.unipassPrivateKey.exportKey("pkcs1"),
+      Role.Owner,
+      100,
+    );
+    const syncAccountTx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
+    walletContext.wallet = walletContext.wallet.setKeyset(newKeyset);
+    const to = WalletEOA.createRandom().address;
+    const toValue = parseEther("0.001");
+    const transferTx = new CallTxBuilder(true, constants.Zero, to, toValue, "0x").build();
+    const digestHash = digestTxHash(context.chainId, walletContext.wallet.address, 2, [transferTx]);
+    [walletContext.wallet, signerIndexes] = await selectKeys(
+      walletContext.wallet,
+      EmailType.CallOtherContract,
+      digestHash,
+      context.unipassPrivateKey.exportKey("pkcs1"),
+      Role.AssetsOp,
+      100,
+    );
+    const ret = await (
+      await walletContext.wallet.sendTransaction({
+        type: "Bundled",
+        transactions: [
+          deployTx,
+          { type: "Execute", transactions: syncAccountTx, sessionKeyOrSignerIndex: [], gasLimit: constants.Zero },
+          {
+            type: "Execute",
+            transactions: transferTx,
+            sessionKeyOrSignerIndex: signerIndexes,
+            gasLimit: constants.Zero,
+          },
+        ],
+      })
+    ).wait();
+    expect(ret.status).toEqual(1);
+    expect(await walletContext.wallet.getContract().getMetaNonce()).toEqual(BigNumber.from(10));
+    expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(true);
+    expect(await context.provider.getBalance(to)).toEqual(toValue);
   });
   it("Updating KeysetHash Wighout TimeLock Should Success", async () => {
     const newKeysetHash = randomBytes(32);

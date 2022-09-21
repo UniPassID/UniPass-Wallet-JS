@@ -13,19 +13,17 @@ import {
   parseEther,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
-import { Relayer, PendingExecuteCallArgs, ExecuteCall } from "@unipasswallet/relayer";
+import { Relayer, PendingExecuteCallArgs, ExecuteCall, toUnipassTransaction } from "@unipasswallet/relayer";
 import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain, gasEstimator, moduleMainGasEstimator } from "@unipasswallet/abi";
 import {
-  isSignedTransactions,
   Transaction,
-  SignedTransactions,
   digestTxHash,
   digestGuestTxHash,
-  GuestTransactions,
   CallType,
   Transactionish,
-  toTransactions,
+  isUnipassWalletTransaction,
+  toTransaction,
 } from "@unipasswallet/transactions";
 import {
   isContractDeployed,
@@ -49,6 +47,38 @@ export const OverwriterEstimatorDefaults = {
   dataZeroCost: 4,
   dataOneCost: 16,
   baseCost: 21000,
+};
+
+export type ExecuteTransaction = {
+  type: "Execute";
+  transactions: Transactionish[] | Transactionish;
+  sessionKeyOrSignerIndex: SessionKey | number[];
+  gasLimit: BigNumber;
+};
+
+export function isExecuteTransaction(tx: any): tx is ExecuteTransaction {
+  return tx.type === "Execute";
+}
+
+export type BundledTransaction = {
+  type: "Bundled";
+  transactions: (ExecuteTransaction | Transactionish)[] | ExecuteTransaction | Transactionish;
+};
+
+export function isBundledTransaction(tx: any): tx is BundledTransaction {
+  return tx.type === "Bundled";
+}
+
+export type InputTransaction = BundledTransaction | ExecuteTransaction | Transactionish[] | Transactionish;
+
+export type SignedTransactions = {
+  digest: string;
+  chainId: number;
+  transactions: Transaction[];
+  nonce: BigNumber;
+  signature: string;
+  data: string;
+  address: string;
 };
 
 export class Wallet extends Signer {
@@ -198,80 +228,67 @@ export class Wallet extends Signer {
     throw new Error("Not Support `signTransaction`, Please use `signTransactions` instead");
   }
 
-  async getExecuteSignedTransaction(
-    transactions: Transaction[],
-    sessionKeyOrSignIndexes: SessionKey | number[],
-    index: number = 0,
-  ): Promise<SignedTransactions> {
-    const { chainId } = await this.provider!.getNetwork();
-    const a = await this.relayer.getNonce(this.address);
-    console.log(a);
-
-    const nonce = BigNumber.from(a).toNumber() + index;
-    console.log("index:");
-    console.log(index);
-    console.log("nonce:");
-    console.log(nonce);
-
-    const txHash = await digestTxHash(chainId, this.address, nonce, transactions);
-
-    const signature = await this.signMessage(arrayify(txHash), sessionKeyOrSignIndexes);
-
-    return {
-      _isSignedTransactions: true,
-      txHash,
-      transactions,
-      nonce,
-      signature,
-    };
-  }
-
-  async getExecuteTransaction(
-    transactions: SignedTransactions | Transaction[],
-    sessionKeyOrSignerIndexes: number[] | SessionKey,
-  ): Promise<Transaction> {
-    let signedTransactions = transactions;
-
-    if (Array.isArray(signedTransactions)) {
-      signedTransactions = await this.getExecuteSignedTransaction(signedTransactions, sessionKeyOrSignerIndexes);
-    }
-
-    return {
-      _isUnipassWalletTransaction: true,
-      target: this.address,
-      callType: CallType.Call,
-      revertOnError: false,
-      gasLimit: constants.Zero,
-      value: constants.Zero,
-      data: new Interface(moduleMain.abi).encodeFunctionData("execute", [
-        signedTransactions.transactions,
-        signedTransactions.nonce,
-        signedTransactions.signature,
-      ]),
-    };
-  }
-
   async signTransactions(
-    transactionish: Deferrable<Transactionish>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED",
-    index: number = 0,
-  ): Promise<SignedTransactions | GuestTransactions> {
-    let transactions = toTransactions(await resolveArrayProperties<Transactionish>(transactionish));
-    if (transactions.length === 0) {
-      throw new Error("Transactinos is Empty");
+    transaction: Deferrable<InputTransaction>,
+    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
+    innerNonce?: BigNumber,
+  ): Promise<SignedTransactions> {
+    const txs = await resolveArrayProperties<InputTransaction>(transaction);
+
+    let nonce: BigNumber;
+    const moduleMainInterface = new Interface(moduleMain.abi);
+    const { chainId } = await this.provider!.getNetwork();
+    let digest: string;
+    let transactions: Transaction[] = [];
+    let signature: string;
+    let data: string;
+    let address: string;
+    if (isBundledTransaction(txs)) {
+      let bundledNonce = innerNonce;
+      if (bundledNonce === undefined) {
+        bundledNonce = BigNumber.from(await this.relayer.getNonce(this.address));
+      }
+      let transaction: Transaction;
+      if (Array.isArray(txs.transactions)) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const tx of txs.transactions) {
+          // eslint-disable-next-line no-await-in-loop
+          [transaction, bundledNonce] = await this.toTransaction(tx, bundledNonce);
+          transactions.push(transaction);
+        }
+      } else {
+        [transaction, bundledNonce] = await this.toTransaction(txs.transactions, bundledNonce);
+        transactions = [transaction];
+      }
+      nonce = constants.Zero;
+      signature = "0x";
+      data = moduleMainInterface.encodeFunctionData("execute", [transactions, 0, "0x"]);
+      digest = digestGuestTxHash(chainId, this.context.moduleGuest!, transactions);
+      address = this.context.moduleGuest!;
+    } else {
+      if (Array.isArray(txs)) {
+        transactions = await Promise.all(txs.map((v) => this.toTransaction(v).then((v) => v[0])));
+      } else {
+        transactions = [await this.toTransaction(txs).then((v) => v[0])];
+      }
+      nonce = innerNonce;
+      if (nonce === undefined) {
+        nonce = await this.relayer.getNonce(this.address);
+      }
+      digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
+      signature = await this.signMessage(arrayify(digest), sessionKeyOrSignerIndexes);
+      address = this.address;
     }
 
-    transactions = await this.estimateGasLimits(...transactions);
-
-    if (sessionKeyOrSignerIndexes === "BUNDLED") {
-      return {
-        _isGuestTransaction: true,
-        transactions,
-        txHash: digestGuestTxHash(await this.getChainId(), this.context.moduleGuest, transactions),
-      };
-    }
-
-    return this.getExecuteSignedTransaction(transactions, sessionKeyOrSignerIndexes, index);
+    return {
+      digest,
+      chainId,
+      signature,
+      nonce,
+      data,
+      transactions,
+      address,
+    };
   }
 
   txBaseCost(data: BytesLike): BigNumber {
@@ -295,7 +312,7 @@ export class Wallet extends Signer {
     }
   }
 
-  async unipassEstimateGas(signedTransactions: SignedTransactions | GuestTransactions): Promise<BigNumber> {
+  async unipassEstimateGas(signedTransactions: SignedTransactions): Promise<BigNumber> {
     // let data: string;
     // let transactions: Transaction[];
     // let estimateData: string;
@@ -356,82 +373,83 @@ export class Wallet extends Signer {
     return BigNumber.from(10_000_000);
   }
 
-  async sendTransaction(
-    transaction: Deferrable<Transactionish>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] | "BUNDLED" = [],
-    index?: number,
-    feeToken?: string,
-  ): Promise<providers.TransactionResponse> {
-    const signedTransactions = await this.signTransactions(transaction, sessionKeyOrSignerIndexes, index);
-
-    let args: PendingExecuteCallArgs;
-
-    const { chainId } = await this.provider!.getNetwork();
-    const moduleMainInterface = new Interface(moduleMain.abi);
-
-    let nonce: BigNumber;
-    let data: string;
-    const estimateGas = await this.unipassEstimateGas(signedTransactions);
-
-    if (isSignedTransactions(signedTransactions)) {
-      nonce = BigNumber.from(signedTransactions.nonce);
-      const signature = hexlify(signedTransactions.signature);
-      const call: ExecuteCall = {
-        txs: signedTransactions.transactions.map((v) => ({
-          ...v,
-          target: hexlify(v.target),
-          value: v.value.toHexString(),
-          gasLimit: v.gasLimit.toHexString(),
-          data: hexlify(v.data),
-        })),
-        nonce: nonce.toHexString(),
-        signature,
-      };
-      data = moduleMainInterface.encodeFunctionData("execute", [signedTransactions.transactions, nonce, signature]);
-      args = {
-        chainId: hexlify(chainId),
-        txHash: hexlify(signedTransactions.txHash),
-        walletAddress: this.address,
-        estimateGas: estimateGas.toHexString(),
-        call: JSON.stringify(call),
-        feeToken,
-      };
-    } else {
-      nonce = constants.Zero;
-      const signature = "0x";
-      const call: ExecuteCall = {
-        txs: signedTransactions.transactions.map((v) => ({
-          ...v,
-          value: v.value.toHexString(),
-          target: hexlify(v.target),
-          gasLimit: v.gasLimit.toHexString(),
-          data: hexlify(v.data),
-        })),
-        nonce: nonce.toHexString(),
-        signature,
-      };
-      data = moduleMainInterface.encodeFunctionData("execute", [signedTransactions.transactions, nonce, signature]);
-
-      args = {
-        chainId: hexlify(chainId),
-        txHash: hexlify(signedTransactions.txHash),
-        walletAddress: this.context.moduleGuest,
-        estimateGas: estimateGas.toHexString(),
-        call: JSON.stringify(call),
-        feeToken,
-      };
+  async toTransaction(
+    tx: Transactionish | ExecuteTransaction,
+    nonce?: BigNumber,
+  ): Promise<[Transaction, BigNumber | undefined]> {
+    if (isUnipassWalletTransaction(tx)) {
+      return [tx, nonce];
     }
 
-    const hash = await this.relayer.relay(args);
+    if (isExecuteTransaction(tx)) {
+      if (!nonce) {
+        throw new Error("Expect Nonce");
+      }
+      let transactions: Transaction[];
+      if (Array.isArray(tx.transactions)) {
+        transactions = tx.transactions.map((v) => toTransaction(v));
+      } else {
+        transactions = [toTransaction(tx.transactions)];
+      }
+      const sig = await this.signTransactions(transactions, tx.sessionKeyOrSignerIndex, nonce);
+      return [
+        {
+          _isUnipassWalletTransaction: true,
+          callType: CallType.Call,
+          gasLimit: tx.gasLimit,
+          revertOnError: false,
+          target: this.address,
+          value: constants.Zero,
+          data: new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions, nonce, sig.signature]),
+        },
+        nonce.add(1),
+      ];
+    }
 
+    return [
+      {
+        _isUnipassWalletTransaction: true,
+        callType: CallType.Call,
+        revertOnError: false,
+        gasLimit: BigNumber.from(tx.gasLimit),
+        target: tx.to,
+        value: BigNumber.from(tx.value),
+        data: tx.data,
+      },
+      nonce,
+    ];
+  }
+
+  async sendTransaction(
+    transactions: Deferrable<InputTransaction>,
+    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
+    feeToken?: string,
+  ): Promise<providers.TransactionResponse> {
+    const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes);
+    const estimateGas = await this.unipassEstimateGas(signedTransactions);
+    const call: ExecuteCall = {
+      txs: signedTransactions.transactions.map((v) => toUnipassTransaction(v)),
+      nonce: signedTransactions.nonce.toHexString(),
+      signature: signedTransactions.signature,
+    };
+    const args: PendingExecuteCallArgs = {
+      chainId: hexlify(signedTransactions.chainId),
+      txHash: signedTransactions.digest,
+      walletAddress: signedTransactions.address,
+      estimateGas: estimateGas.toHexString(),
+      feeToken,
+      call: JSON.stringify(call),
+    };
+    const hash = await this.relayer.relay(args);
+    args.estimateGas = estimateGas.toHexString();
     return {
       hash,
       confirmations: 1,
       from: this.address,
-      chainId,
-      nonce: nonce.toNumber(),
+      chainId: signedTransactions.chainId,
+      nonce: signedTransactions.nonce.toNumber(),
       gasLimit: estimateGas,
-      data,
+      data: signedTransactions.data,
       value: constants.Zero,
       wait: async () => {
         let ret = await this.relayer.wait(hash);
@@ -448,12 +466,10 @@ export class Wallet extends Signer {
           }
           i++;
         }
-
         if (ret.txHash === constants.HashZero) {
           return Promise.reject(new Error(`transactions revert: ${ret.revertReason}`));
         }
         const recipt = await this.provider.waitForTransaction(ret.txHash);
-
         return recipt;
       },
     };

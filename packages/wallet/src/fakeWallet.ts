@@ -5,14 +5,8 @@ import { Relayer } from "@unipasswallet/relayer";
 import { moduleMainGasEstimator, gasEstimator, moduleMain } from "@unipasswallet/abi";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { DkimParamsBase, EmailType } from "@unipasswallet/dkim-base";
-import {
-  CallType,
-  Transaction,
-  isSignedTransactions,
-  SignedTransactions,
-  GuestTransactions,
-} from "@unipasswallet/transactions";
-import { Wallet, WalletOptions } from "./wallet";
+import { CallType, Transaction } from "@unipasswallet/transactions";
+import { SignedTransactions, Wallet, WalletOptions } from "./wallet";
 
 export interface FakeWalletOptions extends WalletOptions {
   address?: string;
@@ -78,44 +72,45 @@ export class FakeWallet extends Wallet {
     return new FakeWallet(options);
   }
 
-  async unipassEstimateGas(signedTransactions: SignedTransactions | GuestTransactions): Promise<BigNumber> {
-    let data;
-    if (isSignedTransactions(signedTransactions)) {
-      data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
-        this.address,
-        new Interface(moduleMain.abi).encodeFunctionData("execute", [
-          signedTransactions.transactions,
-          signedTransactions.nonce,
-          signedTransactions.signature,
-        ]),
-      ]);
-    } else {
-      data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
-        this.address,
-        new Interface(moduleMain.abi).encodeFunctionData("execute", [signedTransactions.transactions, 0, "0x"]),
-      ]);
-    }
+  async unipassEstimateGas(signedTransactions: SignedTransactions): Promise<BigNumber> {
+    // let data;
+    // if (isSignedTransactions(signedTransactions)) {
+    //   data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
+    //     this.address,
+    //     new Interface(moduleMain.abi).encodeFunctionData("execute", [
+    //       signedTransactions.transactions,
+    //       signedTransactions.nonce,
+    //       signedTransactions.signature,
+    //     ]),
+    //   ]);
+    // } else {
+    //   data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
+    //     this.address,
+    //     new Interface(moduleMain.abi).encodeFunctionData("execute", [signedTransactions.transactions, 0, "0x"]),
+    //   ]);
+    // }
 
-    const params = [
-      {
-        from: this.address,
-        to: this.context.gasEstimator,
-        data,
-      },
-      "latest",
-      {
-        [this.context.moduleMain]: {
-          code: moduleMainGasEstimator.bytecode,
-        },
-        [this.context.moduleMainUpgradable]: {
-          code: moduleMainGasEstimator.bytecode,
-        },
-      },
-    ];
-    const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
-    const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
+    // const params = [
+    //   {
+    //     from: this.address,
+    //     to: this.context.gasEstimator,
+    //     data,
+    //   },
+    //   "latest",
+    //   {
+    //     [this.context.moduleMain]: {
+    //       code: moduleMainGasEstimator.bytecode,
+    //     },
+    //     [this.context.moduleMainUpgradable]: {
+    //       code: moduleMainGasEstimator.bytecode,
+    //     },
+    //   },
+    // ];
+    // const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
+    // const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
 
-    return gas.add(this.txBaseCost(data));
+    // return gas.add(this.txBaseCost(data));
+    return constants.Zero;
   }
 
   async estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]> {

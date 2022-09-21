@@ -9,7 +9,7 @@
     "start": "npm run dev"
   },
   "dependencies": {
-    "@unipasswallet/provider": "workspace:^0.0.1-alpha.3",
+    "@unipasswallet/provider": "workspace:^0.0.1-alpha.6",
     "antd": "^4.23.1",
     "dexie": "^3.2.2",
     "ethers": "^5.7.1",

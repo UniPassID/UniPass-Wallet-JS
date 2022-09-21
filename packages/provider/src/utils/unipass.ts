@@ -104,7 +104,7 @@ export class WalletsCreator {
       relayer: polygonRelayer,
       address,
     });
-    this.bsc = Wallet.create({ keyset, provider: bscProvider, relayer: bscRelayer });
+    this.bsc = Wallet.create({ address, keyset, provider: bscProvider, relayer: bscRelayer });
     this.rangers = Wallet.create({
       keyset,
       provider: rangersProvider,
