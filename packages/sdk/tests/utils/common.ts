@@ -1,23 +1,11 @@
-import {
-  getCreate2Address,
-  keccak256,
-  randomBytes,
-  solidityPack,
-} from "ethers/lib/utils";
+import { getCreate2Address, hexlify, keccak256, randomBytes, solidityPack } from "ethers/lib/utils";
 import { DkimParams } from "@unipasswallet/dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, ethers, Signer, Wallet as WalletEOA } from "ethers";
 import { EmailType } from "@unipasswallet/dkim-base";
 import { Wallet, generateEmailSubject } from "@unipasswallet/wallet";
-import {
-  Keyset,
-  KeyBase,
-  KeyEmailDkim,
-  KeySecp256k1Wallet,
-  RoleWeight,
-  SignType,
-} from "@unipasswallet/keys";
+import { Keyset, KeyBase, KeyEmailDkim, KeySecp256k1Wallet, RoleWeight, SignType } from "@unipasswallet/keys";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
 
@@ -39,20 +27,15 @@ export function randomKeyset(len: number): Keyset {
       const random = randomInt(1);
 
       if (random === 0) {
-        ret.push(
-          new KeySecp256k1Wallet(
-            WalletEOA.createRandom(),
-            randomRoleWeight(role, len),
-            SignType.EthSign
-          )
-        );
+        ret.push(new KeySecp256k1Wallet(WalletEOA.createRandom(), randomRoleWeight(role, len), SignType.EthSign));
       } else {
         ret.push(
           new KeyEmailDkim(
+            "Raw",
             `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`,
-            randomBytes(32),
-            randomRoleWeight(role, len)
-          )
+            hexlify(randomBytes(32)),
+            randomRoleWeight(role, len),
+          ),
         );
       }
     });
@@ -89,7 +72,7 @@ export async function selectKeys(
   digestHash: string,
   unipassPrivateKey: string,
   role: Role,
-  threshold: number
+  threshold: number,
 ): Promise<[Wallet, number[]]> {
   const indexes: number[] = [];
   let sum = 0;
@@ -120,19 +103,15 @@ export async function selectKeys(
   const keys: KeyBase[] = await Promise.all(
     wallet.keyset.keys.map(async (key, i) => {
       if (indexes.includes(i)) {
-        if (KeyEmailDkim.isKeyEmailDkim(key)) {
-          const dkimParams = await generateDkimParams(
-            key.emailFrom,
-            subject,
-            unipassPrivateKey
-          );
+        if (KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") {
+          const dkimParams = await generateDkimParams(key.emailFrom, subject, unipassPrivateKey);
           // eslint-disable-next-line no-param-reassign
           key.setDkimParams(dkimParams);
         }
       }
 
       return key;
-    })
+    }),
   );
 
   return [wallet.setKeyset(new Keyset(keys)), indexes];
@@ -141,9 +120,7 @@ export async function selectKeys(
 export function getKeysetHash(keys: KeyBase[]): string {
   let keysetHash = "0x";
   keys.forEach((key) => {
-    keysetHash = keccak256(
-      solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()])
-    );
+    keysetHash = keccak256(solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()]));
   });
 
   return keysetHash;
@@ -153,30 +130,20 @@ export function getProxyAddress(
   moduleMainAddress: string,
   dkimKeysAddress: string,
   factoryAddress: string,
-  keysetHash: string
+  keysetHash: string,
 ): string {
   const code = ethers.utils.solidityPack(
     ["bytes", "uint256"],
-    [
-      "0x603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3",
-      moduleMainAddress,
-    ]
+    ["0x603a600e3d39601a805130553df3363d3d373d3d3d363d30545af43d82803e903d91601857fd5bf3", moduleMainAddress],
   );
   const codeHash = keccak256(code);
-  const salt = keccak256(
-    solidityPack(["bytes32", "address"], [keysetHash, dkimKeysAddress])
-  );
+  const salt = keccak256(solidityPack(["bytes32", "address"], [keysetHash, dkimKeysAddress]));
   const expectedAddress = getCreate2Address(factoryAddress, salt, codeHash);
 
   return expectedAddress;
 }
 
-export async function getSignEmailWithDkim(
-  subject: string,
-  from: string,
-  to: string,
-  unipassPrivateKey: string
-) {
+export async function getSignEmailWithDkim(subject: string, from: string, to: string, unipassPrivateKey: string) {
   const mail = new MailComposer({
     from,
     to,
@@ -210,14 +177,9 @@ export async function signEmailWithDkim(mail: MailComposer, dkim: DKIM) {
 export async function generateDkimParams(
   emailFrom: string,
   subject: string,
-  unipassPrivateKey: string
+  unipassPrivateKey: string,
 ): Promise<DkimParams> {
-  const email = await getSignEmailWithDkim(
-    subject,
-    emailFrom,
-    "test@unipass.id.com",
-    unipassPrivateKey
-  );
+  const email = await getSignEmailWithDkim(subject, emailFrom, "test@unipass.id.com", unipassPrivateKey);
   const dkims = await DkimParams.parseEmailParams(email, []);
 
   return dkims;
