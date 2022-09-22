@@ -40,7 +40,14 @@ export class FakeWallet extends Wallet {
         }
 
         if (KeyEmailDkim.isKeyEmailDkim(key)) {
-          return new KeyEmailDkim(key.emailFrom, key.pepper, key.roleWeight, key.getDkimParams());
+          return new KeyEmailDkim(
+            key.type,
+            key.emailFrom,
+            key.pepper,
+            key.roleWeight,
+            key.getDkimParams(),
+            key.emailHash,
+          );
         }
 
         if (KeySecp256k1.isKeySecp256k1(key) || KeySecp256k1Wallet.isKeySecp256k1Wallet(key)) {
@@ -166,7 +173,7 @@ export class FakeWallet extends Wallet {
     const signRet = await Promise.all(
       this.keyset.keys.map(async (key, index) => {
         if (signerIndexes.includes(index)) {
-          if (KeyEmailDkim.isKeyEmailDkim(key)) {
+          if (KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") {
             const subject = generateEmailSubject(this.emailType, digestHash);
             const emailHeader =
               `from:${key.emailFrom}\r\n` +
