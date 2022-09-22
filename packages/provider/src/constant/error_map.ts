@@ -24,6 +24,7 @@ const error_map = {
   // 2:not received sync email, 3:not synced
   // sync error
   403001: "Please check your email",
+  403002: "User information has expired, please login again",
 };
 
 export default class WalletError extends Error {
