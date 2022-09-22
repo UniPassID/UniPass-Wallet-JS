@@ -4,10 +4,10 @@ import { EmailType } from "@unipasswallet/dkim-base";
 import { randomKeyset, Role, selectKeys } from "./utils/common";
 
 describe("Test Fake Wallet", () => {
-  let context: TestContext;
-  let walletContext: WalletContext;
+  // let context: TestContext;
+  // let walletContext: WalletContext;
   beforeAll(async () => {
-    context = await initTestContext();
+    // context = await initTestContext();
   });
   beforeEach(async () => {
     // walletContext = await initWalletContext(context, false);

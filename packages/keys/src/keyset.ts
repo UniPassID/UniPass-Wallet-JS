@@ -1,20 +1,11 @@
-import {
-  KeySecp256k1,
-  KeyEmailDkim,
-  RoleWeight,
-  KeyBase,
-  KeySecp256k1Wallet,
-  KeyERC1271,
-} from ".";
+import { KeySecp256k1, KeyEmailDkim, RoleWeight, KeyBase, KeySecp256k1Wallet, KeyERC1271 } from ".";
 import { BytesLike } from "ethers";
-import { keccak256, solidityPack } from "ethers/lib/utils";
+import { hexlify, keccak256, solidityPack } from "ethers/lib/utils";
 
 export function getKeysetHash(keys: KeyBase[]): string {
   let keysetHash = "0x";
   keys.forEach((key) => {
-    keysetHash = keccak256(
-      solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()])
-    );
+    keysetHash = keccak256(solidityPack(["bytes", "bytes"], [keysetHash, key.serialize()]));
   });
 
   return keysetHash;
@@ -29,12 +20,13 @@ export class Keyset {
     masterKey: KeySecp256k1,
     guardians: KeyBase[],
     policy?: KeyBase,
-    registerEmailRoleWeight: RoleWeight = new RoleWeight(60, 0, 60)
+    registerEmailRoleWeight: RoleWeight = new RoleWeight(60, 0, 60),
   ): Keyset {
     const registerEmailKey = new KeyEmailDkim(
+      "Raw",
       registerEmail,
-      registerEmailPepper,
-      registerEmailRoleWeight
+      hexlify(registerEmailPepper),
+      registerEmailRoleWeight,
     );
     const keys = [masterKey as KeyBase, registerEmailKey].concat(guardians);
 
@@ -47,6 +39,16 @@ export class Keyset {
 
   public hash(): string {
     return getKeysetHash(this.keys);
+  }
+
+  public obscure(): Keyset {
+    const keys = this.keys.map((key) => {
+      if (KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") {
+        return key.obscure();
+      }
+      return key;
+    });
+    return new Keyset(keys);
   }
 
   public toJson(): string {
@@ -91,7 +93,7 @@ export class Keyset {
           return KeySecp256k1Wallet.fromJsonObj(v.KeySecp256k1Wallet);
         }
         throw new Error("Invalid KeyBase");
-      })
+      }),
     );
   }
 }
