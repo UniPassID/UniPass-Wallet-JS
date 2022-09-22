@@ -10,8 +10,8 @@ export interface UnipassWalletContext {
 }
 
 export const unipassWalletContext: UnipassWalletContext = {
-  moduleMain: "0x86407827c875a69F6A2dfa00d50dd4F2Da24ac66",
-  moduleMainUpgradable: "0x02997dfE857c10276Ffba7d702Cf0fb9096E3b97",
+  moduleMain: "0x04c9CeF691D305f12816CAA5ee57d346e21c9334",
+  moduleMainUpgradable: "0x43574355F5290D79C95f13DfE39958768E98E74c",
   moduleGuest: "0xCB0F96A80bdaE9B7e453C6cee0895DEc3a47cAf0",
 
   dkimKeys: "0xe59C516F6eaE143B2563f8006D69dDC1f417bba3",
