@@ -36,7 +36,6 @@ const DB: DBProps = {
       const res = await db.table("users").put(user);
       return res;
     } catch (err) {
-      console.error(err);
       return undefined;
     }
   },

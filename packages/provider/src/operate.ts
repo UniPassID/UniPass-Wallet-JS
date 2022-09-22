@@ -218,31 +218,24 @@ const doLogout = async (email: string) => {
 const syncEmail = async (email: string, chainType: ChainType, env: Environment) => {
   if (!email) throw new WalletError(402004);
   checkEmailFormat(email);
-  const user = await DB.getUser(email ?? "");
-  if (user) {
-    const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
-    await api.syncEmail({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
-  } else {
-    throw new WalletError(402007);
-  }
+  const user = await getUser();
+  const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
+  await api.syncEmail({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
 };
 
 const checkAccountStatus = async (email: string, chainType: ChainType, env: Environment) => {
   checkEmailFormat(email);
-  const user = await DB.getUser(email ?? "");
-  if (user) {
-    const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
-    const {
-      data: { syncStatus, upAuthToken },
-    } = await api.accountStatus({
-      email,
-      authChainNode: getAuthNodeChain(env, chainType),
-      sessionKeyPermit,
-    });
-    console.log(`syncStatus: ${syncStatus}`);
-    return syncStatus;
-  }
-  throw new WalletError(402007);
+  const user = await getUser();
+  const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
+  const {
+    data: { syncStatus },
+  } = await api.accountStatus({
+    email,
+    authChainNode: getAuthNodeChain(env, chainType),
+    sessionKeyPermit,
+  });
+  console.log(`syncStatus: ${syncStatus}`);
+  return syncStatus;
 };
 
 const genTransaction = async (
@@ -252,169 +245,135 @@ const genTransaction = async (
   env: Environment,
   fee?: TransactionFee,
 ) => {
-  const users = await DB.getUsers();
-  const email = _email || window.localStorage.getItem("email");
-  if (users.length > 0) {
-    const user = email ? users.find((e) => e.email === email) : users[0];
-    if (user) {
-      const txs: Array<Transaction> = [];
-      const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
-      txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
-      if (fee) {
-        const { token, value: tokenValue } = fee;
-        if (token !== ADDRESS_ZERO) {
-          const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
-          const tokenData = erc20Interface.encodeFunctionData("transfer", [target, tokenValue]);
-          txs.push(new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build());
+  const user = await getUser();
+  const txs: Array<Transaction> = [];
+  const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
+  txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
+  if (fee) {
+    const { token, value: tokenValue } = fee;
+    if (token !== ADDRESS_ZERO) {
+      const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
+      const tokenData = erc20Interface.encodeFunctionData("transfer", [target, tokenValue]);
+      txs.push(new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build());
+    } else {
+      txs.push(new CallTxBuilder(true, BigNumber.from(0), target, tokenValue, "0x").build());
+    }
+  }
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
+  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
+  if (chainType !== "polygon") {
+    const syncStatus = await checkAccountStatus(user.email, chainType, env);
+    const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
+    const serverTxs: (ExecuteTransaction | Transactionish)[] = [];
+    if (syncStatus === SyncStatusEnum.ServerSynced) {
+      const {
+        data: { transactions = [], isNeedDeploy },
+      } = await api.syncTransaction({
+        email: user.email,
+        sessionKeyPermit,
+        authChainNode: getAuthNodeChain(env, chainType),
+      });
+      transactions.forEach((v, i) => {
+        transactions[i] = { ...v, gasLimit: BigNumber.from(v.gasLimit._hex), value: BigNumber.from(v.value._hex) };
+      });
+      if (transactions.length === 1) {
+        if (isNeedDeploy) {
+          serverTxs.push(transactions[0]);
         } else {
-          txs.push(new CallTxBuilder(true, BigNumber.from(0), target, tokenValue, "0x").build());
-        }
-      }
-      const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
-      const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
-      if (chainType !== "polygon") {
-        const syncStatus = await checkAccountStatus(email, chainType, env);
-        const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
-        const serverTxs: (ExecuteTransaction | Transactionish)[] = [];
-        if (syncStatus === SyncStatusEnum.ServerSynced) {
-          const {
-            data: { transactions = [], isNeedDeploy },
-          } = await api.syncTransaction({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
-          transactions.forEach((v, i) => {
-            transactions[i] = { ...v, gasLimit: BigNumber.from(v.gasLimit._hex), value: BigNumber.from(v.value._hex) };
-          });
-          if (transactions.length === 1) {
-            if (isNeedDeploy) {
-              serverTxs.push(transactions[0]);
-            } else {
-              serverTxs.push({
-                type: "Execute",
-                transactions,
-                sessionKeyOrSignerIndex: [],
-                gasLimit: constants.Zero,
-              });
-            }
-          } else if (transactions.length === 2) {
-            serverTxs.push(transactions[0]);
-            serverTxs.push({
-              type: "Execute",
-              transactions: transactions[1],
-              sessionKeyOrSignerIndex: [],
-              gasLimit: constants.Zero,
-            });
-          }
-
           serverTxs.push({
             type: "Execute",
-            transactions: txs,
-            sessionKeyOrSignerIndex: sessionkey,
+            transactions,
+            sessionKeyOrSignerIndex: [],
             gasLimit: constants.Zero,
           });
-          console.log("[genTransaction]");
-
-          console.log(serverTxs);
-          const transaction = await wallet.sendTransaction({ type: "Bundled", transactions: serverTxs });
-          const transactionReceipt = await transaction.wait();
-          console.log(transactionReceipt);
-          return transactionReceipt;
         }
-        if (syncStatus === SyncStatusEnum.NotReceived) {
-          throw new WalletError(403001);
-        } else if (syncStatus === SyncStatusEnum.NotSynced) {
-          throw new WalletError(403001);
-        }
+      } else if (transactions.length === 2) {
+        serverTxs.push(transactions[0]);
+        serverTxs.push({
+          type: "Execute",
+          transactions: transactions[1],
+          sessionKeyOrSignerIndex: [],
+          gasLimit: constants.Zero,
+        });
       }
-      console.log("[genTransaction1]");
-      console.log(txs);
-      const transaction = await wallet.sendTransaction(txs, sessionkey);
+
+      serverTxs.push({
+        type: "Execute",
+        transactions: txs,
+        sessionKeyOrSignerIndex: sessionkey,
+        gasLimit: constants.Zero,
+      });
+      console.log("[genTransaction]");
+      console.log(serverTxs);
+      const transaction = await wallet.sendTransaction({ type: "Bundled", transactions: serverTxs });
       const transactionReceipt = await transaction.wait();
       console.log(transactionReceipt);
       return transactionReceipt;
     }
-  } else {
-    throw new WalletError(402007);
+    if (syncStatus === SyncStatusEnum.NotReceived) {
+      throw new WalletError(403001);
+    } else if (syncStatus === SyncStatusEnum.NotSynced) {
+      throw new WalletError(403001);
+    }
   }
+  console.log("[genTransaction1]");
+  console.log(txs);
+  const transaction = await wallet.sendTransaction(txs, sessionkey);
+  const transactionReceipt = await transaction.wait();
+  console.log(transactionReceipt);
+  return transactionReceipt;
 };
 
 const genSignMessage = async (message: string, _email: string, env: Environment) => {
-  const users = await DB.getUsers();
-  const email = _email || window.localStorage.getItem("email");
-  if (users.length > 0) {
-    const user = email ? users.find((e) => e.email === email) : users[0];
-    if (user) {
-      const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
-      const sessionkey = await SessionKey.fromSessionKeyStore(users[0].sessionKey, wallet, decryptSessionKey);
-      const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), sessionkey);
-      return signedMessage;
-    }
-  } else {
-    throw new WalletError(402007);
-  }
+  const user = await getUser();
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
+  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
+  const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), sessionkey);
+  return signedMessage;
 };
 
 const verifySignature = async (message: string, sig: string, _email: string, env: Environment) => {
-  const users = await DB.getUsers();
-  const email = _email || window.localStorage.getItem("email");
-  if (users.length > 0) {
-    const user = email ? users.find((e) => e.email === email) : users[0];
-    if (user) {
-      const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
-      const signedMessage = await wallet.isValidSignature(arrayify(keccak256(toUtf8Bytes(message))), sig);
-      return signedMessage;
-    }
-  } else {
-    throw new WalletError(402007);
-  }
+  const user = await getUser();
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
+  const signedMessage = await wallet.isValidSignature(arrayify(keccak256(toUtf8Bytes(message))), sig);
+  return signedMessage;
 };
 
 const getWallet = async (_email: string, env: Environment, chainType: ChainType) => {
-  const users = await DB.getUsers();
-  const email = _email || window.localStorage.getItem("email");
-  if (users.length > 0) {
-    const user = email ? users.find((e) => e.email === email) : users[0];
-    if (user) {
-      const keyset = Keyset.fromJson(user.keyset.keysetJson);
-      const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
-      return wallet;
-    }
-  } else {
-    throw new WalletError(402007);
-  }
+  const user = await getUser();
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
+  return wallet;
 };
 
 const checkLocalStatus = async (env: Environment) => {
-  const users = await DB.getUsers();
-  const email = window.localStorage.getItem("email");
-  if (users.length > 0) {
-    const user = email ? users.find((e) => e.email === email) : users[0];
-    if (user) {
-      if (dayjs.unix(user.sessionKey.expires).isAfter(dayjs())) {
-        const keyset = Keyset.fromJson(user.keyset.keysetJson);
-        const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
-        const isLogged = await wallet.isSyncKeysetHash();
-        console.log("isLogged");
-        console.log(isLogged);
-
-        if (isLogged) {
-          return user.email;
-        }
-      }
+  try {
+    const user = await getUser();
+    const keyset = Keyset.fromJson(user.keyset.keysetJson);
+    const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
+    const isLogged = await wallet.isSyncKeysetHash();
+    if (isLogged) {
+      return user.email;
     }
+  } catch (e) {
+    return false;
   }
 };
 
-const ckeckSyncStatus = async (_email: string, chainType: ChainType, env: Environment) => {
+const getUser = async (): Promise<User | undefined> => {
   const users = await DB.getUsers();
-  const email = _email || window.localStorage.getItem("email");
-  if (users.length > 0) {
-    const status = await checkAccountStatus(email, chainType, env);
-    if (status === SyncStatusEnum.NotReceived || status === SyncStatusEnum.NotSynced) return false;
-    return status === SyncStatusEnum.Synced || status === SyncStatusEnum.ServerSynced;
+  const email = localStorage.getItem("email");
+  if (users.length > 0 && email) {
+    const user = users.find((e) => e.email === email);
+    if (user && dayjs.unix(user.sessionKey.expires).isAfter(dayjs())) return user;
+    await DB.delUser(email);
+    throw new WalletError(403002);
+  } else {
+    throw new WalletError(402007);
   }
-  throw new WalletError(402007);
 };
 
 export {
@@ -428,7 +387,6 @@ export {
   genTransaction,
   genSignMessage,
   checkLocalStatus,
-  ckeckSyncStatus,
   verifySignature,
   getWallet,
 };
