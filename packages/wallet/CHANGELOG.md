@@ -1,5 +1,19 @@
 # @unipasswallet/wallet
 
+## 0.0.1-alpha.10
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.9
+  - @unipasswallet/dkim-base@0.0.1-alpha.9
+  - @unipasswallet/keys@0.0.1-alpha.9
+  - @unipasswallet/network@0.0.1-alpha.9
+  - @unipasswallet/relayer@0.0.1-alpha.5
+  - @unipasswallet/transactions@0.0.1-alpha.9
+  - @unipasswallet/utils@0.0.1-alpha.9
+
 ## 0.0.1-alpha.9
 
 ### Patch Changes
