@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.0.1-alpha.8
+
+### Patch Changes
+
+- update versions
+
 ## 0.0.1-alpha.7
 
 ### Patch Changes

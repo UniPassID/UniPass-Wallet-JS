@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.0.1-alpha.8
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.8
+  - @unipasswallet/utils@0.0.1-alpha.8
+
 ## 0.0.1-alpha.7
 
 ### Patch Changes
