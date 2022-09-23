@@ -87,7 +87,14 @@ export class WalletsCreator {
       const ins = new WalletsCreator(keyset, address, env);
       WalletsCreator.instance = ins;
     }
+    WalletsCreator.instance.polygon.address = address;
+    WalletsCreator.instance.polygon.keyset = keyset;
 
+    WalletsCreator.instance.bsc.address = address;
+    WalletsCreator.instance.bsc.keyset = keyset;
+
+    WalletsCreator.instance.rangers.address = address;
+    WalletsCreator.instance.rangers.keyset = keyset;
     return WalletsCreator.instance;
   }
 
