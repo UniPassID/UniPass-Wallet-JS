@@ -111,7 +111,7 @@ const doRegister = async (
     keyset: {
       hash: keysetHash,
       masterKeyAddress: localKeyData.localKeyAddress,
-      keysetJson: keyset.toJson(),
+      keysetJson: keyset.obscure().toJson(),
     },
     sessionKey: {
       localKey: {
