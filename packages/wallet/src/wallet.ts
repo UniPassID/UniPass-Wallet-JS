@@ -82,9 +82,9 @@ export type SignedTransactions = {
 };
 
 export class Wallet extends Signer {
-  public readonly address: string;
+  public address: string;
 
-  public readonly keyset: Keyset;
+  public keyset: Keyset;
 
   public readonly context: UnipassWalletContext = unipassWalletContext;
 
