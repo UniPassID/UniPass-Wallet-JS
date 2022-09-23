@@ -11,13 +11,13 @@ export const chain_config = {
     rpc_url: "https://node.wallet.unipass.id/rangers-mainnet",
   },
   "polygon-mumbai": {
-    rpc_url: "https://polygon-testnet.public.blastapi.io",
+    rpc_url: "https://node.wallet.unipass.id/polygon-mumbai",
   },
   "bsc-testnet": {
-    rpc_url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+    rpc_url: "https://node.wallet.unipass.id/bsc-testnet",
   },
   "rangers-robin": {
-    rpc_url: "https://robin.rangersprotocol.com/api/jsonrpc",
+    rpc_url: "https://node.wallet.unipass.id/rangers-robin",
   },
 };
 
