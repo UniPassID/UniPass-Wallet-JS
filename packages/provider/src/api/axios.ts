@@ -30,9 +30,9 @@ export default function requestFactory(backendUrl: string) {
 }
 
 export const initResponse = (response: AxiosResponse) => {
-  if (response.status >= 400) {
-    throw new WalletError(response.status);
-  }
+  // if (response.status >= 400) {
+  //   throw new WalletError(response.status);
+  // }
   if (!response.data?.statusCode) {
     throw new WalletError(404);
   } else if (response.data.statusCode !== 200) {
