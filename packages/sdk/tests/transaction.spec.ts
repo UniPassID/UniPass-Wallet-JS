@@ -158,20 +158,6 @@ describe("Test Transactions", () => {
       context.txParams,
     );
     deployTx.revertOnError = true;
-    console.log(await context.relayer.getNonce(walletContext.wallet.address));
-    console.log(
-      await walletContext.wallet
-        .toTransaction(
-          {
-            type: "Execute",
-            transactions: [updateKeysetHashTx],
-            sessionKeyOrSignerIndex: [],
-            gasLimit: constants.Zero,
-          },
-          await context.relayer.getNonce(walletContext.wallet.address),
-        )
-        .then((v) => v[0]),
-    );
     const tx: ExecuteTransaction = {
       type: "Execute",
       transactions: [
@@ -192,7 +178,6 @@ describe("Test Transactions", () => {
       gasLimit: constants.Zero,
     };
     const ret = await (await wallet.sendTransaction(tx)).wait();
-    console.log(ret);
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
   });
