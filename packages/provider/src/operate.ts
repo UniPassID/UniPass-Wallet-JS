@@ -60,6 +60,7 @@ const doRegister = async (
   // 3. 获取accountAddress
   const keyset = getAccountKeysetJson(email, localKeyData.localKeyAddress, policyAddress, pepper);
   const keysetHash = keyset.hash();
+  console.log(keyset);
 
   const wallet = WalletsCreator.getPolygonProvider(keyset, env);
   const accountAddress = wallet.address;
@@ -249,6 +250,9 @@ const genTransaction = async (
   const txs: Array<Transaction> = [];
   const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
   txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
+  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
   if (fee) {
     const { token, value: tokenValue } = fee;
     if (token !== ADDRESS_ZERO) {
@@ -256,12 +260,11 @@ const genTransaction = async (
       const tokenData = erc20Interface.encodeFunctionData("transfer", [target, tokenValue]);
       txs.push(new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build());
     } else {
-      txs.push(new CallTxBuilder(true, BigNumber.from(0), target, tokenValue, "0x").build());
+      const receiver = (await wallet.relayer.getFeeOptions()).options[0].to;
+      console.log(`receiver: ${receiver}`);
+      txs.push(new CallTxBuilder(true, BigNumber.from(0), receiver, tokenValue, "0x").build());
     }
   }
-  const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
-  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
   if (chainType !== "polygon") {
     const syncStatus = await checkAccountStatus(user.email, chainType, env);
     const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");

@@ -62,8 +62,8 @@ export class KeyEmailDkim extends KeyBase {
 
     return new KeyEmailDkim(
       "Hash",
-      "0x",
       obscureEmail(this.emailFrom),
+      "0x",
       this.roleWeight,
       this.dkimParams,
       this.emailHash,
