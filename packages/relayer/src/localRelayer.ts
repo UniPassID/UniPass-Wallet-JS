@@ -1,7 +1,7 @@
 import { ExecuteCall, FeeOption, PendingExecuteCallArgs, Relayer, TxnReciptResult } from ".";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain } from "@unipasswallet/abi";
-import { BigNumber, Contract, Signer } from "ethers";
+import { BigNumber, constants, Contract, Signer } from "ethers";
 import { Interface } from "ethers/lib/utils";
 
 export class LocalRelayer implements Relayer {
@@ -15,8 +15,9 @@ export class LocalRelayer implements Relayer {
     return (await this.signer.provider.getCode(walletAddress)) !== "0x";
   }
 
-  async getFeeOptions(): Promise<{ options: FeeOption[] }> {
-    return { options: [] };
+  async getFeeOptions(): Promise<{ options: Array<Pick<FeeOption, "to">> }> {
+    const address = await this.signer.getAddress();
+    return { options: [{ to: address }] };
   }
 
   async getNonce(walletAddr: string): Promise<BigNumber> {

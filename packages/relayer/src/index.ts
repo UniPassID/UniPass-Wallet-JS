@@ -60,7 +60,7 @@ export interface Relayer {
 
   // estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]>;
 
-  getFeeOptions(walletAddress: string, ...transactions: Transaction[]): Promise<{ options: FeeOption[] }>;
+  getFeeOptions(gasLimit?: string): Promise<{ options: FeeOption[] | Array<Pick<FeeOption, "to">> }>;
 
   // gasRefundOptions(...transactions: Transaction[]): Promise<FeeOption[]>;
 

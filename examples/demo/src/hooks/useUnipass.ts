@@ -8,7 +8,7 @@ export function useUnipass() {
 
   useEffect(() => {
     try {
-      const provider = UnipassWalletProvider.getInstance({ env: "test" });
+      const provider = UnipassWalletProvider.getInstance({ env: "dev" });
       setUnipassWallet(provider);
     } catch (e: any) {
       message.error(e.message);
@@ -65,6 +65,7 @@ export function useUnipass() {
         return true;
       }
     } catch (e: any) {
+      console.log(e);
       message.error(e.message);
     } finally {
       setLoading(false);
@@ -93,6 +94,8 @@ export function useUnipass() {
         return true;
       }
     } catch (e: any) {
+      console.log(e);
+
       message.error(e.message);
     } finally {
       setLoading(false);
