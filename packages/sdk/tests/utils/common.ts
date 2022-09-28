@@ -27,7 +27,13 @@ export function randomKeyset(len: number): Keyset {
       const random = randomInt(1);
 
       if (random === 0) {
-        ret.push(new KeySecp256k1Wallet(WalletEOA.createRandom(), randomRoleWeight(role, len), SignType.EthSign));
+        ret.push(
+          new KeySecp256k1Wallet(
+            WalletEOA.createRandom(),
+            randomRoleWeight(role, len),
+            randomInt(10) % 2 === 1 ? SignType.EIP712Sign : SignType.EthSign,
+          ),
+        );
       } else {
         ret.push(
           new KeyEmailDkim(

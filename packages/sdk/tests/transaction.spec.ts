@@ -377,7 +377,7 @@ describe("Test Transactions", () => {
     subject = txBuilder2.digestMessage();
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
-      EmailType.UpdateKeysetHash,
+      EmailType.LockKeysetHash,
       subject,
       context.unipassPrivateKey.exportKey("pkcs1"),
       Role.Guardian,
@@ -399,7 +399,7 @@ describe("Test Transactions", () => {
 
     await new Promise((resolve) =>
       // eslint-disable-next-line no-promise-executor-return
-      setTimeout(resolve, newTimelockDuring * 1000 + 1000),
+      setTimeout(resolve, newTimelockDuring * 1000 + 2000),
     );
 
     ret = await (await walletContext.wallet.sendTransaction([tx])).wait();

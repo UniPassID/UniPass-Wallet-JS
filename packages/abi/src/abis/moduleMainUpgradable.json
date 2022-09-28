@@ -226,6 +226,11 @@
           "type": "bytes32"
         },
         {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes",
           "name": "_reason",
           "type": "bytes"
@@ -334,6 +339,37 @@
       "inputs": [
         {
           "indexed": false,
+          "internalType": "bytes32",
+          "name": "_txHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_requested",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_available",
+          "type": "uint256"
+        }
+      ],
+      "name": "NotEnoughGasEvent",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
           "internalType": "bytes4",
           "name": "_signature",
           "type": "bytes4"
@@ -407,6 +443,12 @@
           "internalType": "bytes32",
           "name": "_txHash",
           "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
         }
       ],
       "name": "TxExecuted",
@@ -420,6 +462,12 @@
           "internalType": "bytes32",
           "name": "_txHash",
           "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -439,6 +487,12 @@
           "internalType": "bytes32",
           "name": "_txHash",
           "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
         },
         {
           "indexed": false,
