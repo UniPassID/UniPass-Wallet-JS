@@ -52,7 +52,7 @@ export class Keyset {
   }
 
   public toJson(): string {
-    return `[${this.keys
+    return `{"keys":[${this.keys
       .map((v) => {
         if (KeyEmailDkim.isKeyEmailDkim(v)) {
           return `{"KeyEmailDkim":${v.toJson()}}`;
@@ -71,12 +71,12 @@ export class Keyset {
         }
         throw new Error("Not Valid KeyBase");
       })
-      .join(",")}]`;
+      .join(",")}]}`;
   }
 
   public static fromJson(json: string): Keyset {
     return new Keyset(
-      (JSON.parse(json) as any[]).map((v) => {
+      (JSON.parse(json) as any).keys.map((v) => {
         if (v.KeyEmailDkim) {
           return KeyEmailDkim.fromJsonObj(v.KeyEmailDkim);
         }
