@@ -17,6 +17,7 @@
     "@unipasswallet/transaction-builders": "0.0.0"
   },
   "changesets": [
+    "dull-bobcats-drive",
     "empty-dots-juggle",
     "funny-experts-repeat",
     "gorgeous-panthers-accept",
