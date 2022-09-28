@@ -99,7 +99,7 @@ export class RpcService implements RpcService {
   }
 
   async feeTokens(headers?: object): Promise<FeeTokensReturn> {
-    const res = await this.fetch(this.url("fee_tokens"), createGetPostHTTPRequest(headers));
+    const res = await this.fetch(this.url("/fee_tokens"), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
     return {
       isFeeRequired: <boolean>_data.isFeeRequired,
