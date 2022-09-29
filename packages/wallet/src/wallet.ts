@@ -75,6 +75,7 @@ export type SignedTransactions = {
   digest: string;
   chainId: number;
   transactions: Transaction[];
+  gasLimit: BigNumber;
   nonce: BigNumber;
   signature: string;
   data: string;
@@ -232,6 +233,7 @@ export class Wallet extends Signer {
     transaction: Deferrable<InputTransaction>,
     sessionKeyOrSignerIndexes: SessionKey | number[] = [],
     innerNonce?: BigNumber,
+    innerGasLimit: BigNumber = constants.Zero,
   ): Promise<SignedTransactions> {
     const txs = await resolveArrayProperties<InputTransaction>(transaction);
 
@@ -243,6 +245,7 @@ export class Wallet extends Signer {
     let signature: string;
     let data: string;
     let address: string;
+    let gasLimit: BigNumber;
     if (isBundledTransaction(txs)) {
       let bundledNonce = innerNonce;
       if (bundledNonce === undefined) {
@@ -265,6 +268,21 @@ export class Wallet extends Signer {
       data = moduleMainInterface.encodeFunctionData("execute", [transactions, 0, "0x"]);
       digest = digestGuestTxHash(chainId, this.context.moduleGuest!, transactions);
       address = this.context.moduleGuest!;
+      gasLimit = constants.Zero;
+    } else if (isExecuteTransaction(txs)) {
+      if (Array.isArray(txs.transactions)) {
+        transactions = await Promise.all(txs.transactions.map((v) => this.toTransaction(v).then((v) => v[0])));
+      } else {
+        transactions = [await this.toTransaction(txs.transactions).then((v) => v[0])];
+      }
+      nonce = innerNonce;
+      if (nonce === undefined) {
+        nonce = await this.relayer.getNonce(this.address);
+      }
+      digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
+      signature = await this.signMessage(arrayify(digest), txs.sessionKeyOrSignerIndex);
+      address = this.address;
+      gasLimit = txs.gasLimit;
     } else {
       if (Array.isArray(txs)) {
         transactions = await Promise.all(txs.map((v) => this.toTransaction(v).then((v) => v[0])));
@@ -278,6 +296,7 @@ export class Wallet extends Signer {
       digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
       signature = await this.signMessage(arrayify(digest), sessionKeyOrSignerIndexes);
       address = this.address;
+      gasLimit = innerGasLimit;
     }
 
     return {
@@ -288,6 +307,7 @@ export class Wallet extends Signer {
       data,
       transactions,
       address,
+      gasLimit,
     };
   }
 
@@ -391,7 +411,7 @@ export class Wallet extends Signer {
       } else {
         transactions = [toTransaction(tx.transactions)];
       }
-      const sig = await this.signTransactions(transactions, tx.sessionKeyOrSignerIndex, nonce);
+      const sig = await this.signTransactions(transactions, tx.sessionKeyOrSignerIndex, nonce, tx.gasLimit);
       return [
         {
           _isUnipassWalletTransaction: true,
@@ -424,8 +444,9 @@ export class Wallet extends Signer {
     transactions: Deferrable<InputTransaction>,
     sessionKeyOrSignerIndexes: SessionKey | number[] = [],
     feeToken?: string,
+    gasLmit: BigNumber = constants.Zero,
   ): Promise<providers.TransactionResponse> {
-    const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes);
+    const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes, undefined, gasLmit);
     const estimateGas = await this.unipassEstimateGas(signedTransactions);
     const call: ExecuteCall = {
       txs: signedTransactions.transactions.map((v) => toUnipassTransaction(v)),
@@ -476,14 +497,12 @@ export class Wallet extends Signer {
   }
 
   async isSyncKeysetHash(): Promise<boolean> {
-    if (!(await isContractDeployed(this.address, this.provider))) {
+    try {
+      const contract = this.getContract();
+      return await contract.isValidKeysetHash(this.keyset.hash())
+    } catch (err) {
       return false;
     }
-
-    const contract = this.getContract();
-    const keysetHash = await contract.getKeysetHash();
-
-    return keysetHash === constants.HashZero || keysetHash === this.keyset.hash();
   }
 
   getContract(): Contract {

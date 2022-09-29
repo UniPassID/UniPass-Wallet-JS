@@ -1,5 +1,66 @@
 # @unipasswallet/transaction-builders
 
+## 0.0.1-alpha.10
+
+### Patch Changes
+
+- @unipasswallet/keys: update json parse
+  @unipasswallet/relayer: update receipt
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.15
+  - @unipasswallet/keys@0.0.1-alpha.15
+  - @unipasswallet/transactions@0.0.1-alpha.14
+  - @unipasswallet/utils@0.0.1-alpha.15
+  - @unipasswallet/wallet@0.0.1-alpha.15
+
+## 0.0.1-alpha.9
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.13
+  - @unipasswallet/keys@0.0.1-alpha.13
+  - @unipasswallet/transactions@0.0.1-alpha.13
+  - @unipasswallet/utils@0.0.1-alpha.13
+  - @unipasswallet/wallet@0.0.1-alpha.14
+
+## 0.0.1-alpha.8
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.12
+  - @unipasswallet/keys@0.0.1-alpha.12
+  - @unipasswallet/transactions@0.0.1-alpha.12
+  - @unipasswallet/utils@0.0.1-alpha.12
+  - @unipasswallet/wallet@0.0.1-alpha.13
+
+## 0.0.1-alpha.7
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.11
+  - @unipasswallet/keys@0.0.1-alpha.11
+  - @unipasswallet/transactions@0.0.1-alpha.11
+  - @unipasswallet/utils@0.0.1-alpha.11
+  - @unipasswallet/wallet@0.0.1-alpha.12
+
+## 0.0.1-alpha.6
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.10
+  - @unipasswallet/keys@0.0.1-alpha.10
+  - @unipasswallet/transactions@0.0.1-alpha.10
+  - @unipasswallet/utils@0.0.1-alpha.10
+  - @unipasswallet/wallet@0.0.1-alpha.11
+
 ## 0.0.1-alpha.5
 
 ### Patch Changes

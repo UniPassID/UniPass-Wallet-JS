@@ -1,4 +1,4 @@
-import { ExecuteCall, FeeOption, PendingExecuteCallArgs, Relayer, TxnReciptResult } from ".";
+import { ExecuteCall, FeeOption, PendingExecuteCallArgs, Relayer, TxnReceiptResult } from ".";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain } from "@unipasswallet/abi";
 import { BigNumber, constants, Contract, Signer } from "ethers";
@@ -58,12 +58,13 @@ export class LocalRelayer implements Relayer {
     return ret.hash;
   }
 
-  async wait(txHash: string): Promise<TxnReciptResult | undefined> {
+  async wait(txHash: string): Promise<TxnReceiptResult | undefined> {
     return {
       txHash,
       index: 0,
-      status: "",
+      status: 1,
       logs: [],
+      receipts: [],
     };
   }
 }

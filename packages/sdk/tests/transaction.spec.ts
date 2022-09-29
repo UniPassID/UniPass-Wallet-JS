@@ -10,11 +10,18 @@ import {
   UpdateImplementationTxBuilder,
   SyncAccountTxBuilder,
 } from "@unipasswallet/transaction-builders";
-import { generateDkimParams, randomKeyset, Role, selectKeys } from "./utils/common";
+import { generateDkimParams, randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
 import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
-import { SessionKey, generateEmailSubject, getWalletDeployTransaction } from "@unipasswallet/wallet";
-import { SignType } from "@unipasswallet/keys";
+import {
+  SessionKey,
+  generateEmailSubject,
+  getWalletDeployTransaction,
+  Wallet,
+  ExecuteTransaction,
+} from "@unipasswallet/wallet";
+import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
 import { digestTxHash } from "@unipasswallet/transactions";
+import { RpcRelayer } from "@unipasswallet/relayer";
 
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
@@ -44,7 +51,7 @@ describe("Test Transactions", () => {
     hash = randomBytes(32);
     expect(await walletContext.wallet.isValidSignature(hash, sig)).toEqual(false);
   });
-  it("Test DeployTx + AccountTx + TransferTx", async () => {
+  it("Test DeployTx + SyncAccountTx + TransferTx", async () => {
     walletContext = await initWalletContext(context, false);
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
     const newKeyset = randomKeyset(10);
@@ -98,6 +105,82 @@ describe("Test Transactions", () => {
     expect(await walletContext.wallet.getContract().getMetaNonce()).toEqual(BigNumber.from(10));
     expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(true);
     expect(await context.provider.getBalance(to)).toEqual(toValue);
+  });
+  it("Test DeployTx + UpdateKeysetHashTx + TransferTx", async () => {
+    walletContext = await initWalletContext(context, false);
+    const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
+    const newKeysetHash = randomBytes(32);
+    let signerIndexes: number[];
+    const txBuilder = await new UpdateKeysetHashTxBuilder(
+      walletContext.wallet.address,
+      walletContext.metaNonce,
+      newKeysetHash,
+      true,
+    );
+    [walletContext.wallet, signerIndexes] = await selectKeys(
+      walletContext.wallet,
+      EmailType.UpdateKeysetHash,
+      txBuilder.digestMessage(),
+      context.unipassPrivateKey.exportKey("pkcs1"),
+      Role.Owner,
+      100,
+    );
+    const updateKeysetHashTx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
+    const to = WalletEOA.createRandom().address;
+    const toValue = parseEther("0.001");
+    const transferTx = new CallTxBuilder(true, constants.Zero, to, toValue, "0x").build();
+    const digestHash = digestTxHash(context.chainId, walletContext.wallet.address, 2, [transferTx]);
+    [walletContext.wallet, signerIndexes] = await selectKeys(
+      walletContext.wallet,
+      EmailType.CallOtherContract,
+      digestHash,
+      context.unipassPrivateKey.exportKey("pkcs1"),
+      Role.AssetsOp,
+      100,
+    );
+    const keyset = new Keyset([
+      new KeySecp256k1Wallet(WalletEOA.createRandom(), new RoleWeight(100, 100, 100), SignType.EthSign),
+    ]);
+    const wallet = Wallet.create({
+      keyset,
+      context: context.unipassWalletContext,
+      provider: context.provider,
+      relayer: context.relayer,
+    });
+    await transferEth(
+      new WalletEOA(process.env.HARDHAT_PRIVATE_KEY, context.provider),
+      wallet.address,
+      parseEther("10"),
+    );
+    await context.deployer.deployProxyContract(
+      context.moduleMain.interface,
+      context.moduleMain.address,
+      keyset.hash(),
+      context.txParams,
+    );
+    deployTx.revertOnError = true;
+    const tx: ExecuteTransaction = {
+      type: "Execute",
+      transactions: [
+        deployTx,
+        await walletContext.wallet
+          .toTransaction(
+            {
+              type: "Execute",
+              transactions: [updateKeysetHashTx],
+              sessionKeyOrSignerIndex: [],
+              gasLimit: constants.Zero,
+            },
+            await context.relayer.getNonce(walletContext.wallet.address),
+          )
+          .then((v) => v[0]),
+      ],
+      sessionKeyOrSignerIndex: [0],
+      gasLimit: constants.Zero,
+    };
+    const ret = await (await wallet.sendTransaction(tx)).wait();
+    expect(ret.status).toEqual(1);
+    expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
   });
   it("Updating KeysetHash Wighout TimeLock Should Success", async () => {
     const newKeysetHash = randomBytes(32);
@@ -295,7 +378,7 @@ describe("Test Transactions", () => {
     subject = txBuilder2.digestMessage();
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
-      EmailType.UpdateKeysetHash,
+      EmailType.LockKeysetHash,
       subject,
       context.unipassPrivateKey.exportKey("pkcs1"),
       Role.Guardian,
@@ -317,7 +400,7 @@ describe("Test Transactions", () => {
 
     await new Promise((resolve) =>
       // eslint-disable-next-line no-promise-executor-return
-      setTimeout(resolve, newTimelockDuring * 1000 + 1000),
+      setTimeout(resolve, newTimelockDuring * 1000 + 2000),
     );
 
     ret = await (await walletContext.wallet.sendTransaction([tx])).wait();

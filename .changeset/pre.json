@@ -17,14 +17,19 @@
     "@unipasswallet/transaction-builders": "0.0.0"
   },
   "changesets": [
+    "dull-bobcats-drive",
     "empty-dots-juggle",
     "funny-experts-repeat",
     "gorgeous-panthers-accept",
     "healthy-points-serve",
+    "hot-ghosts-walk",
     "odd-pans-mix",
     "proud-avocados-film",
+    "purple-dodos-drop",
+    "rude-candles-compare",
     "serious-ties-sort",
     "strange-chicken-add",
+    "swift-buses-sip",
     "tiny-olives-punch",
     "tricky-squids-join"
   ]

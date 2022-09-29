@@ -1,6 +1,5 @@
 import { BigNumber } from "ethers";
-import { Transaction } from "@unipasswallet/transactions";
-import { PendingExecuteCallArgs, TxnReciptResult } from "./rpcRelayer";
+import { PendingExecuteCallArgs, TxnReceiptResult } from "./rpcRelayer";
 
 export * from "./rpcRelayer";
 
@@ -70,5 +69,5 @@ export interface Relayer {
 
   relay(args: PendingExecuteCallArgs): Promise<string>;
 
-  wait(txHash: string): Promise<TxnReciptResult | undefined>;
+  wait(txHash: string): Promise<TxnReceiptResult | undefined>;
 }

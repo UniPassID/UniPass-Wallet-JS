@@ -9,6 +9,7 @@ import {
   hashMessage,
   hexlify,
   toUtf8String,
+  zeroPad,
 } from "ethers/lib/utils";
 import TssWorker from "./tss-worker";
 import {
@@ -142,6 +143,8 @@ const sign = async (signInput: SignInput): Promise<string> => {
   const startSign = await api.sign(signInput);
   const res = startSign.data.tssRes;
   let sig = res.msg;
+  sig.r = zeroPad(sig.r, 32);
+  sig.s = zeroPad(sig.s, 32);
   const sigArray = concat([sig.r, sig.s, sig.recid]);
   sig = hexlify(sigArray);
   console.log(`[sign] sign = ${sig}`);
