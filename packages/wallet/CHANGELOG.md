@@ -1,5 +1,20 @@
 # @unipasswallet/wallet
 
+## 0.0.1-alpha.15
+
+### Patch Changes
+
+- @unipasswallet/keys: update json parse
+  @unipasswallet/relayer: update receipt
+- Updated dependencies
+  - @unipasswallet/relayer@0.0.1-alpha.10
+  - @unipasswallet/abi@0.0.1-alpha.15
+  - @unipasswallet/dkim-base@0.0.1-alpha.15
+  - @unipasswallet/keys@0.0.1-alpha.15
+  - @unipasswallet/network@0.0.1-alpha.15
+  - @unipasswallet/transactions@0.0.1-alpha.14
+  - @unipasswallet/utils@0.0.1-alpha.15
+
 ## 0.0.1-alpha.14
 
 ### Patch Changes

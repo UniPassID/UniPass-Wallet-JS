@@ -1,5 +1,14 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.11
+
+### Patch Changes
+
+- @unipasswallet/keys: update json parse
+  @unipasswallet/relayer: update receipt
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.15
+
 ## 0.0.1-alpha.9
 
 ### Patch Changes

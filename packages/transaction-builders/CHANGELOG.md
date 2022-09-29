@@ -1,5 +1,18 @@
 # @unipasswallet/transaction-builders
 
+## 0.0.1-alpha.10
+
+### Patch Changes
+
+- @unipasswallet/keys: update json parse
+  @unipasswallet/relayer: update receipt
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.15
+  - @unipasswallet/keys@0.0.1-alpha.15
+  - @unipasswallet/transactions@0.0.1-alpha.14
+  - @unipasswallet/utils@0.0.1-alpha.15
+  - @unipasswallet/wallet@0.0.1-alpha.15
+
 ## 0.0.1-alpha.9
 
 ### Patch Changes
