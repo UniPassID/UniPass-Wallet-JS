@@ -1,5 +1,11 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.19
+
+### Patch Changes
+
+- update provider
+
 ## 0.0.1-alpha.18
 
 ### Patch Changes
