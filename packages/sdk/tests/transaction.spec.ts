@@ -21,6 +21,7 @@ import {
 } from "@unipasswallet/wallet";
 import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
 import { digestTxHash } from "@unipasswallet/transactions";
+import { RpcRelayer } from "@unipasswallet/relayer";
 
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
