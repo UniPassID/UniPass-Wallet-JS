@@ -45,6 +45,7 @@ export default class UnipassWalletProvider implements WalletProvider {
   private password: string | undefined;
 
   private env: Environment = "prod";
+  private config: UnipassWalletProps | undefined ;
 
   static getInstance(props: UnipassWalletProps) {
     if (!UnipassWalletProvider.instance) {
@@ -56,7 +57,8 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   private constructor(props: UnipassWalletProps) {
-    const { env } = props;
+    const { env, relayer_config } = props;
+    this.config = props;
     this.env = env;
     const { backend } = getApiConfig(env);
     this.init(backend);
@@ -104,27 +106,27 @@ export default class UnipassWalletProvider implements WalletProvider {
   public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
     const { tx, fee, chain } = props;
     const _chain = chain ?? "polygon";
-    const transactionReceipt = await genTransaction(tx, this.email, _chain, this.env, fee);
+    const transactionReceipt = await genTransaction(tx, this.email, _chain, this.config, fee);
     return transactionReceipt;
   }
 
   public async signMessage(message: string) {
-    const result = await genSignMessage(message, this.email, this.env);
+    const result = await genSignMessage(message, this.email, this.config);
     return result;
   }
 
   public async verifySignMessage(message: string, signature: string): Promise<boolean> {
-    const isValid = await verifySignature(message, signature, this.email, this.env);
+    const isValid = await verifySignature(message, signature, this.email, this.config);
     return isValid;
   }
 
   public async wallet(chain: ChainType = "polygon") {
-    const wallet = await getWallet(this.email, this.env, chain);
+    const wallet = await getWallet(this.email, this.config, chain);
     return wallet;
   }
 
   public async isLoggedIn() {
-    const email = await checkLocalStatus(this.env);
+    const email = await checkLocalStatus(this.config);
     if (email) {
       this.email = email;
       return true;

@@ -2,7 +2,7 @@ import { providers, Wallet as WalletEOA } from "ethers";
 import { Wallet } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { RpcRelayer, LocalRelayer } from "@unipasswallet/relayer";
-import { AuthChainNode, ChainType, Environment } from "../interface/unipassWalletProvider";
+import { AuthChainNode, ChainType, Environment, UnipassWalletProps } from "../interface/unipassWalletProvider";
 import { unipassWalletContext } from "@unipasswallet/network";
 import { chain_config, api_config, test_api_config } from "../config/index";
 import { User } from "../interface";
@@ -10,11 +10,11 @@ import { decryptSessionKey } from "./session-key";
 import { signMsg } from "./cloud-key";
 import { SIG_PREFIX } from "./tss";
 
-const genProviders = (env: Environment) => {
+const genProviders = (config: UnipassWalletProps) => {
   let polygon_url = "";
   let bsc_url = "";
   let rangers_url = "";
-  switch (env) {
+  switch (config.env) {
     case "dev":
     case "test":
       polygon_url = chain_config["polygon-mumbai"].rpc_url;
@@ -38,39 +38,41 @@ const genProviders = (env: Environment) => {
 };
 
 const genRelayers = (
-  env: Environment,
+  config: UnipassWalletProps,
   polygonProvider: providers.JsonRpcProvider,
   bcdProvider: providers.JsonRpcProvider,
   rangersProvider: providers.JsonRpcProvider,
 ) => {
-  let relayer_url = "";
-  switch (env) {
+  let relayer_config;
+  switch (config.env) {
     case "dev":
     case "test":
-      relayer_url = test_api_config.relayer;
+      relayer_config = {
+        bsc: test_api_config.relayer,
+        rangers: test_api_config.relayer,
+        polygon: test_api_config.relayer,
+      };
       break;
     case "prod":
-      relayer_url = api_config.relayer;
+      relayer_config = {
+        bsc: api_config.relayer,
+        rangers: api_config.relayer,
+        polygon: api_config.relayer,
+      };
       break;
     default:
-      relayer_url = api_config.relayer;
+      relayer_config = {
+        bsc: api_config.relayer,
+        rangers: api_config.relayer,
+        polygon: api_config.relayer,
+      };
   }
-  const polygon = new RpcRelayer(relayer_url, unipassWalletContext, polygonProvider);
-  const bsc = new RpcRelayer(relayer_url, unipassWalletContext, bcdProvider);
-  const rangers = new RpcRelayer(relayer_url, unipassWalletContext, rangersProvider);
+  relayer_config = config.relayer_config || relayer_config;
 
-  // const polygonwallet = new WalletEOA(
-  //   "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-  //   polygonProvider,
-  // );
-  // const bscwallet = new WalletEOA("9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54", bcdProvider);
-  // const rangerswallet = new WalletEOA(
-  //   "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-  //   rangersProvider,
-  // );
-  // const polygon = new LocalRelayer(unipassWalletContext, polygonwallet);
-  // const bsc = new LocalRelayer(unipassWalletContext, bscwallet);
-  // const rangers = new LocalRelayer(unipassWalletContext, rangerswallet);
+  const polygon = new RpcRelayer(relayer_config['polygon'], unipassWalletContext, polygonProvider);
+  const bsc = new RpcRelayer(relayer_config['bsc'], unipassWalletContext, bcdProvider);
+  const rangers = new RpcRelayer(relayer_config['rangers'], unipassWalletContext, rangersProvider);
+
   return { polygon, bsc, rangers };
 };
 export class WalletsCreator {
@@ -82,9 +84,9 @@ export class WalletsCreator {
 
   public rangers: Wallet;
 
-  static getInstance(keyset: Keyset, address: string, env: Environment) {
+  static getInstance(keyset: Keyset, address: string, config: UnipassWalletProps) {
     if (!WalletsCreator.instance) {
-      const ins = new WalletsCreator(keyset, address, env);
+      const ins = new WalletsCreator(keyset, address, config);
       WalletsCreator.instance = ins;
     }
     WalletsCreator.instance.polygon.address = address;
@@ -98,13 +100,13 @@ export class WalletsCreator {
     return WalletsCreator.instance;
   }
 
-  private constructor(keyset: Keyset, address: string, env: Environment) {
-    const { polygon: polygonProvider, bsc: bscProvider, rangers: rangersProvider } = genProviders(env);
+  private constructor(keyset: Keyset, address: string, config: UnipassWalletProps) {
+    const { polygon: polygonProvider, bsc: bscProvider, rangers: rangersProvider } = genProviders(config);
     const {
       polygon: polygonRelayer,
       bsc: bscRelayer,
       rangers: rangersRelayer,
-    } = genRelayers(env, polygonProvider, bscProvider, rangersProvider);
+    } = genRelayers(config, polygonProvider, bscProvider, rangersProvider);
     this.polygon = Wallet.create({
       keyset,
       provider: polygonProvider,

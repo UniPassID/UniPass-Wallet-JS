@@ -14,9 +14,17 @@ import WalletError from "./constant/error_map";
 import { decryptSessionKey, generateSessionKey } from "./utils/session-key";
 import { getAccountKeysetJson } from "./utils/rbac";
 import DB from "./utils/db";
-import { ChainType, Environment, TransactionFee, UniTransaction } from "./interface/unipassWalletProvider";
+import {
+  ChainType,
+  Environment,
+  TransactionFee,
+  UnipassWalletProps,
+  UniTransaction,
+} from "./interface/unipassWalletProvider";
 import { genSessionKeyPermit, WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
+import UnipassWalletProvider from ".";
+import { FeeOption } from "@unipasswallet/relayer";
 
 const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
   checkEmailFormat(email, mailServices);
@@ -243,7 +251,7 @@ const genTransaction = async (
   tx: UniTransaction,
   _email: string,
   chainType: ChainType,
-  env: Environment,
+  config: UnipassWalletProps,
   fee?: TransactionFee,
 ) => {
   const user = await getUser();
@@ -251,22 +259,25 @@ const genTransaction = async (
   const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
   txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
+  const wallet = WalletsCreator.getInstance(keyset, user.account, config)[chainType];
   const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
   if (fee) {
     const { token, value: tokenValue } = fee;
+    // TODO:
+    const { to: receiver, amount: feeAmount } = (
+      await wallet.relayer.getFeeOptions(BigNumber.from(1000000).toHexString())
+    ).options[0] as FeeOption;
+    console.log(`receiver: ${receiver}`);
     if (token !== ADDRESS_ZERO) {
       const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
-      const tokenData = erc20Interface.encodeFunctionData("transfer", [target, tokenValue]);
+      const tokenData = erc20Interface.encodeFunctionData("transfer", [receiver, feeAmount]);
       txs.push(new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build());
     } else {
-      const receiver = (await wallet.relayer.getFeeOptions()).options[0].to;
-      console.log(`receiver: ${receiver}`);
-      txs.push(new CallTxBuilder(true, BigNumber.from(0), receiver, tokenValue, "0x").build());
+      txs.push(new CallTxBuilder(true, BigNumber.from(0), receiver, BigNumber.from(feeAmount), "0x").build());
     }
   }
   if (chainType !== "polygon") {
-    const syncStatus = await checkAccountStatus(user.email, chainType, env);
+    const syncStatus = await checkAccountStatus(user.email, chainType, config.env);
     const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
     const serverTxs: (ExecuteTransaction | Transactionish)[] = [];
     if (syncStatus === SyncStatusEnum.ServerSynced) {
@@ -275,7 +286,7 @@ const genTransaction = async (
       } = await api.syncTransaction({
         email: user.email,
         sessionKeyPermit,
-        authChainNode: getAuthNodeChain(env, chainType),
+        authChainNode: getAuthNodeChain(config.env, chainType),
       });
       transactions.forEach((v, i) => {
         transactions[i] = { ...v, gasLimit: BigNumber.from(v.gasLimit._hex), value: BigNumber.from(v.value._hex) };
@@ -328,35 +339,35 @@ const genTransaction = async (
   return transactionReceipt;
 };
 
-const genSignMessage = async (message: string, _email: string, env: Environment) => {
+const genSignMessage = async (message: string, _email: string, config: UnipassWalletProps) => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
+  const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
   const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
   const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), sessionkey);
   return signedMessage;
 };
 
-const verifySignature = async (message: string, sig: string, _email: string, env: Environment) => {
+const verifySignature = async (message: string, sig: string, _email: string, config: UnipassWalletProps) => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
+  const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
   const signedMessage = await wallet.isValidSignature(arrayify(keccak256(toUtf8Bytes(message))), sig);
   return signedMessage;
 };
 
-const getWallet = async (_email: string, env: Environment, chainType: ChainType) => {
+const getWallet = async (_email: string, config: UnipassWalletProps, chainType: ChainType) => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, env)[chainType];
+  const wallet = WalletsCreator.getInstance(keyset, user.account, config)[chainType];
   return wallet;
 };
 
-const checkLocalStatus = async (env: Environment) => {
+const checkLocalStatus = async (config: UnipassWalletProps) => {
   try {
     const user = await getUser();
     const keyset = Keyset.fromJson(user.keyset.keysetJson);
-    const wallet = WalletsCreator.getInstance(keyset, user.account, env).polygon;
+    const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
     const isLogged = await wallet.isSyncKeysetHash();
     if (isLogged) {
       return user.email;

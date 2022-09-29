@@ -13,8 +13,12 @@ type Environment = "dev" | "test" | "prod";
 
 type ChainType = "polygon" | "bsc" | "rangers";
 
+type RelayerConfig = {
+  [key in ChainType]: string;
+};
 interface UnipassWalletProps {
   env: Environment;
+  relayer_config?: RelayerConfig;
 }
 
 interface UniTransaction {
