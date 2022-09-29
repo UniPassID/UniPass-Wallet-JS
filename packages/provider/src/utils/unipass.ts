@@ -55,22 +55,22 @@ const genRelayers = (
     default:
       relayer_url = api_config.relayer;
   }
-  // const polygon = new RpcRelayer(relayer_url, unipassWalletContext, genProviders(env).polygon);
-  // const bsc = new RpcRelayer(relayer_url, unipassWalletContext, genProviders(env).bsc);
-  // const rangers = new RpcRelayer(relayer_url, unipassWalletContext, genProviders(env).rangers);
+  const polygon = new RpcRelayer(relayer_url, unipassWalletContext, polygonProvider);
+  const bsc = new RpcRelayer(relayer_url, unipassWalletContext, bcdProvider);
+  const rangers = new RpcRelayer(relayer_url, unipassWalletContext, rangersProvider);
 
-  const polygonwallet = new WalletEOA(
-    "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-    polygonProvider,
-  );
-  const bscwallet = new WalletEOA("9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54", bcdProvider);
-  const rangerswallet = new WalletEOA(
-    "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
-    rangersProvider,
-  );
-  const polygon = new LocalRelayer(unipassWalletContext, polygonwallet);
-  const bsc = new LocalRelayer(unipassWalletContext, bscwallet);
-  const rangers = new LocalRelayer(unipassWalletContext, rangerswallet);
+  // const polygonwallet = new WalletEOA(
+  //   "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
+  //   polygonProvider,
+  // );
+  // const bscwallet = new WalletEOA("9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54", bcdProvider);
+  // const rangerswallet = new WalletEOA(
+  //   "9c7b4c1f29a493d29cc3dac7c64dcf027faa6fa07b730adb95d43a19b992da54",
+  //   rangersProvider,
+  // );
+  // const polygon = new LocalRelayer(unipassWalletContext, polygonwallet);
+  // const bsc = new LocalRelayer(unipassWalletContext, bscwallet);
+  // const rangers = new LocalRelayer(unipassWalletContext, rangerswallet);
   return { polygon, bsc, rangers };
 };
 export class WalletsCreator {

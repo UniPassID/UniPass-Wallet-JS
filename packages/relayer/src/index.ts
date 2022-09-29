@@ -26,7 +26,7 @@ export enum TransferType {
 export interface FeeOption {
   token: FeeToken;
   to: string;
-  value: string;
+  amount: string;
   gasLimit: number;
 }
 
