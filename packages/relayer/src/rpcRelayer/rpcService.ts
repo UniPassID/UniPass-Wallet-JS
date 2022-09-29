@@ -57,12 +57,13 @@ export interface TxnReciptLog {
   data: string;
 }
 
-export interface TxnReciptResult {
+export interface TxnReceiptResult {
   txHash: string;
   index: number;
-  status: string;
+  status: number;
   revertReason?: string;
-  logs: TxnReciptLog[];
+  logs?: TxnReciptLog[];
+  receipts: TxnReceiptResult[];
 }
 
 export interface EstimateGasResult {
@@ -78,7 +79,7 @@ export interface RpcService {
   feeTokens(headers?: object): Promise<FeeTokensReturn>;
   feeOptions(feeOptionArgs: FeeOptionArgs, headers?: object): Promise<FeeOptionsReturn>;
   sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string>;
-  txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult>;
+  txRecipt(txHash: string, headers?: object): Promise<TxnReceiptResult>;
   estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult>;
   nonce(walletAddr: string, headers?: object): Promise<BigNumber>;
   metaNonce(walletAddr: string, headers?: object): Promise<BigNumber>;
@@ -122,10 +123,10 @@ export class RpcService implements RpcService {
     return <string>_data;
   }
 
-  async txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult> {
+  async txRecipt(txHash: string, headers?: object): Promise<TxnReceiptResult> {
     const res = await this.fetch(this.url(`/tx_receipt/${txHash}`), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
-    return <TxnReciptResult>_data;
+    return <TxnReceiptResult>_data;
   }
 
   async estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
