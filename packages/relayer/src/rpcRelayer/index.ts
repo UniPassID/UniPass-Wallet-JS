@@ -45,12 +45,12 @@ export class RpcRelayer implements Relayer {
   }
 
   async getMetaNonce(walletAddr: string): Promise<BigNumber> {
-    if (await this.isWalletDeployed(walletAddr)) {
-      const metaNonce = BigNumber.from(this.rpcService.metaNonce(walletAddr)).add(1);
+    try {
+      const metaNonce = (await this.rpcService.metaNonce(walletAddr)).add(1);
       return metaNonce;
+    } catch (e) {
+      return BigNumber.from(1);
     }
-
-    return BigNumber.from(1);
   }
 
   relay(transactions: PendingExecuteCallArgs): Promise<string> {

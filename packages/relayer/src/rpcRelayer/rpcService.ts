@@ -119,31 +119,31 @@ export class RpcService implements RpcService {
   async sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string> {
     const res = await this.fetch(this.url("/send_transaction"), createPostHTTPRequest(args, headers));
     const _data = await buildResponse(res);
-    return <string>_data.data;
+    return <string>_data;
   }
 
   async txRecipt(txHash: string, headers?: object): Promise<TxnReciptResult> {
     const res = await this.fetch(this.url(`/tx_receipt/${txHash}`), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
-    return <TxnReciptResult>_data.data;
+    return <TxnReciptResult>_data;
   }
 
   async estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
     const res = await this.fetch(this.url(`/estimate_gas`), createPostHTTPRequest(pendingExecuteCallArgs, headers));
     const _data = await buildResponse(res);
-    return _data.data;
+    return _data;
   }
 
   async nonce(walletAddr: string, headers?: object): Promise<BigNumber> {
     const res = await this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
-    return BigNumber.from(_data.data);
+    return BigNumber.from(_data);
   }
 
   async metaNonce(walletAddr: string, headers?: object): Promise<BigNumber> {
     const res = await this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
     const _data = await buildResponse(res);
-    return BigNumber.from(_data.data);
+    return BigNumber.from(_data);
   }
 }
 
@@ -179,11 +179,11 @@ const buildResponse = (res: Response): Promise<any> =>
       } as WebRPCError;
     }
 
-    if (!res.ok) {
+    if (!res.ok || data.statusCode !== 200) {
       throw data; // webrpc error response
     }
 
-    return data;
+    return data.data;
   });
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
