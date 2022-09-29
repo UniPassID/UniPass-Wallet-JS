@@ -12,6 +12,7 @@ import WhiteListArtifact from "../../../../artifacts/unipass-wallet-contracts/co
 import TestERC20Artifact from "../../../../artifacts/contracts/tests/TestERC20.sol/TestERC20.json";
 import GreeterArtifact from "../../../../artifacts/contracts/tests/Greeter.sol/Greeter.json";
 import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/GasEstimator.sol/GasEstimator.json";
+import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
 import { randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { FakeWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
@@ -33,6 +34,7 @@ export interface TestContext {
   whiteList: Contract;
   whiteListAdmin: Wallet;
   gasEstimator: Contract;
+  feeEstimator: Contract;
   unipassWalletContext: UnipassWalletContext;
   relayer: Relayer;
 }
@@ -121,6 +123,13 @@ export async function initTestContext(): Promise<TestContext> {
   );
   const gasEstimator = await deployer.deployContract(GasEstimator, instance, txParams);
 
+  const FeeEstimator = new ContractFactory(
+    new Interface(FeeEstimatorArtiface.abi),
+    FeeEstimatorArtiface.bytecode,
+    signer,
+  );
+  const feeEstimator = await deployer.deployContract(FeeEstimator, instance, txParams);
+
   const unipassWalletContext: UnipassWalletContext = {
     moduleMain: moduleMain.address,
     moduleMainUpgradable: moduleMainUpgradable.address,
@@ -149,6 +158,7 @@ export async function initTestContext(): Promise<TestContext> {
     whiteList,
     whiteListAdmin,
     gasEstimator,
+    feeEstimator,
   };
 }
 

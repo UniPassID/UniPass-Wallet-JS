@@ -59,7 +59,7 @@ export class RpcRelayer implements Relayer {
 
   async wait(txHash: string): Promise<TxnReceiptResult | undefined> {
     const ret = await this.rpcService.txRecipt(txHash);
-    if (ret !== undefined && ret.receipts.find((v) => v.status === 0) !== undefined) {
+    if (ret !== undefined && ret !== null && ret.receipts.find((v) => v.status === 0) !== undefined) {
       ret.status = 3;
     }
     return ret;

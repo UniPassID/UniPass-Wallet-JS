@@ -26,6 +26,7 @@ module.exports = {
       "unipass-wallet-contracts/contracts/modules/ModuleMainGasEstimator.sol",
       "unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol",
       "unipass-wallet-contracts/contracts/modules/utils/GasEstimator.sol",
+      "unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol",
       "unipass-wallet-contracts/contracts/DkimKeys.sol",
     ],
   },

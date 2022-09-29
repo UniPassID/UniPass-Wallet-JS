@@ -17,7 +17,6 @@ describe("Test Rpc Relayer", () => {
       });
       it("Get Nonce Should Seccess", async () => {
         const ret = await relayer.getNonce(unipassWalletContext.moduleMain);
-        console.log(ret);
         expect(ret).toBeUndefined;
       });
       it("Get MetaNonce Should Seccess", async () => {
