@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/provider",
-  "version": "0.0.1-alpha.17",
+  "version": "0.0.1-alpha.18",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,14 +14,14 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/keys": "workspace:^0.0.1-alpha.17",
-    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.17",
-    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.16",
-    "@unipasswallet/utils": "workspace:^0.0.1-alpha.17",
-    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.17",
-    "@unipasswallet/transaction-builders": "workspace:^0.0.1-alpha.12",
-    "@unipasswallet/relayer": "workspace:^0.0.1-alpha.12",
-    "@unipasswallet/network": "workspace:^0.0.1-alpha.17",
+    "@unipasswallet/keys": "workspace:^0.0.1-alpha.18",
+    "@unipasswallet/sdk": "workspace:^0.0.1-alpha.18",
+    "@unipasswallet/transactions": "workspace:^0.0.1-alpha.17",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.18",
+    "@unipasswallet/wallet": "workspace:^0.0.1-alpha.18",
+    "@unipasswallet/transaction-builders": "workspace:^0.0.1-alpha.13",
+    "@unipasswallet/relayer": "workspace:^0.0.1-alpha.13",
+    "@unipasswallet/network": "workspace:^0.0.1-alpha.18",
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
     "dexie": "^3.2.2",

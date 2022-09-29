@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.14
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.18
+
 ## 0.0.1-alpha.13
 
 ### Patch Changes
