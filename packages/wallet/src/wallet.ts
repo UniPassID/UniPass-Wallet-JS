@@ -390,7 +390,7 @@ export class Wallet extends Signer {
     //   })
     //   .reduce((pre, cur) => pre.add(cur), constants.Zero);
     // return gas.add(this.txBaseCost(data)).add(BigNumber.from(6000)).add(baseGas);
-    return BigNumber.from(10_000_000);
+    return BigNumber.from(3_000_000);
   }
 
   async toTransaction(
