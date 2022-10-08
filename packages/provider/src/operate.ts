@@ -91,6 +91,8 @@ const doRegister = async (
   );
   // 6 生成sessionKeyPermit
   const sig = await signMsg(SIG_PREFIX.UPLOAD + timestamp, sessionKey.privkey, false);
+  console.log("[sig] sig", sig);
+
   const sessionKeyPermit = {
     timestamp,
     timestampNow: timestamp,
@@ -375,6 +377,7 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
     if (isLogged) {
       return user.email;
     }
+    await DB.delUser(user.email);
   } catch (e) {
     return false;
   }

@@ -36,13 +36,20 @@ export const test_api_config = {
   relayer: "https://d.wallet.unipass.vip/relayer-rs",
 };
 
+export const testnet_api_config = {
+  backend: "https://testnet.wallet.unipass.vip/wallet",
+  relayer: "https://d.wallet.unipass.vip/relayer-rs",
+};
+
 export const getApiConfig = (env: Environment) => {
   switch (env) {
     case "dev":
       return dev_api_config;
     case "test":
       return test_api_config;
-    case "prod":
+    case "testnet":
+      return testnet_api_config;
+    case "mainnet":
       return api_config;
     default:
   }

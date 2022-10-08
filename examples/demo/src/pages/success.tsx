@@ -67,13 +67,13 @@ const LoginSuccess: React.FC = () => {
         const params = {} as TransactionProps;
         params.tx = {
           target: address,
-          value: etherToWei(value),
+          value: etherToWei(`${value}`),
           revertOnError: true,
         };
         if (feeAddress) {
           params.fee = {
             token: feeAddress,
-            value: etherToWei(feeValue, feeDecimal),
+            value: etherToWei(`${feeValue}`, feeDecimal),
           };
         }
         params.chain = chain;
@@ -177,7 +177,7 @@ const LoginSuccess: React.FC = () => {
       <Divider />
 
       <h3>sign message</h3>
-      <Form name="sign message" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} onFinish={signMessage} autoComplete="off">
+      <Form name="sign message1" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }} onFinish={signMessage} autoComplete="off">
         <Form.Item label="message" name="message" rules={[{ required: true, message: "Please input your message!" }]}>
           <TextArea />
         </Form.Item>

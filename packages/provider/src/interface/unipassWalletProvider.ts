@@ -9,12 +9,14 @@ type AuthChainNode =
   | "bsc-mainnet"
   | "rangers-mainnet";
 
-type Environment = "dev" | "test" | "prod";
+type Environment = "dev" | "test" | "testnet" | "mainnet";
 
 type ChainType = "polygon" | "bsc" | "rangers";
 
 type RelayerConfig = {
-  [key in ChainType]: string;
+  polygon: string;
+  bsc: string;
+  rangers: string;
 };
 interface UnipassWalletProps {
   env: Environment;
