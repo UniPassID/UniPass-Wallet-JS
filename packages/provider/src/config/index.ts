@@ -21,7 +21,7 @@ export const chain_config = {
   },
 };
 
-export const api_config = {
+export const mainnet_api_config = {
   backend: "https://poc-api.wallet.unipass.id",
   relayer: {
     polygon: "https://poc-api.wallet.unipass.id/relayer",
@@ -63,7 +63,7 @@ export const getApiConfig = (props: UnipassWalletProps) => {
     case "testnet":
       return testnet_api_config;
     case "mainnet":
-      return api_config;
+      return mainnet_api_config;
     default:
   }
 };
