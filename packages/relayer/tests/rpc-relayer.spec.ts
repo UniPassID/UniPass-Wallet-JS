@@ -25,4 +25,7 @@ describe("Test Rpc Relayer", () => {
       });
     });
   }
+  it("For Ignoring Error `Your test suite must contain at least one test`", () => {
+    expect(true).toEqual(true);
+  });
 });

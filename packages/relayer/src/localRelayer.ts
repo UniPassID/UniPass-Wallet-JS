@@ -46,12 +46,14 @@ export class LocalRelayer implements Relayer {
 
   async relay(transactions: PendingExecuteCallArgs): Promise<string> {
     const call: ExecuteCall = JSON.parse(transactions.call);
+    let gasLimit = BigNumber.from(transactions.estimateGas);
+    gasLimit = gasLimit.eq(constants.Zero) ? BigNumber.from(10_000_000) : gasLimit;
     const ret = await new Contract(transactions.walletAddress, new Interface(moduleMain.abi), this.signer).execute(
       call.txs,
       call.nonce,
       call.signature,
       {
-        gasLimit: BigNumber.from(transactions.estimateGas),
+        gasLimit,
       },
     );
 
