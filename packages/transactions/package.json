@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/transactions",
-  "version": "0.0.1-alpha.17",
+  "version": "0.0.1-alpha.18",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -13,8 +13,8 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/utils": "workspace:^0.0.1-alpha.18",
-    "@unipasswallet/abi": "workspace:^0.0.1-alpha.18",
+    "@unipasswallet/utils": "workspace:^0.0.1-alpha.19",
+    "@unipasswallet/abi": "workspace:^0.0.1-alpha.19",
     "ethers": "^5.7.1"
   },
   "devDependencies": {

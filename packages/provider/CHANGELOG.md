@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.20
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.19
+  - @unipasswallet/network@0.0.1-alpha.19
+  - @unipasswallet/relayer@0.0.1-alpha.14
+  - @unipasswallet/sdk@0.0.1-alpha.19
+  - @unipasswallet/transaction-builders@0.0.1-alpha.14
+  - @unipasswallet/transactions@0.0.1-alpha.18
+  - @unipasswallet/utils@0.0.1-alpha.19
+  - @unipasswallet/wallet@0.0.1-alpha.19
+
 ## 0.0.1-alpha.19
 
 ### Patch Changes
