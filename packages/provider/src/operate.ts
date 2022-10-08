@@ -326,7 +326,7 @@ const genTransaction = async (
       console.log("[genTransaction]");
       console.log(serverTxs);
       const transaction = await wallet.sendTransaction({ type: "Bundled", transactions: serverTxs });
-      const transactionReceipt = await transaction.wait();
+      const transactionReceipt = await transaction.wait(0);
       console.log(transactionReceipt);
       return transactionReceipt;
     }
@@ -339,7 +339,7 @@ const genTransaction = async (
   console.log("[genTransaction1]");
   console.log(txs);
   const transaction = await wallet.sendTransaction(txs, sessionkey);
-  const transactionReceipt = await transaction.wait();
+  const transactionReceipt = await transaction.wait(0);
   console.log(transactionReceipt);
   return transactionReceipt;
 };
@@ -369,18 +369,14 @@ const getWallet = async (_email: string, config: UnipassWalletProps, chainType: 
 };
 
 const checkLocalStatus = async (config: UnipassWalletProps) => {
-  try {
-    const user = await getUser();
-    const keyset = Keyset.fromJson(user.keyset.keysetJson);
-    const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
-    const isLogged = await wallet.isSyncKeysetHash();
-    if (isLogged) {
-      return user.email;
-    }
-    await DB.delUser(user.email);
-  } catch (e) {
-    return false;
+  const user = await getUser();
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
+  const isLogged = await wallet.isSyncKeysetHash();
+  if (isLogged) {
+    return user.email;
   }
+  await DB.delUser(user.email);
 };
 
 const getUser = async (): Promise<User | undefined> => {
