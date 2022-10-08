@@ -11,6 +11,7 @@ import {
   BytesLike,
   defaultAbiCoder,
   parseEther,
+  Logger,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
 import { Relayer, PendingExecuteCallArgs, ExecuteCall, toUnipassTransaction } from "@unipasswallet/relayer";
@@ -472,9 +473,8 @@ export class Wallet extends Signer {
       gasLimit: estimateGas,
       data: signedTransactions.data,
       value: constants.Zero,
-      wait: async () => {
+      wait: async (confirmations?: number, timeout: number = 30) => {
         let ret = await this.relayer.wait(hash);
-        const timeout = 30;
         let i = 0;
         while (ret === undefined || ret === null) {
           if (i < timeout) {
@@ -490,7 +490,29 @@ export class Wallet extends Signer {
         if (ret.txHash === constants.HashZero) {
           return Promise.reject(new Error(`transactions revert: ${ret.revertReason}`));
         }
+        if (confirmations == 0) {
+          let receipt: providers.TransactionReceipt = {
+            transactionHash: ret.txHash,
+            confirmations,
+            status: ret.status,
+            from: constants.AddressZero,
+            to: this.address,
+            contractAddress: constants.AddressZero,
+            transactionIndex: 0,
+            gasUsed: constants.Zero,
+            logsBloom: "",
+            blockHash: "",
+            logs: [],
+            blockNumber: 0,
+            cumulativeGasUsed: constants.Zero,
+            effectiveGasPrice: constants.Zero,
+            byzantium: false,
+            type: 0,
+          };
+          return receipt;
+        }
         const recipt = await this.provider.waitForTransaction(ret.txHash);
+        recipt.status = ret.status;
         return recipt;
       },
     };
@@ -501,7 +523,10 @@ export class Wallet extends Signer {
       const contract = this.getContract();
       return await contract.isValidKeysetHash(this.keyset.hash());
     } catch (err) {
-      return false;
+      if (err.code === Logger.errors.CALL_EXCEPTION) {
+        return false;
+      }
+      throw err;
     }
   }
 
