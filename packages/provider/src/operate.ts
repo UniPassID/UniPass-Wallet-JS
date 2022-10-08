@@ -47,7 +47,7 @@ const doRegister = async (
   email: string,
   upAuthToken: string,
   policyAddress: string,
-  env: Environment,
+  config: UnipassWalletProps,
 ) => {
   if (!email || !upAuthToken || !policyAddress) throw new WalletError(402004);
   // 1、verify password
@@ -70,7 +70,7 @@ const doRegister = async (
   const keysetHash = keyset.hash();
   console.log(keyset);
 
-  const wallet = WalletsCreator.getPolygonProvider(keyset, env);
+  const wallet = WalletsCreator.getPolygonProvider(keyset, config.env);
   const accountAddress = wallet.address;
   if (!accountAddress) throw new WalletError(402002);
   const timestamp = dayjs().add(4, "hour").unix();

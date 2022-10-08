@@ -1,3 +1,4 @@
+import { dev_api_config } from './../../../../packages/provider/src/config/index';
 import { useEffect, useState } from "react";
 import { message } from "antd";
 import UnipassWalletProvider from "@unipasswallet/provider";
@@ -8,7 +9,7 @@ export function useUnipass() {
 
   useEffect(() => {
     try {
-      const provider = UnipassWalletProvider.getInstance({ env: "dev" });
+      const provider = UnipassWalletProvider.getInstance({ env: "testnet", url_config: dev_api_config });
       setUnipassWallet(provider);
     } catch (e: any) {
       message.error(e.message);

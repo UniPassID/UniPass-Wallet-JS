@@ -1,4 +1,4 @@
-import { Environment } from "../interface/unipassWalletProvider";
+import { UnipassWalletProps } from "../interface/unipassWalletProvider";
 
 export const chain_config = {
   "polygon-mainnet": {
@@ -57,12 +57,9 @@ export const testnet_api_config = {
   },
 };
 
-export const getApiConfig = (env: Environment) => {
-  switch (env) {
-    case "dev":
-      return dev_api_config;
-    case "test":
-      return test_api_config;
+export const getApiConfig = (props: UnipassWalletProps) => {
+  if (props.url_config) return props.url_config;
+  switch (props.env) {
     case "testnet":
       return testnet_api_config;
     case "mainnet":
