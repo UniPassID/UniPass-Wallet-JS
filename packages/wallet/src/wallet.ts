@@ -519,15 +519,8 @@ export class Wallet extends Signer {
   }
 
   async isSyncKeysetHash(): Promise<boolean> {
-    try {
-      const contract = this.getContract();
-      return await contract.isValidKeysetHash(this.keyset.hash());
-    } catch (err) {
-      if (err.code === Logger.errors.CALL_EXCEPTION) {
-        return false;
-      }
-      throw err;
-    }
+    const contract = this.getContract();
+    return await contract.isValidKeysetHash(this.keyset.hash());
   }
 
   getContract(): Contract {
