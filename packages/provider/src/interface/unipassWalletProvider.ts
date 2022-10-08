@@ -13,7 +13,7 @@ type Environment = "dev" | "test" | "testnet" | "mainnet";
 
 type ChainType = "polygon" | "bsc" | "rangers";
 
-type RelayerConfig = {
+export type RelayerConfig = {
   polygon: string;
   bsc: string;
   rangers: string;

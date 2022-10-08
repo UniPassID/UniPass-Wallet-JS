@@ -2,9 +2,15 @@ import { providers, Wallet as WalletEOA } from "ethers";
 import { Wallet } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { RpcRelayer, LocalRelayer } from "@unipasswallet/relayer";
-import { AuthChainNode, ChainType, Environment, UnipassWalletProps } from "../interface/unipassWalletProvider";
+import {
+  AuthChainNode,
+  ChainType,
+  Environment,
+  UnipassWalletProps,
+  RelayerConfig,
+} from "../interface/unipassWalletProvider";
 import { unipassWalletContext } from "@unipasswallet/network";
-import { chain_config, api_config, test_api_config } from "../config/index";
+import { chain_config, api_config, test_api_config, dev_api_config, testnet_api_config } from "../config/index";
 import { User } from "../interface";
 import { decryptSessionKey } from "./session-key";
 import { signMsg } from "./cloud-key";
@@ -44,29 +50,41 @@ const genRelayers = (
   bcdProvider: providers.JsonRpcProvider,
   rangersProvider: providers.JsonRpcProvider,
 ) => {
-  let relayer_config;
+  let relayer_config: RelayerConfig;
   switch (config.env) {
     case "dev":
+      relayer_config = {
+        bsc: dev_api_config.relayer.bsc,
+        rangers: dev_api_config.relayer.rangers,
+        polygon: dev_api_config.relayer.polygon,
+      };
+      break;
     case "test":
+      relayer_config = {
+        bsc: test_api_config.relayer.bsc,
+        rangers: test_api_config.relayer.rangers,
+        polygon: test_api_config.relayer.polygon,
+      };
+      break;
     case "testnet":
       relayer_config = {
-        bsc: test_api_config.relayer,
-        rangers: test_api_config.relayer,
-        polygon: test_api_config.relayer,
+        bsc: testnet_api_config.relayer.bsc,
+        rangers: testnet_api_config.relayer.rangers,
+        polygon: testnet_api_config.relayer.polygon,
       };
       break;
     case "mainnet":
       relayer_config = {
-        bsc: api_config.relayer,
-        rangers: api_config.relayer,
-        polygon: api_config.relayer,
+        bsc: api_config.relayer.bsc,
+        rangers: api_config.relayer.rangers,
+        polygon: api_config.relayer.polygon,
       };
       break;
     default:
       relayer_config = {
-        bsc: api_config.relayer,
-        rangers: api_config.relayer,
-        polygon: api_config.relayer,
+        bsc: api_config.relayer.bsc,
+        rangers: api_config.relayer.rangers,
+        polygon: api_config.relayer.polygon,
       };
   }
   relayer_config = config.relayer_config || relayer_config;

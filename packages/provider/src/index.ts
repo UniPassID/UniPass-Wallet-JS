@@ -26,6 +26,7 @@ import {
 import { getApiConfig } from "./config";
 
 export * from "./interface/unipassWalletProvider";
+export * from "./config/index";
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
