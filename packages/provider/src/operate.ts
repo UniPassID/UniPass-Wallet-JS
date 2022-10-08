@@ -293,6 +293,7 @@ const genTransaction = async (
       });
       if (transactions.length === 1) {
         if (isNeedDeploy) {
+          transactions[0].gasLimit = constants.Zero;
           serverTxs.push(transactions[0]);
         } else {
           serverTxs.push({
@@ -303,6 +304,8 @@ const genTransaction = async (
           });
         }
       } else if (transactions.length === 2) {
+        transactions[0].gasLimit = constants.Zero;
+        transactions[1].gasLimit = constants.Zero;
         serverTxs.push(transactions[0]);
         serverTxs.push({
           type: "Execute",

@@ -390,7 +390,7 @@ export class Wallet extends Signer {
     //   })
     //   .reduce((pre, cur) => pre.add(cur), constants.Zero);
     // return gas.add(this.txBaseCost(data)).add(BigNumber.from(6000)).add(baseGas);
-    return BigNumber.from(3_000_000);
+    return constants.Zero;
   }
 
   async toTransaction(
@@ -499,7 +499,7 @@ export class Wallet extends Signer {
   async isSyncKeysetHash(): Promise<boolean> {
     try {
       const contract = this.getContract();
-      return await contract.isValidKeysetHash(this.keyset.hash())
+      return await contract.isValidKeysetHash(this.keyset.hash());
     } catch (err) {
       return false;
     }
