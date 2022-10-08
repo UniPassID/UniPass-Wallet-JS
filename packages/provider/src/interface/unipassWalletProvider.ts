@@ -9,7 +9,7 @@ type AuthChainNode =
   | "bsc-mainnet"
   | "rangers-mainnet";
 
-type Environment = "dev" | "test" | "prod";
+type Environment = "dev" | "test" | "testnet" | "mainnet";
 
 type ChainType = "polygon" | "bsc" | "rangers";
 

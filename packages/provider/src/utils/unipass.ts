@@ -17,11 +17,12 @@ const genProviders = (env: Environment) => {
   switch (env) {
     case "dev":
     case "test":
+    case "testnet":
       polygon_url = chain_config["polygon-mumbai"].rpc_url;
       bsc_url = chain_config["bsc-testnet"].rpc_url;
       rangers_url = chain_config["rangers-robin"].rpc_url;
       break;
-    case "prod":
+    case "mainnet":
       polygon_url = chain_config["polygon-mainnet"].rpc_url;
       bsc_url = chain_config["bsc-mainnet"].rpc_url;
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
@@ -47,9 +48,10 @@ const genRelayers = (
   switch (env) {
     case "dev":
     case "test":
+    case "testnet":
       relayer_url = test_api_config.relayer;
       break;
-    case "prod":
+    case "mainnet":
       relayer_url = api_config.relayer;
       break;
     default:
@@ -125,9 +127,10 @@ export class WalletsCreator {
     switch (env) {
       case "dev":
       case "test":
+      case "testnet":
         polygon_url = chain_config["polygon-mumbai"].rpc_url;
         break;
-      case "prod":
+      case "mainnet":
         polygon_url = chain_config["polygon-mainnet"].rpc_url;
         break;
       default:
@@ -141,7 +144,7 @@ export class WalletsCreator {
 }
 
 export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthChainNode => {
-  if (env === "dev" || env === "test") {
+  if (env === "dev" || env === "test" || env === "testnet") {
     switch (chainType) {
       case "polygon":
         return "polygon-mumbai";
@@ -152,7 +155,7 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
       default:
         return "polygon-mumbai";
     }
-  } else if (env === "prod") {
+  } else if (env === "mainnet") {
     switch (chainType) {
       case "polygon":
         return "polygon-mainnet";

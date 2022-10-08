@@ -44,7 +44,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private password: string | undefined;
 
-  private env: Environment = "prod";
+  private env: Environment = "mainnet";
 
   static getInstance(props: UnipassWalletProps) {
     if (!UnipassWalletProvider.instance) {
