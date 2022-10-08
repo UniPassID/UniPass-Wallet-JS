@@ -1,12 +1,6 @@
 import { providers } from "ethers";
 import TssWorker from "./utils/tss-worker";
-import {
-  ChainType,
-  Environment,
-  TransactionProps,
-  UnipassWalletProps,
-  WalletProvider,
-} from "./interface/unipassWalletProvider";
+import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { AxiosInstance } from "axios";
 import requestFactory from "./api/axios";
@@ -26,6 +20,7 @@ import {
 import { getApiConfig } from "./config";
 
 export * from "./interface/unipassWalletProvider";
+export * from "./config/index";
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
@@ -44,8 +39,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private password: string | undefined;
 
-  private env: Environment = "prod";
-  private config: UnipassWalletProps | undefined ;
+  private config: UnipassWalletProps | undefined;
 
   static getInstance(props: UnipassWalletProps) {
     if (!UnipassWalletProvider.instance) {
@@ -57,10 +51,8 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   private constructor(props: UnipassWalletProps) {
-    const { env, relayer_config } = props;
     this.config = props;
-    this.env = env;
-    const { backend } = getApiConfig(env);
+    const { backend } = getApiConfig(props);
     this.init(backend);
   }
 
@@ -83,7 +75,7 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async register(password: string) {
-    await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this.env);
+    await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this.config);
   }
 
   public async passwordToken(email: string, password: string) {

@@ -4,7 +4,7 @@
 
 ```typescript
 // init provider
-type Environment = "dev" | "test" | "prod";
+type Environment = "dev" | "test" | "testnet" | "mainnet";
 
 const provider = UnipassWalletProvider.getInstance({ env: "dev" });
 ```

@@ -1,7 +1,7 @@
 import { ExecuteCall, FeeOption, PendingExecuteCallArgs, Relayer, TxnReceiptResult } from ".";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain } from "@unipasswallet/abi";
-import { BigNumber, Contract, Signer } from "ethers";
+import { BigNumber, constants, Contract, Signer } from "ethers";
 import { Interface } from "ethers/lib/utils";
 
 export class LocalRelayer implements Relayer {

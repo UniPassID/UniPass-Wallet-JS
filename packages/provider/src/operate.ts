@@ -47,7 +47,7 @@ const doRegister = async (
   email: string,
   upAuthToken: string,
   policyAddress: string,
-  env: Environment,
+  config: UnipassWalletProps,
 ) => {
   if (!email || !upAuthToken || !policyAddress) throw new WalletError(402004);
   // 1、verify password
@@ -70,7 +70,7 @@ const doRegister = async (
   const keysetHash = keyset.hash();
   console.log(keyset);
 
-  const wallet = WalletsCreator.getPolygonProvider(keyset, env);
+  const wallet = WalletsCreator.getPolygonProvider(keyset, config.env);
   const accountAddress = wallet.address;
   if (!accountAddress) throw new WalletError(402002);
   const timestamp = dayjs().add(4, "hour").unix();
@@ -91,6 +91,8 @@ const doRegister = async (
   );
   // 6 生成sessionKeyPermit
   const sig = await signMsg(SIG_PREFIX.UPLOAD + timestamp, sessionKey.privkey, false);
+  console.log("[sig] sig", sig);
+
   const sessionKeyPermit = {
     timestamp,
     timestampNow: timestamp,
@@ -375,6 +377,7 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
     if (isLogged) {
       return user.email;
     }
+    await DB.delUser(user.email);
   } catch (e) {
     return false;
   }

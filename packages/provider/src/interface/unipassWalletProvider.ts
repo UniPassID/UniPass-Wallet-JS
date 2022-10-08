@@ -9,16 +9,22 @@ type AuthChainNode =
   | "bsc-mainnet"
   | "rangers-mainnet";
 
-type Environment = "dev" | "test" | "prod";
+type Environment = "testnet" | "mainnet";
 
 type ChainType = "polygon" | "bsc" | "rangers";
 
-type RelayerConfig = {
-  [key in ChainType]: string;
+export type UrlConfig = {
+  backend: string;
+  relayer: {
+    polygon: string;
+    bsc: string;
+    rangers: string;
+  };
 };
+
 interface UnipassWalletProps {
   env: Environment;
-  relayer_config?: RelayerConfig;
+  url_config?: UrlConfig;
 }
 
 interface UniTransaction {

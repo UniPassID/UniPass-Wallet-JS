@@ -4,7 +4,7 @@ import { Keyset } from "@unipasswallet/keys";
 import { RpcRelayer, LocalRelayer } from "@unipasswallet/relayer";
 import { AuthChainNode, ChainType, Environment, UnipassWalletProps } from "../interface/unipassWalletProvider";
 import { unipassWalletContext } from "@unipasswallet/network";
-import { chain_config, api_config, test_api_config } from "../config/index";
+import { chain_config, api_config, testnet_api_config } from "../config/index";
 import { User } from "../interface";
 import { decryptSessionKey } from "./session-key";
 import { signMsg } from "./cloud-key";
@@ -15,13 +15,12 @@ const genProviders = (config: UnipassWalletProps) => {
   let bsc_url = "";
   let rangers_url = "";
   switch (config.env) {
-    case "dev":
-    case "test":
+    case "testnet":
       polygon_url = chain_config["polygon-mumbai"].rpc_url;
       bsc_url = chain_config["bsc-testnet"].rpc_url;
       rangers_url = chain_config["rangers-robin"].rpc_url;
       break;
-    case "prod":
+    case "mainnet":
       polygon_url = chain_config["polygon-mainnet"].rpc_url;
       bsc_url = chain_config["bsc-mainnet"].rpc_url;
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
@@ -43,35 +42,34 @@ const genRelayers = (
   bcdProvider: providers.JsonRpcProvider,
   rangersProvider: providers.JsonRpcProvider,
 ) => {
-  let relayer_config;
+  let relayer_config: { bsc: string; polygon: string; rangers: string };
   switch (config.env) {
-    case "dev":
-    case "test":
+    case "testnet":
       relayer_config = {
-        bsc: test_api_config.relayer,
-        rangers: test_api_config.relayer,
-        polygon: test_api_config.relayer,
+        bsc: testnet_api_config.relayer.bsc,
+        rangers: testnet_api_config.relayer.rangers,
+        polygon: testnet_api_config.relayer.polygon,
       };
       break;
-    case "prod":
+    case "mainnet":
       relayer_config = {
-        bsc: api_config.relayer,
-        rangers: api_config.relayer,
-        polygon: api_config.relayer,
+        bsc: api_config.relayer.bsc,
+        rangers: api_config.relayer.rangers,
+        polygon: api_config.relayer.polygon,
       };
       break;
     default:
       relayer_config = {
-        bsc: api_config.relayer,
-        rangers: api_config.relayer,
-        polygon: api_config.relayer,
+        bsc: api_config.relayer.bsc,
+        rangers: api_config.relayer.rangers,
+        polygon: api_config.relayer.polygon,
       };
   }
-  relayer_config = config.relayer_config || relayer_config;
+  relayer_config = config?.url_config?.relayer || relayer_config;
 
-  const polygon = new RpcRelayer(relayer_config['polygon'], unipassWalletContext, polygonProvider);
-  const bsc = new RpcRelayer(relayer_config['bsc'], unipassWalletContext, bcdProvider);
-  const rangers = new RpcRelayer(relayer_config['rangers'], unipassWalletContext, rangersProvider);
+  const polygon = new RpcRelayer(relayer_config.polygon, unipassWalletContext, polygonProvider);
+  const bsc = new RpcRelayer(relayer_config.bsc, unipassWalletContext, bcdProvider);
+  const rangers = new RpcRelayer(relayer_config.rangers, unipassWalletContext, rangersProvider);
 
   return { polygon, bsc, rangers };
 };
@@ -125,11 +123,10 @@ export class WalletsCreator {
   static getPolygonProvider(keyset: Keyset, env: Environment): Wallet {
     let polygon_url = "";
     switch (env) {
-      case "dev":
-      case "test":
+      case "testnet":
         polygon_url = chain_config["polygon-mumbai"].rpc_url;
         break;
-      case "prod":
+      case "mainnet":
         polygon_url = chain_config["polygon-mainnet"].rpc_url;
         break;
       default:
@@ -143,7 +140,7 @@ export class WalletsCreator {
 }
 
 export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthChainNode => {
-  if (env === "dev" || env === "test") {
+  if (env === "testnet") {
     switch (chainType) {
       case "polygon":
         return "polygon-mumbai";
@@ -154,7 +151,7 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
       default:
         return "polygon-mumbai";
     }
-  } else if (env === "prod") {
+  } else if (env === "mainnet") {
     switch (chainType) {
       case "polygon":
         return "polygon-mainnet";
