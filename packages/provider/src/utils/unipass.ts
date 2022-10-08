@@ -4,7 +4,7 @@ import { Keyset } from "@unipasswallet/keys";
 import { RpcRelayer, LocalRelayer } from "@unipasswallet/relayer";
 import { AuthChainNode, ChainType, Environment, UnipassWalletProps } from "../interface/unipassWalletProvider";
 import { unipassWalletContext } from "@unipasswallet/network";
-import { chain_config, api_config, testnet_api_config } from "../config/index";
+import { chain_config, mainnet_api_config, testnet_api_config } from "../config/index";
 import { User } from "../interface";
 import { decryptSessionKey } from "./session-key";
 import { signMsg } from "./cloud-key";
@@ -53,16 +53,16 @@ const genRelayers = (
       break;
     case "mainnet":
       relayer_config = {
-        bsc: api_config.relayer.bsc,
-        rangers: api_config.relayer.rangers,
-        polygon: api_config.relayer.polygon,
+        bsc: mainnet_api_config.relayer.bsc,
+        rangers: mainnet_api_config.relayer.rangers,
+        polygon: mainnet_api_config.relayer.polygon,
       };
       break;
     default:
       relayer_config = {
-        bsc: api_config.relayer.bsc,
-        rangers: api_config.relayer.rangers,
-        polygon: api_config.relayer.polygon,
+        bsc: mainnet_api_config.relayer.bsc,
+        rangers: mainnet_api_config.relayer.rangers,
+        polygon: mainnet_api_config.relayer.polygon,
       };
   }
   relayer_config = config?.url_config?.relayer || relayer_config;
