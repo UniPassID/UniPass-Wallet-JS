@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.0.1-alpha.22
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.22
+  - @unipasswallet/utils@0.0.1-alpha.22
+
 ## 0.0.1-alpha.21
 
 ### Patch Changes
