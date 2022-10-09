@@ -33,18 +33,18 @@ export const mainnet_api_config = {
 export const dev_api_config = {
   backend: "https://d.wallet.unipass.vip/wallet",
   relayer: {
-    polygon: "https://d.wallet.unipass.id/relayer-polygon",
-    bsc: "https://d.wallet.unipass.id/relayer-bsc",
-    rangers: "https://d.wallet.unipass.id/relayer-rangers",
+    polygon: "https://d.wallet.unipass.vip/relayer-polygon",
+    bsc: "https://d.wallet.unipass.vip/relayer-bsc",
+    rangers: "https://d.wallet.unipass.vip/relayer-rangers",
   },
 };
 
 export const test_api_config = {
   backend: "https://t.wallet.unipass.vip/wallet",
   relayer: {
-    polygon: "https://t.wallet.unipass.id/relayer-polygon",
-    bsc: "https://t.wallet.unipass.id/relayer-bsc",
-    rangers: "https://t.wallet.unipass.id/relayer-rangers",
+    polygon: "https://t.wallet.unipass.vip/relayer-polygon",
+    bsc: "https://t.wallet.unipass.vip/relayer-bsc",
+    rangers: "https://t.wallet.unipass.vip/relayer-rangers",
   },
 };
 
