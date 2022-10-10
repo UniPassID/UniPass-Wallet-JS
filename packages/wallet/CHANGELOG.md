@@ -1,5 +1,61 @@
 # @unipasswallet/wallet
 
+## 0.0.1-alpha.22
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.22
+  - @unipasswallet/dkim-base@0.0.1-alpha.22
+  - @unipasswallet/keys@0.0.1-alpha.22
+  - @unipasswallet/network@0.0.1-alpha.22
+  - @unipasswallet/relayer@0.0.1-alpha.17
+  - @unipasswallet/transactions@0.0.1-alpha.21
+  - @unipasswallet/utils@0.0.1-alpha.22
+
+## 0.0.1-alpha.21
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.21
+  - @unipasswallet/dkim-base@0.0.1-alpha.21
+  - @unipasswallet/keys@0.0.1-alpha.21
+  - @unipasswallet/network@0.0.1-alpha.21
+  - @unipasswallet/relayer@0.0.1-alpha.16
+  - @unipasswallet/transactions@0.0.1-alpha.20
+  - @unipasswallet/utils@0.0.1-alpha.21
+
+## 0.0.1-alpha.20
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.20
+  - @unipasswallet/dkim-base@0.0.1-alpha.20
+  - @unipasswallet/keys@0.0.1-alpha.20
+  - @unipasswallet/network@0.0.1-alpha.20
+  - @unipasswallet/relayer@0.0.1-alpha.15
+  - @unipasswallet/transactions@0.0.1-alpha.19
+  - @unipasswallet/utils@0.0.1-alpha.20
+
+## 0.0.1-alpha.19
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.19
+  - @unipasswallet/dkim-base@0.0.1-alpha.19
+  - @unipasswallet/keys@0.0.1-alpha.19
+  - @unipasswallet/network@0.0.1-alpha.19
+  - @unipasswallet/relayer@0.0.1-alpha.14
+  - @unipasswallet/transactions@0.0.1-alpha.18
+  - @unipasswallet/utils@0.0.1-alpha.19
+
 ## 0.0.1-alpha.18
 
 ### Patch Changes

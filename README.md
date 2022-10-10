@@ -24,11 +24,7 @@ npm i unipass-wallet
 
 ```typescript
 // Update KeysetHash
-const txBuilder = new UpdateKeysetHashTxBuilder(
-  userAddr,
-  metaNonce,
-  newKeysetHash
-);
+const txBuilder = new UpdateKeysetHashTxBuilder(userAddr, metaNonce, newKeysetHash);
 
 // Unlock KeysetHash TimeLock
 const txBuilder = new UnlockKeysetHashTxBuilder(userAddr, metaNonce);
@@ -37,18 +33,10 @@ const txBuilder = new UnlockKeysetHashTxBuilder(userAddr, metaNonce);
 const txBuilder = new CancelLockKeysetHashTxBuilder(userAddr, metaNonce);
 
 // Update TimeLock During
-const txBuilder = new UpdateTimeLockDuringTxBuilder(
-  userAddr,
-  metaNonce,
-  newTimeLockDuring
-);
+const txBuilder = new UpdateTimeLockDuringTxBuilder(userAddr, metaNonce, newTimeLockDuring);
 
 // Update Implemenation
-const txBuilder = new UpdateImplementationTxBuilder(
-  userAddr,
-  metaNonce,
-  newImplemenation
-);
+const txBuilder = new UpdateImplementationTxBuilder(userAddr, metaNonce, newImplemenation);
 ```
 
 ## Build Transaction
@@ -80,4 +68,7 @@ const ret = await (
 ```shell
 pnpm changeset
 pnpm changeset version
+pnpm install -r && pnpm build
+git commit add -m 'your commit message'
+pnpm changeset publish
 ```
