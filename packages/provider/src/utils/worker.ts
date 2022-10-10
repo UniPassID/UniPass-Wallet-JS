@@ -8,22 +8,21 @@ import init, {
 } from "lindell-ecdsa-wasm";
 import * as Comlink from "comlink";
 
-export const initLindellEcdsaWasm = async () => {
-  try {
-    await init();
-    window.postMessage({ ready: true });
-    const { getRandomValues } = crypto;
-    crypto.getRandomValues = (array: any) => {
-      const buffer = new Uint8Array(array);
-      const value = getRandomValues.call(crypto, buffer);
-      array.set(value);
-      return array;
-    };
-    console.log("Worker is initialized");
-  } catch (error) {
-    console.error("Worker is initializing error", error);
-  }
+// Temporary hack for getRandomValues() error
+const { getRandomValues } = crypto;
+crypto.getRandomValues = function (array: any) {
+  const buffer = new Uint8Array(array);
+  const value = getRandomValues.call(crypto, buffer);
+  array.set(value);
+  return array;
 };
+
+console.log("Worker is initializing...");
+// eslint-disable-next-line no-void
+void (async function () {
+  await init();
+  self.postMessage({ ready: true });
+})();
 
 Comlink.expose({
   keccak256,

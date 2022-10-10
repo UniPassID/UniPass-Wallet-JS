@@ -17,7 +17,6 @@ import {
   verifySignature,
 } from "./operate";
 import { getApiConfig } from "./config";
-import { initLindellEcdsaWasm } from "./utils/worker";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
@@ -58,7 +57,6 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private async init(backend: string) {
     UnipassWalletProvider.request = requestFactory(backend);
-    await initLindellEcdsaWasm();
     const { data } = await api.getSuffixes();
     this.mailServices = data.suffixes;
     this.policyAddress = data.policyAddress;

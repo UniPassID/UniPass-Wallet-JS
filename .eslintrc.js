@@ -9,5 +9,6 @@ module.exports = {
     "consistent-return": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "warn",
+    "no-restricted-globals": "off",
   },
 };
