@@ -1,5 +1,4 @@
 import { providers } from "ethers";
-import TssWorker from "./utils/tss-worker";
 import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { AxiosInstance } from "axios";
@@ -18,6 +17,7 @@ import {
   verifySignature,
 } from "./operate";
 import { getApiConfig } from "./config";
+import { initLindellEcdsaWasm } from "./utils/worker";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
@@ -58,7 +58,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private async init(backend: string) {
     UnipassWalletProvider.request = requestFactory(backend);
-    await TssWorker.initLindellEcdsaWasm();
+    await initLindellEcdsaWasm();
     const { data } = await api.getSuffixes();
     this.mailServices = data.suffixes;
     this.policyAddress = data.policyAddress;
