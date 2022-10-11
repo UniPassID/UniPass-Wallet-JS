@@ -20,6 +20,7 @@ import { getApiConfig } from "./config";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
+export * from "./utils/tss-worker";
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;

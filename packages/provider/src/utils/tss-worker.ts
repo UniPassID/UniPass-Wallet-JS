@@ -19,11 +19,9 @@ const getLi17P2Sign2 = async (context1: any, msgHash: number[]) => {
   return [partialSig, message2];
 };
 
-const TssWorker = {
+export const TssWorker = {
   getP2KeyGen1,
   getP2KeyGen2,
   getLi17P2Sign1,
   getLi17P2Sign2,
 };
-
-export default TssWorker;

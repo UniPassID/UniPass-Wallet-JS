@@ -1,7 +1,6 @@
-import { dev_api_config } from './../../../../packages/provider/src/config/index';
 import { useEffect, useState } from "react";
 import { message } from "antd";
-import UnipassWalletProvider from "@unipasswallet/provider";
+import UnipassWalletProvider, { dev_api_config } from "@unipasswallet/provider";
 
 export function useUnipass() {
   const [unipassWallet, setUnipassWallet] = useState<UnipassWalletProvider | undefined>(undefined);

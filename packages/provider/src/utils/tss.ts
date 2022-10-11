@@ -11,7 +11,7 @@ import {
   toUtf8String,
   zeroPad,
 } from "ethers/lib/utils";
-import TssWorker from "./tss-worker";
+import { TssWorker } from "./tss-worker";
 import {
   GetKeygenData,
   KeyGenInput,
