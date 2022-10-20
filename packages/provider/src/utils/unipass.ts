@@ -14,38 +14,45 @@ const genProviders = (config: UnipassWalletProps) => {
   let polygon_url = "";
   let bsc_url = "";
   let rangers_url = "";
+  let eth_url = "";
   switch (config.env) {
     case "testnet":
+      eth_url = chain_config["eth-goerli"].rpc_url;
       polygon_url = chain_config["polygon-mumbai"].rpc_url;
       bsc_url = chain_config["bsc-testnet"].rpc_url;
       rangers_url = chain_config["rangers-robin"].rpc_url;
       break;
     case "mainnet":
+      eth_url = chain_config["eth-mainnet"].rpc_url;
       polygon_url = chain_config["polygon-mainnet"].rpc_url;
       bsc_url = chain_config["bsc-mainnet"].rpc_url;
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
       break;
     default:
+      eth_url = chain_config["eth-mainnet"].rpc_url;
       polygon_url = chain_config["polygon-mainnet"].rpc_url;
       bsc_url = chain_config["bsc-mainnet"].rpc_url;
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
   }
+  const eth = new providers.JsonRpcProvider(eth_url);
   const polygon = new providers.JsonRpcProvider(polygon_url);
   const bsc = new providers.JsonRpcProvider(bsc_url);
   const rangers = new providers.JsonRpcProvider(rangers_url);
-  return { polygon, bsc, rangers };
+  return { polygon, bsc, rangers, eth };
 };
 
 const genRelayers = (
   config: UnipassWalletProps,
+  ethProvider: providers.JsonRpcProvider,
   polygonProvider: providers.JsonRpcProvider,
   bcdProvider: providers.JsonRpcProvider,
   rangersProvider: providers.JsonRpcProvider,
 ) => {
-  let relayer_config: { bsc: string; polygon: string; rangers: string };
+  let relayer_config: { eth: string; bsc: string; polygon: string; rangers: string };
   switch (config.env) {
     case "testnet":
       relayer_config = {
+        eth: testnet_api_config.relayer.eth,
         bsc: testnet_api_config.relayer.bsc,
         rangers: testnet_api_config.relayer.rangers,
         polygon: testnet_api_config.relayer.polygon,
@@ -53,6 +60,7 @@ const genRelayers = (
       break;
     case "mainnet":
       relayer_config = {
+        eth: mainnet_api_config.relayer.eth,
         bsc: mainnet_api_config.relayer.bsc,
         rangers: mainnet_api_config.relayer.rangers,
         polygon: mainnet_api_config.relayer.polygon,
@@ -60,6 +68,7 @@ const genRelayers = (
       break;
     default:
       relayer_config = {
+        eth: mainnet_api_config.relayer.eth,
         bsc: mainnet_api_config.relayer.bsc,
         rangers: mainnet_api_config.relayer.rangers,
         polygon: mainnet_api_config.relayer.polygon,
@@ -99,12 +108,17 @@ export class WalletsCreator {
   }
 
   private constructor(keyset: Keyset, address: string, config: UnipassWalletProps) {
-    const { polygon: polygonProvider, bsc: bscProvider, rangers: rangersProvider } = genProviders(config);
+    const {
+      eth: ethProvider,
+      polygon: polygonProvider,
+      bsc: bscProvider,
+      rangers: rangersProvider,
+    } = genProviders(config);
     const {
       polygon: polygonRelayer,
       bsc: bscRelayer,
       rangers: rangersRelayer,
-    } = genRelayers(config, polygonProvider, bscProvider, rangersProvider);
+    } = genRelayers(config, ethProvider, polygonProvider, bscProvider, rangersProvider);
     this.polygon = Wallet.create({
       keyset,
       provider: polygonProvider,
