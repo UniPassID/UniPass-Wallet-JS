@@ -266,13 +266,11 @@ const genTransaction = async (
   if (fee) {
     const { token, value: tokenValue } = fee;
     // TODO: check tokenValue
-    const feeOptions = (
-      await wallet.relayer.getFeeOptions(BigNumber.from(500000).toHexString())
-    );
+    const feeOptions = await wallet.relayer.getFeeOptions(BigNumber.from(500000).toHexString());
 
     if (token !== ADDRESS_ZERO) {
       const feeOption = feeOptions.options.find(
-        (x) => 
+        (x) =>
           !!(x as FeeOption).token.contractAddress &&
           (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
       );
@@ -286,7 +284,7 @@ const genTransaction = async (
       const feeOption = feeOptions.options.find(
         (x) =>
           !(x as FeeOption).token.contractAddress ||
-          (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase()
+          (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
       );
       if (!feeOption) throw new Error(`un supported fee token ${token}`);
 
@@ -385,14 +383,20 @@ const getWallet = async (_email: string, config: UnipassWalletProps, chainType: 
 };
 
 const checkLocalStatus = async (config: UnipassWalletProps) => {
-  const user = await getUser();
-  const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
-  const isLogged = await wallet.isSyncKeysetHash();
-  if (isLogged) {
-    return user.email;
+  try {
+    const user = await getUser();
+    const keyset = Keyset.fromJson(user.keyset.keysetJson);
+    const wallet = WalletsCreator.getInstance(keyset, user.account, config).polygon;
+    const isLogged = await wallet.isSyncKeysetHash();
+    if (isLogged) {
+      return user.email;
+    }
+    await DB.delUser(user.email);
+  } catch (err) {
+    if (err instanceof WalletError && (err.code === 403002 || err.code === 402007)) return false;
+
+    throw err;
   }
-  await DB.delUser(user.email);
 };
 
 const getUser = async (): Promise<User | undefined> => {

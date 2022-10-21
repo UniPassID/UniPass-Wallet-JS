@@ -16,6 +16,7 @@ type ChainType = "polygon" | "bsc" | "rangers";
 export type UrlConfig = {
   backend: string;
   relayer: {
+    eth: string;
     polygon: string;
     bsc: string;
     rangers: string;
