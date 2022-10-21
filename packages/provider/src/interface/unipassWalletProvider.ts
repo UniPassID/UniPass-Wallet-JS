@@ -3,15 +3,17 @@ import { BigNumber, BytesLike, providers } from "ethers";
 
 type AuthChainNode =
   | "polygon-mumbai"
+  | "eth-goerli"
   | "bsc-testnet"
   | "rangers-robin"
   | "polygon-mainnet"
+  | "eth-mainnet"
   | "bsc-mainnet"
   | "rangers-mainnet";
 
 type Environment = "testnet" | "mainnet";
 
-type ChainType = "polygon" | "bsc" | "rangers";
+type ChainType = "polygon" | "eth" | "bsc" | "rangers";
 
 export type UrlConfig = {
   backend: string;
