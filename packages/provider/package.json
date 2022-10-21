@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/provider",
-  "version": "0.0.1-alpha.31",
+  "version": "0.0.1-alpha.32",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
