@@ -49,7 +49,7 @@ export class DkimParams extends DkimParamsBase {
     sdidIndex: number,
     sdidRightIndex: number,
     selectorIndex: number,
-    selectorRightIndex: number
+    selectorRightIndex: number,
   ) {
     super(
       emailType,
@@ -65,7 +65,7 @@ export class DkimParams extends DkimParamsBase {
       sdidIndex,
       sdidRightIndex,
       selectorIndex,
-      selectorRightIndex
+      selectorRightIndex,
     );
   }
 
@@ -74,7 +74,7 @@ export class DkimParams extends DkimParamsBase {
     emailType: EmailType,
     fromHeader: string,
     digestHash: string,
-    emailBlackList: string[]
+    emailBlackList: string[],
   ): DkimParams {
     const params = results
       .map((result): DkimParams | undefined => {
@@ -92,7 +92,7 @@ export class DkimParams extends DkimParamsBase {
           processedHeader,
           hexlify(signature.signature),
           signature.domain,
-          signature.selector
+          signature.selector,
         ) as DkimParams;
       })
       .find((v) => v !== undefined);
@@ -100,10 +100,7 @@ export class DkimParams extends DkimParamsBase {
     return params;
   }
 
-  public static async parseEmailParams(
-    email: string,
-    emailBlackList: string[]
-  ): Promise<DkimParams> {
+  public static async parseEmailParams(email: string, emailBlackList: string[]): Promise<DkimParams> {
     const mail = await mailParser.simpleParser(email, {
       subjectSep: " ",
       isSepBase64: true,
@@ -113,66 +110,37 @@ export class DkimParams extends DkimParamsBase {
     const from: string = mail.headers.get("from").value[0].address;
     const [emailType, digestHash] = DkimParams.parseEmailSubject(subject);
 
-    const results: Dkim.VerifyResult[] = (await verifyDKIMContent(
-      Buffer.from(email, "utf-8")
-    )) as Dkim.VerifyResult[];
+    const results: Dkim.VerifyResult[] = (await verifyDKIMContent(Buffer.from(email, "utf-8"))) as Dkim.VerifyResult[];
 
-    return this.getDkimParams(
-      results,
-      emailType,
-      from,
-      digestHash,
-      emailBlackList
-    );
+    return this.getDkimParams(results, emailType, from, digestHash, emailBlackList);
   }
 
   public static parseEmailSubject(emailSubject: string): [EmailType, string] {
-    if (
-      emailSubject.startsWith("UniPass-Update-Account-0x") &&
-      emailSubject.length === 89
-    ) {
+    if (emailSubject.startsWith("UniPass-Update-Account-0x") && emailSubject.length === 89) {
       return [EmailType.UpdateKeysetHash, emailSubject.slice(23)];
     }
 
-    if (
-      emailSubject.startsWith("UniPass-Start-Recovery-0x") &&
-      emailSubject.length === 89
-    ) {
+    if (emailSubject.startsWith("UniPass-Start-Recovery-0x") && emailSubject.length === 89) {
       return [EmailType.LockKeysetHash, emailSubject.slice(23)];
     }
 
-    if (
-      emailSubject.startsWith("UniPass-Cancel-Recovery-0x") &&
-      emailSubject.length === 90
-    ) {
+    if (emailSubject.startsWith("UniPass-Cancel-Recovery-0x") && emailSubject.length === 90) {
       return [EmailType.CancelLockKeysetHash, emailSubject.slice(24)];
     }
 
-    if (
-      emailSubject.startsWith("UniPass-Update-Timelock-0x") &&
-      emailSubject.length === 90
-    ) {
+    if (emailSubject.startsWith("UniPass-Update-Timelock-0x") && emailSubject.length === 90) {
       return [EmailType.UpdateTimeLockDuring, emailSubject.slice(24)];
     }
 
-    if (
-      emailSubject.startsWith("UniPass-Update-Implementation-0x") &&
-      emailSubject.length === 96
-    ) {
+    if (emailSubject.startsWith("UniPass-Update-Implementation-0x") && emailSubject.length === 96) {
       return [EmailType.UpdateImplementation, emailSubject.slice(30)];
     }
 
-    if (
-      emailSubject.startsWith("UniPass-Deploy-Account-0x") &&
-      emailSubject.length === 89
-    ) {
+    if (emailSubject.startsWith("UniPass-Deploy-Account-0x") && emailSubject.length === 89) {
       return [EmailType.SyncAccount, emailSubject.slice(23)];
     }
 
-    if (
-      emailSubject.startsWith("UniPass-Call-Contract-0x") &&
-      emailSubject.length === 88
-    ) {
+    if (emailSubject.startsWith("UniPass-Call-Contract-0x") && emailSubject.length === 88) {
       return [EmailType.CallOtherContract, emailSubject.slice(22)];
     }
     throw new Error(`Invalid Email Subject: ${emailSubject}`);
