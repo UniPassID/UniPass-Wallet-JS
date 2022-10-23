@@ -1,14 +1,15 @@
-import { providers, Wallet as WalletEOA, Bytes, constants, BigNumber } from "ethers";
-import { BytesLike, concat, defaultAbiCoder, hexlify, Interface, keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import { providers, Wallet as WalletEOA, Bytes, BigNumber, constants } from "ethers";
+import { BytesLike, concat, getCreate2Address, hexlify, keccak256, solidityPack, toUtf8Bytes } from "ethers/lib/utils";
 import { KeyEmailDkim, KeyERC1271, KeySecp256k1, KeySecp256k1Wallet, Keyset, SignType } from "@unipasswallet/keys";
 import { Relayer } from "@unipasswallet/relayer";
-import { moduleMainGasEstimator, gasEstimator, moduleMain } from "@unipasswallet/abi";
-import { UnipassWalletContext } from "@unipasswallet/network";
+import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
 import { DkimParamsBase, EmailType } from "@unipasswallet/dkim-base";
 import { CallType, Transaction } from "@unipasswallet/transactions";
-import { SignedTransactions, Wallet, WalletOptions } from "./wallet";
+import { CreationCode, SingletonFactoryAddress } from "@unipasswallet/utils";
+import { Wallet, WalletOptions } from "./wallet";
+import { SessionKey } from "./sessionKey";
 
-export interface FakeWalletOptions extends WalletOptions {
+export interface GasEstimatingWalletOptions extends WalletOptions {
   address?: string;
   keyset: Keyset;
   context?: UnipassWalletContext;
@@ -18,18 +19,35 @@ export interface FakeWalletOptions extends WalletOptions {
   emailType: EmailType;
 }
 
-export class FakeWallet extends Wallet {
+export class GasEstimatingWallet extends Wallet {
   public readonly fakeKeyset: Keyset;
 
   public readonly rsaEncryptor?: (input: BytesLike) => Promise<string>;
 
   public readonly emailType: EmailType;
 
-  constructor(options: FakeWalletOptions) {
+  constructor(options: GasEstimatingWalletOptions) {
     super(options);
-    this.fakeKeyset = FakeWallet.createFakeKeyset(options.keyset);
+    this.fakeKeyset = GasEstimatingWallet.createFakeKeyset(options.keyset);
     this.emailType = options.emailType;
     this.rsaEncryptor = options.rsaEncryptor;
+  }
+
+  static override create(options: GasEstimatingWalletOptions): GasEstimatingWallet {
+    const createOptions = options;
+
+    const { keyset, context = unipassWalletContext } = createOptions;
+
+    if (!createOptions.address) {
+      const address = getCreate2Address(
+        SingletonFactoryAddress,
+        keyset.hash(),
+        keccak256(solidityPack(["bytes", "uint256"], [CreationCode, context.moduleMain])),
+      );
+
+      createOptions.address = address;
+    }
+    return new GasEstimatingWallet(createOptions);
   }
 
   static createFakeKeyset(keyset: Keyset): Keyset {
@@ -61,7 +79,7 @@ export class FakeWallet extends Wallet {
     return fakeKeyset;
   }
 
-  options(): FakeWalletOptions {
+  options(): GasEstimatingWalletOptions {
     return {
       address: this.address,
       keyset: this.keyset,
@@ -73,103 +91,74 @@ export class FakeWallet extends Wallet {
     };
   }
 
-  setEmailType(emailType: EmailType): FakeWallet {
+  setEmailType(emailType: EmailType): GasEstimatingWallet {
     const options = this.options();
     options.emailType = emailType;
-    return new FakeWallet(options);
+    return new GasEstimatingWallet(options);
   }
 
-  async unipassEstimateGas(signedTransactions: SignedTransactions): Promise<BigNumber> {
-    // let data;
-    // if (isSignedTransactions(signedTransactions)) {
-    //   data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
-    //     this.address,
-    //     new Interface(moduleMain.abi).encodeFunctionData("execute", [
-    //       signedTransactions.transactions,
-    //       signedTransactions.nonce,
-    //       signedTransactions.signature,
-    //     ]),
-    //   ]);
-    // } else {
-    //   data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
-    //     this.address,
-    //     new Interface(moduleMain.abi).encodeFunctionData("execute", [signedTransactions.transactions, 0, "0x"]),
-    //   ]);
-    // }
-
-    // const params = [
-    //   {
-    //     from: this.address,
-    //     to: this.context.gasEstimator,
-    //     data,
-    //   },
-    //   "latest",
-    //   {
-    //     [this.context.moduleMain]: {
-    //       code: moduleMainGasEstimator.bytecode,
-    //     },
-    //     [this.context.moduleMainUpgradable]: {
-    //       code: moduleMainGasEstimator.bytecode,
-    //     },
-    //   },
-    // ];
-    // const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
-    // const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
-
-    // return gas.add(this.txBaseCost(data));
-    return constants.Zero;
-  }
-
-  async estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]> {
+  async estimateGasLimits(
+    to: string,
+    nonce: BigNumber,
+    signerIndexesOrSessionKey: number[] | SessionKey,
+    ...transactions: Transaction[]
+  ): Promise<{
+    txs: Transaction[];
+    total: BigNumber;
+  }> {
     const txs = transactions;
+    const overwrite = {
+      [this.context.moduleMain]: {
+        code: this.context.moduleMainGasEstimatorCode,
+      },
+      [this.context.moduleMainUpgradable]: {
+        code: this.context.moduleMainUpgradableGasEstimatorCode,
+      },
+    };
+
     if (this.provider instanceof providers.JsonRpcProvider) {
       const gasLimits = await Promise.all(
-        [...txs.keys()].map(async (index) => {
-          const data = new Interface(gasEstimator.abi).encodeFunctionData("estimate", [
-            this.address,
-            new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions.slice(0, index), 0, "0x"]),
-          ]);
-
-          const params = [
+        [...txs.keys(), txs.length].map(async (index) => {
+          const transactions = txs.slice(0, index);
+          const { signature } = await this.signTransactions(transactions, signerIndexesOrSessionKey);
+          return this.unipassEstimateGas(
             {
-              from: this.address,
-              to: this.context.gasEstimator,
-              data,
+              address: to,
+              transactions,
+              nonce,
+              signature,
             },
-            "latest",
-            {
-              [this.context.moduleMain]: {
-                code: moduleMainGasEstimator.bytecode,
-              },
-              [this.context.moduleMainUpgradable]: {
-                code: moduleMainGasEstimator.bytecode,
-              },
-            },
-          ];
-          const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
-          const [, , gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
-          return gas;
+            overwrite,
+          );
         }),
       );
 
+      const total = gasLimits[gasLimits.length - 1];
+
       gasLimits.reduce((pre, current, i) => {
-        if (!txs[i].revertOnError && txs[i].gasLimit.eq(constants.Zero) && txs[i].callType === CallType.Call) {
-          txs[i].gasLimit = current.sub(pre);
+        if (i > 0 && txs[i - 1].gasLimit.eq(constants.Zero) && txs[i - 1].callType === CallType.Call) {
+          txs[i - 1].gasLimit = current.sub(pre);
         }
         return current;
-      }, 0);
+      }, constants.Zero);
 
-      return txs;
+      return { txs, total };
     }
-
     return Promise.reject(new Error("Expect JsonRpcProvider"));
   }
 
-  async signMessage(message: Bytes | string, signerIndexes: number[] = [], isDigest: boolean = true): Promise<string> {
+  override async signMessage(
+    message: Bytes | string,
+    signerIndexes: number[] = [],
+    isDigest: boolean = true,
+  ): Promise<string> {
     if (typeof message === "string") {
       throw new Error("expect message to be bytes");
     }
     const digestHash = isDigest ? hexlify(message) : keccak256(message);
+    if (signerIndexes.length === 0) {
+      return "0x";
+    }
     const signRet = await Promise.all(
       this.keyset.keys.map(async (key, index) => {
         if (signerIndexes.includes(index)) {
@@ -187,13 +176,14 @@ export class FakeWallet extends Wallet {
               "dkim-signature:v=1; a=rsa-sha256; c=relaxed/relaxed; d=unipass.com; q=dns/txt; s=s2055; bh=KG9NOk7U9KUpsJvB9CDWzOWqDKp2k7AV9eKQJYKEc70=; h=from:subject:date:message-id:to:mime-version:content-type:content-transfer-encoding; b=";
 
             const dkimSig = await this.rsaEncryptor(toUtf8Bytes(emailHeader));
+
             key.setDkimParams(
               DkimParamsBase.create(
                 this.emailType,
                 key.emailFrom,
                 digestHash,
                 emailHeader,
-                hexlify(dkimSig),
+                dkimSig,
                 "unipass.com",
                 "s2055",
               ),
@@ -206,8 +196,7 @@ export class FakeWallet extends Wallet {
         return key.generateKey();
       }),
     );
-
-    return hexlify(concat(signRet));
+    return solidityPack(["uint8", "bytes"], [0, concat(signRet)]);
   }
 }
 

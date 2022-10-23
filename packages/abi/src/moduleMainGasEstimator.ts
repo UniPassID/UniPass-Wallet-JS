@@ -1,1 +1,1 @@
-export { abi, bytecode } from "./abis/moduleMainGasEstimator.json";
+export { abi } from "./abis/moduleMainGasEstimator.json";

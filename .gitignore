@@ -11,3 +11,4 @@ config.ts
 .pnpm-store
 .secret
 *.DS_Store
+.vscode
