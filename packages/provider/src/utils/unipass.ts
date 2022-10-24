@@ -76,14 +76,17 @@ const genRelayers = (
   }
   relayer_config = config?.url_config?.relayer || relayer_config;
 
+  const eth = new RpcRelayer(relayer_config.eth, unipassWalletContext, ethProvider);
   const polygon = new RpcRelayer(relayer_config.polygon, unipassWalletContext, polygonProvider);
   const bsc = new RpcRelayer(relayer_config.bsc, unipassWalletContext, bcdProvider);
   const rangers = new RpcRelayer(relayer_config.rangers, unipassWalletContext, rangersProvider);
 
-  return { polygon, bsc, rangers };
+  return { polygon, bsc, rangers, eth };
 };
 export class WalletsCreator {
   public static instance: WalletsCreator;
+
+  public eth: Wallet;
 
   public polygon: Wallet;
 
@@ -96,6 +99,9 @@ export class WalletsCreator {
       const ins = new WalletsCreator(keyset, address, config);
       WalletsCreator.instance = ins;
     }
+    WalletsCreator.instance.eth.address = address;
+    WalletsCreator.instance.eth.keyset = keyset;
+
     WalletsCreator.instance.polygon.address = address;
     WalletsCreator.instance.polygon.keyset = keyset;
 
@@ -115,10 +121,13 @@ export class WalletsCreator {
       rangers: rangersProvider,
     } = genProviders(config);
     const {
+      eth: ethRelayer,
       polygon: polygonRelayer,
       bsc: bscRelayer,
       rangers: rangersRelayer,
     } = genRelayers(config, ethProvider, polygonProvider, bscProvider, rangersProvider);
+
+    this.eth = Wallet.create({ address, keyset, provider: ethProvider, relayer: ethRelayer });
     this.polygon = Wallet.create({
       keyset,
       provider: polygonProvider,
@@ -156,6 +165,8 @@ export class WalletsCreator {
 export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthChainNode => {
   if (env === "testnet") {
     switch (chainType) {
+      case "eth":
+        return "eth-goerli";
       case "polygon":
         return "polygon-mumbai";
       case "bsc":
@@ -167,6 +178,8 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
     }
   } else if (env === "mainnet") {
     switch (chainType) {
+      case "eth":
+        return "eth-mainnet";
       case "polygon":
         return "polygon-mainnet";
       case "bsc":
