@@ -1,5 +1,17 @@
 # @unipasswallet/relayer
 
+## 0.0.1-alpha.21
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.26
+  - @unipasswallet/keys@0.0.1-alpha.26
+  - @unipasswallet/network@0.0.1-alpha.26
+  - @unipasswallet/transactions@0.0.1-alpha.25
+  - @unipasswallet/utils@0.0.1-alpha.26
+
 ## 0.0.1-alpha.20
 
 ### Patch Changes
