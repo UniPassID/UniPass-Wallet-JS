@@ -61,6 +61,7 @@ export function isExecuteTransaction(tx: any): tx is ExecuteTransaction {
 export type BundledTransaction = {
   type: "Bundled";
   transactions: (ExecuteTransaction | Transactionish)[] | ExecuteTransaction | Transactionish;
+  gasLimit: BigNumber;
 };
 
 export function isBundledTransaction(tx: any): tx is BundledTransaction {
@@ -266,7 +267,7 @@ export class Wallet extends Signer {
       data = moduleMainInterface.encodeFunctionData("execute", [transactions, 0, "0x"]);
       digest = digestGuestTxHash(chainId, this.context.moduleGuest!, transactions);
       address = this.context.moduleGuest!;
-      gasLimit = constants.Zero;
+      gasLimit = txs.gasLimit;
     } else if (isExecuteTransaction(txs)) {
       if (Array.isArray(txs.transactions)) {
         transactions = await Promise.all(txs.transactions.map((v) => this.toTransaction(v).then((v) => v[0])));
@@ -412,10 +413,11 @@ export class Wallet extends Signer {
     sessionKeyOrSignerIndexes: SessionKey | number[] = [],
     feeToken?: string,
     gasLmit: BigNumber = constants.Zero,
-    nonce?: BigNumber,
   ): Promise<providers.TransactionResponse> {
     const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes, undefined, gasLmit);
-    const estimateGas = await this.unipassEstimateGas(signedTransactions);
+    const estimateGas = signedTransactions.gasLimit.eq(0)
+      ? await this.unipassEstimateGas(signedTransactions)
+      : signedTransactions.gasLimit;
     const call: ExecuteCall = {
       txs: signedTransactions.transactions.map((v) => toUnipassTransaction(v)),
       nonce: signedTransactions.nonce.toHexString(),
@@ -430,7 +432,6 @@ export class Wallet extends Signer {
       call: JSON.stringify(call),
     };
     const hash = await this.relayer.relay(args);
-    args.estimateGas = estimateGas.toHexString();
     return {
       hash,
       confirmations: 1,

@@ -77,7 +77,12 @@ const LoginSuccess: React.FC = () => {
           };
         }
         params.chain = chain;
-        await unipassWallet.transaction(params);
+        console.log("start Transfer Native Token");
+        // await unipassWallet.transaction(params);
+        const estimatedTxs = await unipassWallet.estimateTransferTransactionsGasLimits(params);
+        console.log("estiamted txs", estimatedTxs);
+        const receipt = await unipassWallet.sendTransaction(estimatedTxs, chain);
+        console.log("receipt:", receipt);
         message.success("send native token successfully");
       } catch (e: any) {
         if (e.code === 403001) {
@@ -114,7 +119,10 @@ const LoginSuccess: React.FC = () => {
         }
         params.chain = chain;
         console.log(params);
-        await unipassWallet.transaction(params);
+        const estimatedTxs = await unipassWallet.estimateTransferTransactionsGasLimits(params);
+        console.log("estiamted txs", estimatedTxs);
+        const receipt = await unipassWallet.sendTransaction(estimatedTxs, chain);
+        console.log("receipt:", receipt);
         message.success("send erc20 token successfully");
       } catch (e: any) {
         if (e.code === 403001) {

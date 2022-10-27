@@ -1,7 +1,13 @@
-import { arrayify, keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import { arrayify, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
 import { BigNumber, constants, ethers } from "ethers";
-import { ExecuteTransaction, SessionKey } from "@unipasswallet/wallet";
+import {
+  ExecuteTransaction,
+  SessionKey,
+  BundledTransaction,
+  isBundledTransaction,
+  Wallet,
+} from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
@@ -23,7 +29,6 @@ import {
 } from "./interface/unipassWalletProvider";
 import { genSessionKeyPermit, WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
-import UnipassWalletProvider from ".";
 import { FeeOption } from "@unipasswallet/relayer";
 
 const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
@@ -68,7 +73,6 @@ const doRegister = async (
   // 3. 获取accountAddress
   const keyset = getAccountKeysetJson(email, localKeyData.localKeyAddress, policyAddress, pepper);
   const keysetHash = keyset.hash();
-  console.log(keyset);
 
   const wallet = WalletsCreator.getPolygonProvider(keyset, config.env);
   const accountAddress = wallet.address;
@@ -245,57 +249,27 @@ const checkAccountStatus = async (email: string, chainType: ChainType, env: Envi
     authChainNode: getAuthNodeChain(env, chainType),
     sessionKeyPermit,
   });
-  console.log(`syncStatus: ${syncStatus}`);
   return syncStatus;
 };
 
-const genTransaction = async (
+export type OperateTransaction = {
+  deployTx?: Transaction;
+  syncAccountTx?: ExecuteTransaction;
+  transaction: Transaction;
+};
+
+export const innerGenerateTransferTx = async (
   tx: UniTransaction,
-  _email: string,
   chainType: ChainType,
   config: UnipassWalletProps,
-  fee?: TransactionFee,
-) => {
+): Promise<OperateTransaction> => {
   const user = await getUser();
-  const txs: Array<Transaction> = [];
-  const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
-  txs.push(new CallTxBuilder(revertOnError, gasLimit, target, value, data).build());
-  const keyset = Keyset.fromJson(user.keyset.keysetJson);
-  const wallet = WalletsCreator.getInstance(keyset, user.account, config)[chainType];
-  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
-  if (fee) {
-    const { token, value: tokenValue } = fee;
-    // TODO: check tokenValue
-    const feeOptions = await wallet.relayer.getFeeOptions(BigNumber.from(500000).toHexString());
 
-    if (token !== ADDRESS_ZERO) {
-      const feeOption = feeOptions.options.find(
-        (x) =>
-          !!(x as FeeOption).token.contractAddress &&
-          (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
-      );
-      if (!feeOption) throw new Error(`un supported fee token ${token}`);
-
-      const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
-      const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
-      const tokenData = erc20Interface.encodeFunctionData("transfer", [receiver, feeAmount]);
-      txs.push(new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build());
-    } else {
-      const feeOption = feeOptions.options.find(
-        (x) =>
-          !(x as FeeOption).token.contractAddress ||
-          (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
-      );
-      if (!feeOption) throw new Error(`un supported fee token ${token}`);
-
-      const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
-      txs.push(new CallTxBuilder(true, BigNumber.from(0), receiver, BigNumber.from(feeAmount), "0x").build());
-    }
-  }
+  let deployTx: Transaction;
+  let syncAccountTx: ExecuteTransaction;
   if (chainType !== "polygon") {
     const syncStatus = await checkAccountStatus(user.email, chainType, config.env);
     const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
-    const serverTxs: (ExecuteTransaction | Transactionish)[] = [];
     if (syncStatus === SyncStatusEnum.ServerSynced) {
       const {
         data: { transactions = [], isNeedDeploy },
@@ -310,39 +284,29 @@ const genTransaction = async (
       if (transactions.length === 1) {
         if (isNeedDeploy) {
           transactions[0].gasLimit = constants.Zero;
-          serverTxs.push(transactions[0]);
+          transactions[0].revertOnError = true;
+          [deployTx] = transactions;
         } else {
-          serverTxs.push({
+          syncAccountTx = {
             type: "Execute",
             transactions,
             sessionKeyOrSignerIndex: [],
             gasLimit: constants.Zero,
-          });
+          };
         }
       } else if (transactions.length === 2) {
         transactions[0].gasLimit = constants.Zero;
         transactions[1].gasLimit = constants.Zero;
-        serverTxs.push(transactions[0]);
-        serverTxs.push({
+        transactions[0].revertOnError = true;
+        transactions[1].revertOnError = true;
+        [deployTx] = transactions;
+        syncAccountTx = {
           type: "Execute",
           transactions: transactions[1],
           sessionKeyOrSignerIndex: [],
           gasLimit: constants.Zero,
-        });
+        };
       }
-
-      serverTxs.push({
-        type: "Execute",
-        transactions: txs,
-        sessionKeyOrSignerIndex: sessionkey,
-        gasLimit: constants.Zero,
-      });
-      console.log("[genTransaction]");
-      console.log(serverTxs);
-      const transaction = await wallet.sendTransaction({ type: "Bundled", transactions: serverTxs }, [], fee?.token);
-      const transactionReceipt = await transaction.wait(0);
-      console.log(transactionReceipt);
-      return transactionReceipt;
     }
     if (syncStatus === SyncStatusEnum.NotReceived) {
       throw new WalletError(403001);
@@ -350,12 +314,146 @@ const genTransaction = async (
       throw new WalletError(403001);
     }
   }
-  console.log("[genTransaction1]");
-  console.log(txs);
-  const transaction = await wallet.sendTransaction(txs, sessionkey, fee?.token);
-  const transactionReceipt = await transaction.wait(0);
-  console.log(transactionReceipt);
-  return transactionReceipt;
+  const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
+  const transaction = new CallTxBuilder(revertOnError, gasLimit, target, value, data).build();
+
+  return { deployTx, syncAccountTx, transaction };
+};
+
+export const getFeeToken = async (fee: TransactionFee, wallet: Wallet) => {
+  let feeTx;
+  const { token, value: tokenValue } = fee;
+  const feeOptions = await wallet.relayer.getFeeOptions(tokenValue.toHexString());
+
+  if (token !== ADDRESS_ZERO) {
+    const feeOption = feeOptions.options.find(
+      (x) =>
+        !!(x as FeeOption).token.contractAddress &&
+        (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
+    );
+    if (!feeOption) throw new Error(`un supported fee token ${token}`);
+
+    const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
+    const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
+    const tokenData = erc20Interface.encodeFunctionData("transfer", [receiver, feeAmount]);
+    feeTx = new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build();
+  } else {
+    const feeOption = feeOptions.options.find(
+      (x) =>
+        !(x as FeeOption).token.contractAddress ||
+        (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
+    );
+    if (!feeOption) throw new Error(`un supported fee token ${token}`);
+
+    const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
+    feeTx = new CallTxBuilder(true, BigNumber.from(0), receiver, BigNumber.from(feeAmount), "0x").build();
+  }
+  return feeTx;
+};
+
+export const innerEstimateTransferGas = async (
+  tx: OperateTransaction,
+  chainType: ChainType,
+  config: UnipassWalletProps,
+  fee?: TransactionFee,
+): Promise<ExecuteTransaction | BundledTransaction> => {
+  const user = await getUser();
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const instance = WalletsCreator.getInstance(keyset, user.account, config);
+  const wallet = instance[chainType];
+  const gasEstimator = instance[`${chainType}GasEstimator`];
+  const nonce = await wallet.relayer.getNonce(wallet.address);
+
+  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
+  const { deployTx, syncAccountTx } = tx;
+  const { transaction } = tx;
+
+  let feeValue: BigNumber | undefined;
+  let feeTx: Transaction;
+  if (fee) {
+    const { value: tokenValue } = fee;
+    if (tokenValue.eq(0)) {
+      feeValue = tokenValue;
+      feeTx = await getFeeToken({ ...fee, value: constants.One }, wallet);
+    } else {
+      feeTx = await getFeeToken(fee, wallet);
+    }
+  }
+
+  let transferExecuteTx: ExecuteTransaction;
+  if (!feeTx) {
+    transferExecuteTx = {
+      type: "Execute",
+      transactions: [transaction],
+      gasLimit: constants.Zero,
+      sessionKeyOrSignerIndex: sessionkey,
+    };
+  } else {
+    transferExecuteTx = {
+      type: "Execute",
+      transactions: [transaction, feeTx],
+      gasLimit: constants.Zero,
+      sessionKeyOrSignerIndex: sessionkey,
+    };
+  }
+
+  let estimatedTxs;
+  if (deployTx) {
+    estimatedTxs = { type: "Bundled", transactions: [deployTx], gasLimit: constants.Zero };
+  }
+  if (syncAccountTx) {
+    if (estimatedTxs) {
+      estimatedTxs.transactions.push(syncAccountTx);
+    } else {
+      estimatedTxs = { type: "Bundled", transactions: [syncAccountTx], gasLimit: constants.Zero };
+    }
+  }
+
+  if (estimatedTxs) {
+    estimatedTxs.transactions.push(transferExecuteTx);
+  } else {
+    estimatedTxs = transferExecuteTx;
+  }
+
+  let gasLimit;
+  if (chainType === "rangers") {
+    gasLimit = parseEther("0.001");
+  } else if (isBundledTransaction(estimatedTxs)) {
+    estimatedTxs = await gasEstimator.estimateBundledTxGasLimits(estimatedTxs, nonce);
+    gasLimit = estimatedTxs.gasLimit;
+  } else {
+    estimatedTxs = await gasEstimator.estimateExecuteTxsGasLimits(estimatedTxs, nonce);
+    gasLimit = estimatedTxs.gasLimit;
+  }
+
+  if (feeValue && feeValue.eq(0)) {
+    feeTx = await getFeeToken({ ...fee, value: gasLimit }, wallet);
+    transferExecuteTx.transactions[(transferExecuteTx.transactions as Transactionish[]).length - 1] = feeTx;
+    if (isBundledTransaction(estimatedTxs)) {
+      (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[])[
+        (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[]).length - 1
+      ] = transferExecuteTx;
+    } else {
+      estimatedTxs = transferExecuteTx;
+    }
+  }
+  return estimatedTxs;
+};
+
+export const sendTransaction = async (
+  tx: ExecuteTransaction | BundledTransaction,
+  chainType: ChainType,
+  config: UnipassWalletProps,
+) => {
+  const user = await getUser();
+
+  const keyset = Keyset.fromJson(user.keyset.keysetJson);
+  const instance = WalletsCreator.getInstance(keyset, user.account, config);
+  const wallet = instance[chainType];
+  const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
+
+  const ret = await (await wallet.sendTransaction(tx, sessionkey)).wait(1);
+  return ret;
 };
 
 const genSignMessage = async (message: string, _email: string, config: UnipassWalletProps) => {
@@ -420,7 +518,6 @@ export {
   doLogin,
   doLogout,
   syncEmail,
-  genTransaction,
   genSignMessage,
   checkLocalStatus,
   verifySignature,
