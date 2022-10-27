@@ -28,12 +28,22 @@ export const chain_config = {
 };
 
 export const mainnet_api_config = {
-  backend: "https://wallet.unipass.id",
+  backend: "https://wallet.unipass.id/wallet",
   relayer: {
     eth: "https://wallet.unipass.id/relayer-eth",
     polygon: "https://wallet.unipass.id/relayer-polygon",
     bsc: "https://wallet.unipass.id/relayer-bsc",
     rangers: "https://wallet.unipass.id/relayer-rangers",
+  },
+};
+
+export const mainnet_preview_api_config = {
+  backend: "https://m.wallet.unipass.vip/wallet",
+  relayer: {
+    eth: "https://m.wallet.unipass.vip/relayer-eth",
+    polygon: "https://m.wallet.unipass.vip/relayer-polygon",
+    bsc: "https://m.wallet.unipass.vip/relayer-bsc",
+    rangers: "https://m.wallet.unipass.vip/relayer-rangers",
   },
 };
 
