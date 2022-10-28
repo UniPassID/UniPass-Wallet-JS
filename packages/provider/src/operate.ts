@@ -258,7 +258,7 @@ export type OperateTransaction = {
   transaction: Transaction;
 };
 
-export const innerGenerateTransferTx = async (
+export const innerGenerateTransactionTx = async (
   tx: UniTransaction,
   chainType: ChainType,
   config: UnipassWalletProps,
@@ -351,7 +351,7 @@ export const getFeeToken = async (fee: TransactionFee, wallet: Wallet) => {
   return feeTx;
 };
 
-export const innerEstimateTransferGas = async (
+export const innerEstimateTransctionGas = async (
   tx: OperateTransaction,
   chainType: ChainType,
   config: UnipassWalletProps,

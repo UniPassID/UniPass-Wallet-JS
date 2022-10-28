@@ -14,9 +14,9 @@ import {
   genSignMessage,
   getWallet,
   verifySignature,
-  innerGenerateTransferTx,
-  innerEstimateTransferGas,
   sendTransaction,
+  innerGenerateTransactionTx,
+  innerEstimateTransctionGas,
 } from "./operate";
 import { getApiConfig } from "./config";
 import { wallets } from "@unipasswallet/sdk";
@@ -97,11 +97,11 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.upAuthToken = upAuthToken;
   }
 
-  public async estimateTransferTransactionsGasLimits(props: TransactionProps) {
+  public async estimateTransactionsGasLimits(props: TransactionProps) {
     const { tx, chain } = props;
     const _chain = chain ?? "polygon";
-    const transactions = await innerGenerateTransferTx(tx, _chain, this.config);
-    return innerEstimateTransferGas(transactions, chain, this.config, {
+    const transactions = await innerGenerateTransactionTx(tx, _chain, this.config);
+    return innerEstimateTransctionGas(transactions, chain, this.config, {
       value: constants.Zero,
       token: constants.AddressZero,
     });
@@ -118,8 +118,8 @@ export default class UnipassWalletProvider implements WalletProvider {
   public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
     const { tx, chain } = props;
     const _chain = chain ?? "polygon";
-    const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
-    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, {
+    const generatedTx = await innerGenerateTransactionTx(tx, _chain, this.config);
+    const transactions = await innerEstimateTransctionGas(generatedTx, _chain, this.config, {
       value: constants.Zero,
       token: constants.AddressZero,
     });
