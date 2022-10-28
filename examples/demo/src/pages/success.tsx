@@ -118,11 +118,14 @@ const LoginSuccess: React.FC = () => {
           };
         }
         params.chain = chain;
-        console.log(params);
-        const estimatedTxs = await unipassWallet.estimateTransferTransactionsGasLimits(params);
-        console.log("estiamted txs", estimatedTxs);
-        const receipt = await unipassWallet.sendTransaction(estimatedTxs, chain);
-        console.log("receipt:", receipt);
+        // console.log(params);
+        // const estimatedTxs = await unipassWallet.estimateTransferTransactionsGasLimits(params);
+        // console.log("estiamted txs", estimatedTxs);
+        // const receipt = await unipassWallet.sendTransaction(estimatedTxs, chain);
+        // console.log("receipt:", receipt);
+        console.log("params", params);
+        const ret = await unipassWallet.transaction(params);
+        console.log("receipt: ", ret);
         message.success("send erc20 token successfully");
       } catch (e: any) {
         if (e.code === 403001) {

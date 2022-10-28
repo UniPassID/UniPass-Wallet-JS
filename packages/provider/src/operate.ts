@@ -1,13 +1,7 @@
 import { arrayify, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
 import { BigNumber, constants, ethers } from "ethers";
-import {
-  ExecuteTransaction,
-  SessionKey,
-  BundledTransaction,
-  isBundledTransaction,
-  Wallet,
-} from "@unipasswallet/wallet";
+import { ExecuteTransaction, SessionKey, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
@@ -29,7 +23,7 @@ import {
 } from "./interface/unipassWalletProvider";
 import { genSessionKeyPermit, WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
-import { FeeOption } from "@unipasswallet/relayer";
+import { FeeOption, Relayer } from "@unipasswallet/relayer";
 
 const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
   checkEmailFormat(email, mailServices);
@@ -320,33 +314,43 @@ export const innerGenerateTransferTx = async (
   return { deployTx, syncAccountTx, transaction };
 };
 
-export const getFeeToken = async (fee: TransactionFee, wallet: Wallet) => {
-  let feeTx;
-  const { token, value: tokenValue } = fee;
-  const feeOptions = await wallet.relayer.getFeeOptions(tokenValue.toHexString());
+export const getFeeTx = (to: string, feeToken: string, feeValue: BigNumber) => {
+  let feeTx: Transaction;
 
-  if (token !== ADDRESS_ZERO) {
+  if (feeToken !== ADDRESS_ZERO) {
+    const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
+    const tokenData = erc20Interface.encodeFunctionData("transfer", [to, feeValue]);
+    feeTx = new CallTxBuilder(true, BigNumber.from(0), feeToken, BigNumber.from(0), tokenData).build();
+  } else {
+    feeTx = new CallTxBuilder(true, BigNumber.from(0), to, feeValue, "0x").build();
+  }
+  return feeTx;
+};
+
+export const getFeeTxByGasLimit = async (feeToken: string, gasLimit: BigNumber, relayer: Relayer) => {
+  let feeTx: Transaction;
+  const feeOptions = await relayer.getFeeOptions(gasLimit.toHexString());
+
+  if (feeToken !== ADDRESS_ZERO) {
     const feeOption = feeOptions.options.find(
       (x) =>
         !!(x as FeeOption).token.contractAddress &&
-        (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
+        (x as FeeOption).token.contractAddress.toLowerCase() === feeToken.toLowerCase(),
     );
-    if (!feeOption) throw new Error(`un supported fee token ${token}`);
+    if (!feeOption) throw new Error(`un supported fee token ${feeToken}`);
 
     const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
-    const erc20Interface = new ethers.utils.Interface(["function transfer(address _to, uint256 _value)"]);
-    const tokenData = erc20Interface.encodeFunctionData("transfer", [receiver, feeAmount]);
-    feeTx = new CallTxBuilder(true, BigNumber.from(0), token, BigNumber.from(0), tokenData).build();
+    feeTx = getFeeTx(receiver, feeToken, BigNumber.from(feeAmount));
   } else {
     const feeOption = feeOptions.options.find(
       (x) =>
         !(x as FeeOption).token.contractAddress ||
-        (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
+        (x as FeeOption).token.contractAddress.toLowerCase() === feeToken.toLowerCase(),
     );
-    if (!feeOption) throw new Error(`un supported fee token ${token}`);
+    if (!feeOption) throw new Error(`un supported fee token ${feeToken}`);
 
     const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
-    feeTx = new CallTxBuilder(true, BigNumber.from(0), receiver, BigNumber.from(feeAmount), "0x").build();
+    feeTx = getFeeTx(receiver, feeToken, BigNumber.from(feeAmount));
   }
   return feeTx;
 };
@@ -371,12 +375,21 @@ export const innerEstimateTransferGas = async (
   let feeValue: BigNumber | undefined;
   let feeTx: Transaction;
   if (fee) {
-    const { value: tokenValue } = fee;
+    const { token, value: tokenValue } = fee;
     if (tokenValue.eq(0)) {
       feeValue = tokenValue;
-      feeTx = await getFeeToken({ ...fee, value: constants.One }, wallet);
+      feeTx = await getFeeTxByGasLimit(token, constants.One, wallet.relayer);
     } else {
-      feeTx = await getFeeToken(fee, wallet);
+      const feeOptions = await wallet.relayer.getFeeOptions(constants.One.toHexString());
+      const feeOption = feeOptions.options.find(
+        (x) =>
+          !!(x as FeeOption).token.contractAddress &&
+          (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
+      );
+      if (!feeOption) throw new Error(`un supported fee token ${token}`);
+
+      const { to } = feeOption as FeeOption;
+      feeTx = getFeeTx(to, token, tokenValue);
     }
   }
 
@@ -427,7 +440,7 @@ export const innerEstimateTransferGas = async (
   }
 
   if (feeValue && feeValue.eq(0)) {
-    feeTx = await getFeeToken({ ...fee, value: gasLimit }, wallet);
+    feeTx = await getFeeTxByGasLimit(fee.token, gasLimit, wallet.relayer!);
     transferExecuteTx.transactions[(transferExecuteTx.transactions as Transactionish[]).length - 1] = feeTx;
     if (isBundledTransaction(estimatedTxs)) {
       (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[])[

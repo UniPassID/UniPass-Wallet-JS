@@ -1,4 +1,4 @@
-import { constants, providers } from "ethers";
+import { providers } from "ethers";
 import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { AxiosInstance } from "axios";
@@ -98,13 +98,10 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async estimateTransferTransactionsGasLimits(props: TransactionProps) {
-    const { tx, chain } = props;
+    const { tx, chain, fee } = props;
     const _chain = chain ?? "polygon";
     const transactions = await innerGenerateTransferTx(tx, _chain, this.config);
-    return innerEstimateTransferGas(transactions, chain, this.config, {
-      value: constants.Zero,
-      token: constants.AddressZero,
-    });
+    return innerEstimateTransferGas(transactions, chain, this.config, fee);
   }
 
   public async sendTransaction(
@@ -116,13 +113,10 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
-    const { tx, chain } = props;
+    const { tx, chain, fee } = props;
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
-    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, {
-      value: constants.Zero,
-      token: constants.AddressZero,
-    });
+    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee);
     return sendTransaction(transactions, chain, this.config);
   }
 
