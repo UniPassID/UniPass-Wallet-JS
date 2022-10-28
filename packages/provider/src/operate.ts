@@ -328,31 +328,36 @@ export const getFeeTx = (to: string, feeToken: string, feeValue: BigNumber) => {
 };
 
 export const getFeeTxByGasLimit = async (feeToken: string, gasLimit: BigNumber, relayer: Relayer) => {
-  let feeTx: Transaction;
+  const feeOption = await getFeeOption(gasLimit, feeToken, relayer);
+  const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
+  const feeTx = getFeeTx(receiver, feeToken, BigNumber.from(feeAmount));
+
+  return feeTx;
+};
+
+export const getFeeOption = async (
+  gasLimit: BigNumber,
+  token: string,
+  relayer: Relayer,
+): Promise<FeeOption | Pick<FeeOption, "to">> => {
   const feeOptions = await relayer.getFeeOptions(gasLimit.toHexString());
-
-  if (feeToken !== ADDRESS_ZERO) {
-    const feeOption = feeOptions.options.find(
-      (x) =>
-        !!(x as FeeOption).token.contractAddress &&
-        (x as FeeOption).token.contractAddress.toLowerCase() === feeToken.toLowerCase(),
-    );
-    if (!feeOption) throw new Error(`un supported fee token ${feeToken}`);
-
-    const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
-    feeTx = getFeeTx(receiver, feeToken, BigNumber.from(feeAmount));
-  } else {
-    const feeOption = feeOptions.options.find(
+  let feeOption: FeeOption | Pick<FeeOption, "to">;
+  if (token === ADDRESS_ZERO) {
+    feeOption = feeOptions.options.find(
       (x) =>
         !(x as FeeOption).token.contractAddress ||
-        (x as FeeOption).token.contractAddress.toLowerCase() === feeToken.toLowerCase(),
+        (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
     );
-    if (!feeOption) throw new Error(`un supported fee token ${feeToken}`);
-
-    const { to: receiver, amount: feeAmount } = feeOption as FeeOption;
-    feeTx = getFeeTx(receiver, feeToken, BigNumber.from(feeAmount));
+  } else {
+    feeOption = feeOptions.options.find(
+      (x) =>
+        !!(x as FeeOption).token.contractAddress &&
+        (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
+    );
   }
-  return feeTx;
+  if (!feeOption) throw new Error(`un supported fee token ${token}`);
+
+  return feeOption;
 };
 
 export const innerEstimateTransferGas = async (
@@ -380,14 +385,7 @@ export const innerEstimateTransferGas = async (
       feeValue = tokenValue;
       feeTx = await getFeeTxByGasLimit(token, constants.One, wallet.relayer);
     } else {
-      const feeOptions = await wallet.relayer.getFeeOptions(constants.One.toHexString());
-      const feeOption = feeOptions.options.find(
-        (x) =>
-          !!(x as FeeOption).token.contractAddress &&
-          (x as FeeOption).token.contractAddress.toLowerCase() === token.toLowerCase(),
-      );
-      if (!feeOption) throw new Error(`un supported fee token ${token}`);
-
+      const feeOption = await getFeeOption(constants.One, token, wallet.relayer);
       const { to } = feeOption as FeeOption;
       feeTx = getFeeTx(to, token, tokenValue);
     }
@@ -457,6 +455,7 @@ export const sendTransaction = async (
   tx: ExecuteTransaction | BundledTransaction,
   chainType: ChainType,
   config: UnipassWalletProps,
+  feeToken?: string
 ) => {
   const user = await getUser();
 
@@ -465,7 +464,7 @@ export const sendTransaction = async (
   const wallet = instance[chainType];
   const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
 
-  const ret = await (await wallet.sendTransaction(tx, sessionkey)).wait(1);
+  const ret = await (await wallet.sendTransaction(tx, sessionkey, feeToken)).wait(1);
   return ret;
 };
 
