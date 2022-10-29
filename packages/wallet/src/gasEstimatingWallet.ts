@@ -69,7 +69,8 @@ export class GasEstimatingWallet extends Wallet {
         }
 
         if (KeySecp256k1.isKeySecp256k1(key) || KeySecp256k1Wallet.isKeySecp256k1Wallet(key)) {
-          return new KeySecp256k1Wallet(WalletEOA.createRandom(), key.roleWeight, SignType.EthSign);
+          // FIX ME: use faked private key cost less time than create random key
+          return new KeySecp256k1Wallet(new WalletEOA('593f6bd6d96d75627e3d3b446ee16339cc5c45060d2fed97f913b8b158594035'), key.roleWeight, SignType.EthSign);
         }
 
         throw new Error(`Invalid Key: ${key}`);
@@ -169,7 +170,8 @@ export class GasEstimatingWallet extends Wallet {
     if (this.provider instanceof providers.JsonRpcProvider) {
       let signature: string;
       if (to === this.address) {
-        signature = (await this.signTransactions(transactions, signerIndexesOrSessionKey)).signature;
+        // FIX ME: reduce useless nonce fetching from chain
+        signature = (await this.signTransactions(transactions, signerIndexesOrSessionKey, nonce)).signature;
       } else {
         signature = "0x";
       }

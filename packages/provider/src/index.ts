@@ -1,4 +1,4 @@
-import { providers } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { AxiosInstance } from "axios";
@@ -118,6 +118,10 @@ export default class UnipassWalletProvider implements WalletProvider {
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
     const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee);
+    
+    // FIX ME: set gas limit for rangers to disable estimate gas in wallet 
+    if(_chain === 'rangers') transactions.gasLimit = BigNumber.from('1000000');
+
     return sendTransaction(transactions, chain, this.config, fee.token);
   }
 

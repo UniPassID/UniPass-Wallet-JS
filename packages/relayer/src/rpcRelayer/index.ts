@@ -36,12 +36,12 @@ export class RpcRelayer implements Relayer {
   }
 
   async getNonce(walletAddr: string): Promise<BigNumber> {
-    if (await this.isWalletDeployed(walletAddr)) {
+    try {
       const nonce = BigNumber.from(await this.rpcService.nonce(walletAddr)).add(1);
       return nonce;
+    } catch (e) {
+      return BigNumber.from(1);
     }
-
-    return BigNumber.from(1);
   }
 
   async getMetaNonce(walletAddr: string): Promise<BigNumber> {

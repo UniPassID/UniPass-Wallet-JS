@@ -464,7 +464,7 @@ export const sendTransaction = async (
   const wallet = instance[chainType];
   const sessionkey = await SessionKey.fromSessionKeyStore(user.sessionKey, wallet, decryptSessionKey);
 
-  const ret = await (await wallet.sendTransaction(tx, sessionkey, feeToken)).wait(1);
+  const ret = await (await wallet.sendTransaction(tx, sessionkey, feeToken, tx.gasLimit)).wait(1);
   return ret;
 };
 
