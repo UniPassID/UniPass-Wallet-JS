@@ -1,11 +1,12 @@
 import { BigNumber, constants, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
-import { BytesLike, formatBytes32String, hexlify, Interface, parseEther, solidityPack } from "ethers/lib/utils";
+import { formatBytes32String, Interface, parseEther, solidityPack } from "ethers/lib/utils";
 import { Deployer } from "../../../deployer/src/deployer";
 import * as dotenv from "dotenv";
 import NodeRSA from "node-rsa";
 
 import ModuleMainArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMain.sol/ModuleMain.json";
 import ModuleMainUpgradableArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMainUpgradable.sol/ModuleMainUpgradable.json";
+import ModuleMainGasEstimatorArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMainGasEstimator.sol/ModuleMainGasEstimator.json";
 import ModuleGuestArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleGuest.sol/ModuleGuest.json";
 import DkimKeysArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/DkimKeys.sol/DkimKeys.json";
 import WhiteListArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol/ModuleWhiteList.json";
@@ -15,8 +16,8 @@ import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts
 import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
 import { randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { FakeWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
-import { LocalRelayer, Relayer, RpcRelayer } from "@unipasswallet/relayer";
+import { GasEstimatingWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
+import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
 import { EmailType } from "@unipasswallet/dkim-base";
 
 export interface TestContext {
@@ -91,6 +92,30 @@ export async function initTestContext(): Promise<TestContext> {
     whiteList.address,
   );
 
+  const ModuleMainGasEstimator = new ContractFactory(
+    new Interface(ModuleMainGasEstimatorArtifact.abi),
+    ModuleMainGasEstimatorArtifact.bytecode,
+  );
+  const moduleMainGasEatimator = await deployer.deployContract(
+    ModuleMainGasEstimator,
+    instance,
+    txParams,
+    dkimKeys.address,
+    whiteList.address,
+    moduleMainUpgradable.address,
+    true,
+  );
+
+  const moduleMainUpgradableGasEatimator = await deployer.deployContract(
+    ModuleMainGasEstimator,
+    instance,
+    txParams,
+    dkimKeys.address,
+    whiteList.address,
+    moduleMainUpgradable.address,
+    false,
+  );
+
   const ModuleMain = new ContractFactory(new Interface(ModuleMainArtifact.abi), ModuleMainArtifact.bytecode, signer);
   const moduleMain = await deployer.deployContract(
     ModuleMain,
@@ -130,12 +155,19 @@ export async function initTestContext(): Promise<TestContext> {
   );
   const feeEstimator = await deployer.deployContract(FeeEstimator, instance, txParams);
 
+  const moduleMainGasEstimatorCode = await signer.provider.getCode(moduleMainGasEatimator.address);
+
+  const moduleMainUpgradableGasEstimatorCode = await signer.provider.getCode(moduleMainUpgradableGasEatimator.address);
+
   const unipassWalletContext: UnipassWalletContext = {
     moduleMain: moduleMain.address,
     moduleMainUpgradable: moduleMainUpgradable.address,
     dkimKeys: dkimKeys.address,
     moduleGuest: moduleGuest.address,
     gasEstimator: gasEstimator.address,
+    moduleWhiteList: whiteList.address,
+    moduleMainGasEstimatorCode,
+    moduleMainUpgradableGasEstimatorCode,
   };
 
   const relayer = new LocalRelayer(unipassWalletContext, signer);
@@ -166,12 +198,16 @@ export interface WalletContext {
   testERC20Token: Contract;
   greeter: Contract;
   wallet: UnipassWallet;
-  fakeWallet: FakeWallet;
+  fakeWallet: GasEstimatingWallet;
   metaNonce: number;
   nonce: number;
 }
 
-export async function initWalletContext(context: TestContext, toDeploy: boolean): Promise<WalletContext> {
+export async function initWalletContext(
+  context: TestContext,
+  toDeploy: boolean,
+  withDkim: boolean,
+): Promise<WalletContext> {
   const TestERC20Token = new ContractFactory(
     new Interface(TestERC20Artifact.abi),
     TestERC20Artifact.bytecode,
@@ -186,7 +222,7 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
   );
   const greeter = await Greeter.deploy();
 
-  const keyset = randomKeyset(10);
+  const keyset = randomKeyset(10, withDkim);
   const wallet = UnipassWallet.create({
     keyset,
     context: context.unipassWalletContext,
@@ -203,20 +239,18 @@ export async function initWalletContext(context: TestContext, toDeploy: boolean)
   if (toDeploy) {
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, wallet.keyset.hash(), constants.Zero);
     deployTx.revertOnError = true;
-    deployTx.gasLimit = BigNumber.from("1000000");
-    ret = await (await wallet.sendTransaction({ type: "Bundled", transactions: deployTx })).wait();
+    ret = await (
+      await wallet.sendTransaction({ type: "Bundled", transactions: deployTx, gasLimit: constants.Zero })
+    ).wait();
     expect(ret.status).toEqual(1);
   }
   const nonce = 1;
   const metaNonce = 1;
 
   const options = wallet.options();
-  const fakeWallet = new FakeWallet({
+  const fakeWallet = new GasEstimatingWallet({
     ...options,
     provider: options.provider as providers.JsonRpcProvider,
-    rsaEncryptor: async (input: BytesLike) => {
-      return hexlify(context.unipassPrivateKey.encrypt(input));
-    },
     emailType: EmailType.None,
   });
 

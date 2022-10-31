@@ -1,5 +1,17 @@
 # @unipasswallet/abi
 
+## 0.0.1-alpha.27
+
+### Patch Changes
+
+- update versions
+
+## 0.0.1-alpha.26
+
+### Patch Changes
+
+- update versions
+
 ## 0.0.1-alpha.25
 
 ### Patch Changes

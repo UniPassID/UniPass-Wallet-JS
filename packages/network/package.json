@@ -1,13 +1,14 @@
 {
   "name": "@unipasswallet/network",
-  "version": "0.0.1-alpha.25",
+  "version": "0.0.1-alpha.27",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run compile",
+    "build": "pnpm run prebuild && pnpm run clean && pnpm run compile",
+    "prebuild": "ts-node ./build.ts",
     "clean": "rimraf -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"

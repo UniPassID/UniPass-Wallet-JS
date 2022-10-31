@@ -1,4 +1,4 @@
-import { providers } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { AxiosInstance } from "axios";
@@ -10,13 +10,16 @@ import {
   getPasswordToken,
   doLogin,
   doLogout,
-  genTransaction,
   checkLocalStatus,
   genSignMessage,
   getWallet,
   verifySignature,
+  innerGenerateTransferTx,
+  innerEstimateTransferGas,
+  sendTransaction,
 } from "./operate";
 import { getApiConfig } from "./config";
+import { wallets } from "@unipasswallet/sdk";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
@@ -94,11 +97,32 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.upAuthToken = upAuthToken;
   }
 
-  public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
-    const { tx, fee, chain } = props;
+  public async estimateTransferTransactionsGasLimits(props: TransactionProps) {
+    const { tx, chain, fee } = props;
     const _chain = chain ?? "polygon";
-    const transactionReceipt = await genTransaction(tx, this.email, _chain, this.config, fee);
-    return transactionReceipt;
+    const transactions = await innerGenerateTransferTx(tx, _chain, this.config);
+    return innerEstimateTransferGas(transactions, chain, this.config, fee);
+  }
+
+  public async sendTransaction(
+    transactions: wallets.BundledTransaction | wallets.ExecuteTransaction,
+    chainType?: ChainType,
+    feeToken?: string,
+  ) {
+    const chain = chainType ?? "polygon";
+    return sendTransaction(transactions, chain, this.config, feeToken);
+  }
+
+  public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
+    const { tx, chain, fee } = props;
+    const _chain = chain ?? "polygon";
+    const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
+    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee);
+    
+    // FIX ME: set gas limit for rangers to disable estimate gas in wallet 
+    if(_chain === 'rangers') transactions.gasLimit = BigNumber.from('1000000');
+
+    return sendTransaction(transactions, chain, this.config, fee.token);
   }
 
   public async signMessage(message: string) {

@@ -21,7 +21,6 @@ import {
 } from "@unipasswallet/wallet";
 import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
 import { digestTxHash } from "@unipasswallet/transactions";
-import { RpcRelayer } from "@unipasswallet/relayer";
 
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
@@ -33,7 +32,7 @@ describe("Test Transactions", () => {
     context = await initTestContext();
   });
   beforeEach(async () => {
-    walletContext = await initWalletContext(context, true);
+    walletContext = await initWalletContext(context, true, true);
   });
   it("Test IsValidSignature", async () => {
     let hash = randomBytes(32);
@@ -52,9 +51,9 @@ describe("Test Transactions", () => {
     expect(await walletContext.wallet.isValidSignature(hash, sig)).toEqual(false);
   });
   it("Test DeployTx + SyncAccountTx + TransferTx", async () => {
-    walletContext = await initWalletContext(context, false);
+    walletContext = await initWalletContext(context, false, true);
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
-    const newKeyset = randomKeyset(10);
+    const newKeyset = randomKeyset(10, true);
     let signerIndexes: number[];
     const txBuilder = new SyncAccountTxBuilder(
       walletContext.wallet.address,
@@ -99,6 +98,7 @@ describe("Test Transactions", () => {
             gasLimit: constants.Zero,
           },
         ],
+        gasLimit: constants.Zero,
       })
     ).wait();
     expect(ret.status).toEqual(1);
@@ -107,7 +107,7 @@ describe("Test Transactions", () => {
     expect(await context.provider.getBalance(to)).toEqual(toValue);
   });
   it("Test DeployTx + UpdateKeysetHashTx + TransferTx", async () => {
-    walletContext = await initWalletContext(context, false);
+    walletContext = await initWalletContext(context, false, true);
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
     const newKeysetHash = randomBytes(32);
     let signerIndexes: number[];
@@ -182,9 +182,9 @@ describe("Test Transactions", () => {
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
   });
-  it("Updating KeysetHash Wighout TimeLock Should Success", async () => {
+  it("Updating KeysetHash Without TimeLock Should Success", async () => {
     const newKeysetHash = randomBytes(32);
-    const txBuilder = await new UpdateKeysetHashTxBuilder(
+    const txBuilder = new UpdateKeysetHashTxBuilder(
       walletContext.wallet.address,
       walletContext.metaNonce,
       newKeysetHash,
@@ -202,7 +202,7 @@ describe("Test Transactions", () => {
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
     expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(true);
-    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait(1);
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
     expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(false);

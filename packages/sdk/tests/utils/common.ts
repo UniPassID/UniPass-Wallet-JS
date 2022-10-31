@@ -19,28 +19,38 @@ function randomInt(max: number) {
   return Math.ceil(Math.random() * (max + 1));
 }
 
-export function randomKeyset(len: number): Keyset {
+export function randomKeyset(len: number, withDkim: boolean): Keyset {
   const ret: KeyBase[] = [];
 
   for (let i = 0; i < len; i++) {
     [Role.Owner, Role.AssetsOp, Role.Guardian].forEach((role) => {
-      const random = randomInt(1);
+      if (withDkim) {
+        const random = randomInt(1);
 
-      if (random === 0) {
+        if (random === 0) {
+          ret.push(
+            new KeySecp256k1Wallet(
+              WalletEOA.createRandom(),
+              randomRoleWeight(role, len),
+              randomInt(10) % 2 === 1 ? SignType.EIP712Sign : SignType.EthSign,
+            ),
+          );
+        } else {
+          ret.push(
+            new KeyEmailDkim(
+              "Raw",
+              `${Buffer.from(randomBytes(10)).toString("hex")}@gmail.com`,
+              hexlify(randomBytes(32)),
+              randomRoleWeight(role, len),
+            ),
+          );
+        }
+      } else {
         ret.push(
           new KeySecp256k1Wallet(
             WalletEOA.createRandom(),
             randomRoleWeight(role, len),
             randomInt(10) % 2 === 1 ? SignType.EIP712Sign : SignType.EthSign,
-          ),
-        );
-      } else {
-        ret.push(
-          new KeyEmailDkim(
-            "Raw",
-            `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`,
-            hexlify(randomBytes(32)),
-            randomRoleWeight(role, len),
           ),
         );
       }

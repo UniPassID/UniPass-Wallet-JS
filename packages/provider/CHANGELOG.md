@@ -1,5 +1,41 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.35
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.27
+  - @unipasswallet/network@0.0.1-alpha.27
+  - @unipasswallet/relayer@0.0.1-alpha.22
+  - @unipasswallet/sdk@0.0.1-alpha.27
+  - @unipasswallet/transaction-builders@0.0.1-alpha.22
+  - @unipasswallet/transactions@0.0.1-alpha.26
+  - @unipasswallet/utils@0.0.1-alpha.27
+  - @unipasswallet/wallet@0.0.1-alpha.27
+
+## 0.0.1-alpha.34
+
+### Patch Changes
+
+- update versions
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.26
+  - @unipasswallet/network@0.0.1-alpha.26
+  - @unipasswallet/relayer@0.0.1-alpha.21
+  - @unipasswallet/sdk@0.0.1-alpha.26
+  - @unipasswallet/transaction-builders@0.0.1-alpha.21
+  - @unipasswallet/transactions@0.0.1-alpha.25
+  - @unipasswallet/utils@0.0.1-alpha.26
+  - @unipasswallet/wallet@0.0.1-alpha.26
+
+## 0.0.1-alpha.33
+
+### Patch Changes
+
+- update provider version
+
 ## 0.0.1-alpha.32
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { FeeOption, Relayer } from "..";
 import fetchPonyfill from "fetch-ponyfill";
-import { PendingExecuteCallArgs, RpcService, TxnReceiptResult } from "./rpcService";
+import { EstimateGasResult, PendingExecuteCallArgs, RpcService, TxnReceiptResult } from "./rpcService";
 import { BigNumber, providers } from "ethers";
 
 export * from "./rpcService";
@@ -36,12 +36,12 @@ export class RpcRelayer implements Relayer {
   }
 
   async getNonce(walletAddr: string): Promise<BigNumber> {
-    if (await this.isWalletDeployed(walletAddr)) {
+    try {
       const nonce = BigNumber.from(await this.rpcService.nonce(walletAddr)).add(1);
       return nonce;
+    } catch (e) {
+      return BigNumber.from(1);
     }
-
-    return BigNumber.from(1);
   }
 
   async getMetaNonce(walletAddr: string): Promise<BigNumber> {
@@ -55,6 +55,10 @@ export class RpcRelayer implements Relayer {
 
   relay(transactions: PendingExecuteCallArgs): Promise<string> {
     return this.rpcService.sendTransaction(transactions);
+  }
+
+  estimateGas(transactions: PendingExecuteCallArgs): Promise<EstimateGasResult> {
+    return this.rpcService.estimateGas(transactions);
   }
 
   async wait(txHash: string): Promise<TxnReceiptResult | undefined> {

@@ -1,3 +1,5 @@
+import { ModuleMainGasEstimatorCode } from "./moduleMainGasEstimatorCode";
+import { ModuleMainUpgradableGasEstimatorCode } from "./moduleMainUpgradableGasEstimatorCode";
 export interface UnipassWalletContext {
   moduleMain: string;
   moduleMainUpgradable: string;
@@ -7,6 +9,9 @@ export interface UnipassWalletContext {
   moduleWhiteList?: string;
 
   gasEstimator?: string;
+  gasEstimatingDkimKeys?: string;
+  moduleMainGasEstimatorCode?: string;
+  moduleMainUpgradableGasEstimatorCode?: string;
 }
 
 export const unipassWalletContext: UnipassWalletContext = {
@@ -18,4 +23,6 @@ export const unipassWalletContext: UnipassWalletContext = {
   moduleWhiteList: "0x40F589896987eF460CaD5f37460d717d2Bf6d3FE",
 
   gasEstimator: "0x6041ae26F00BCec8c04a27190cB75f400a6582d3",
+  moduleMainGasEstimatorCode: ModuleMainGasEstimatorCode,
+  moduleMainUpgradableGasEstimatorCode: ModuleMainUpgradableGasEstimatorCode,
 };
