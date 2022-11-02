@@ -8,6 +8,11 @@
           "type": "address"
         },
         {
+          "internalType": "contract IOpenID",
+          "name": "_openID",
+          "type": "address"
+        },
+        {
           "internalType": "contract IModuleWhiteList",
           "name": "_whiteList",
           "type": "address"
@@ -118,6 +123,17 @@
     {
       "inputs": [
         {
+          "internalType": "uint8",
+          "name": "_sigType",
+          "type": "uint8"
+        }
+      ],
+      "name": "InvalidOpenIDWithEmailSig",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes",
           "name": "_signature",
           "type": "bytes"
@@ -184,6 +200,11 @@
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
           "name": "_requested",
           "type": "uint256"
         },
@@ -194,6 +215,17 @@
         }
       ],
       "name": "NotEnoughGas",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "OpenIDAuthFailed",
       "type": "error"
     },
     {
@@ -1033,6 +1065,19 @@
         }
       ],
       "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "openID",
+      "outputs": [
+        {
+          "internalType": "contract IOpenID",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

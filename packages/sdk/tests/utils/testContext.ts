@@ -1,5 +1,5 @@
 import { BigNumber, constants, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
-import { formatBytes32String, Interface, parseEther, solidityPack } from "ethers/lib/utils";
+import { formatBytes32String, Interface, keccak256, parseEther, solidityPack, toUtf8Bytes } from "ethers/lib/utils";
 import { Deployer } from "../../../deployer/src/deployer";
 import * as dotenv from "dotenv";
 import NodeRSA from "node-rsa";
@@ -9,12 +9,13 @@ import ModuleMainUpgradableArtifact from "../../../../artifacts/unipass-wallet-c
 import ModuleMainGasEstimatorArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMainGasEstimator.sol/ModuleMainGasEstimator.json";
 import ModuleGuestArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleGuest.sol/ModuleGuest.json";
 import DkimKeysArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/DkimKeys.sol/DkimKeys.json";
+import OpenIDArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/OpenID.sol/OpenID.json";
 import WhiteListArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol/ModuleWhiteList.json";
 import TestERC20Artifact from "../../../../artifacts/contracts/tests/TestERC20.sol/TestERC20.json";
 import GreeterArtifact from "../../../../artifacts/contracts/tests/Greeter.sol/Greeter.json";
 import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/GasEstimator.sol/GasEstimator.json";
 import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
-import { randomKeyset, transferEth } from "./common";
+import { OPENID_AUDIENCE, OPENID_ISSUER, OPENID_KID, randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { GasEstimatingWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
 import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
@@ -71,6 +72,28 @@ export async function initTestContext(): Promise<TestContext> {
   ).wait();
   expect(ret.status).toEqual(1);
 
+  const OpenID = new ContractFactory(new Interface(OpenIDArtifact.abi), OpenIDArtifact.bytecode, signer);
+  const openIDAdmin = Wallet.createRandom().connect(provider);
+  const openID = await deployer.deployContract(OpenID, instance, txParams, openIDAdmin.address);
+  await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), openIDAdmin.address, parseEther("10"));
+  ret = await (
+    await openID
+      .connect(openIDAdmin)
+      .updateOpenIDPublidKey(
+        keccak256(solidityPack(["bytes", "bytes"], [toUtf8Bytes(OPENID_ISSUER), toUtf8Bytes(OPENID_KID)])),
+        unipassPrivateKey.exportKey("components-public").n.subarray(1),
+      )
+  ).wait();
+  expect(ret.status).toEqual(1);
+  ret = await (
+    await openID
+      .connect(openIDAdmin)
+      .addOpenIDAudience(
+        keccak256(solidityPack(["bytes", "bytes"], [toUtf8Bytes(OPENID_ISSUER), toUtf8Bytes(OPENID_AUDIENCE)])),
+      )
+  ).wait();
+  expect(ret.status).toEqual(1);
+
   const WhiteList = new ContractFactory(
     new Interface(WhiteListArtifact.abi),
     WhiteListArtifact.bytecode,
@@ -89,6 +112,7 @@ export async function initTestContext(): Promise<TestContext> {
     instance,
     txParams,
     dkimKeys.address,
+    openID.address,
     whiteList.address,
   );
 
@@ -101,6 +125,7 @@ export async function initTestContext(): Promise<TestContext> {
     instance,
     txParams,
     dkimKeys.address,
+    openID.address,
     whiteList.address,
     moduleMainUpgradable.address,
     true,
@@ -111,6 +136,7 @@ export async function initTestContext(): Promise<TestContext> {
     instance,
     txParams,
     dkimKeys.address,
+    openID.address,
     whiteList.address,
     moduleMainUpgradable.address,
     false,
@@ -124,6 +150,7 @@ export async function initTestContext(): Promise<TestContext> {
     deployer.singleFactoryContract.address,
     moduleMainUpgradable.address,
     dkimKeys.address,
+    openID.address,
     whiteList.address,
   );
 

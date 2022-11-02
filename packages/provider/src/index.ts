@@ -1,4 +1,4 @@
-import { BigNumber, providers } from "ethers";
+import { BigNumber, constants, providers } from "ethers";
 import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import api from "./api/backend";
 import { AxiosInstance } from "axios";
@@ -19,7 +19,7 @@ import {
   sendTransaction,
 } from "./operate";
 import { getApiConfig } from "./config";
-import { wallets } from "@unipasswallet/sdk";
+import { wallets, keys } from "@unipasswallet/sdk";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
@@ -76,8 +76,15 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.upAuthToken = upAuthToken;
   }
 
-  public async register(password: string) {
-    await doRegister(password, this.email, this.upAuthToken, this.policyAddress, this.config);
+  public async register(password: string, openIDOptionsOrOpenIDHash: keys.OpenIDOptions | string = constants.HashZero) {
+    await doRegister(
+      password,
+      this.email,
+      openIDOptionsOrOpenIDHash,
+      this.upAuthToken,
+      this.policyAddress,
+      this.config,
+    );
   }
 
   public async passwordToken(email: string, password: string) {
@@ -118,9 +125,9 @@ export default class UnipassWalletProvider implements WalletProvider {
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
     const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee);
-    
-    // FIX ME: set gas limit for rangers to disable estimate gas in wallet 
-    if(_chain === 'rangers') transactions.gasLimit = BigNumber.from('1000000');
+
+    // FIX ME: set gas limit for rangers to disable estimate gas in wallet
+    if (_chain === "rangers") transactions.gasLimit = BigNumber.from("1000000");
 
     return sendTransaction(transactions, chain, this.config, fee.token);
   }

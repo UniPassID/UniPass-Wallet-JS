@@ -2,7 +2,7 @@ import { arrayify, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
 import { BigNumber, constants, ethers } from "ethers";
 import { ExecuteTransaction, SessionKey, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
-import { Keyset } from "@unipasswallet/keys";
+import { Keyset, OpenIDOptions } from "@unipasswallet/keys";
 import { Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
 import Tss, { SIG_PREFIX } from "./utils/tss";
@@ -44,6 +44,7 @@ const verifyOtpCode = async (email: string, code: string, action: OtpAction, mai
 const doRegister = async (
   password: string,
   email: string,
+  openIDOptionsOrOpenIDHash: OpenIDOptions | string,
   upAuthToken: string,
   policyAddress: string,
   config: UnipassWalletProps,
@@ -65,7 +66,13 @@ const doRegister = async (
   );
   if (!localKeyData) throw new WalletError(402001);
   // 3. 获取accountAddress
-  const keyset = getAccountKeysetJson(email, localKeyData.localKeyAddress, policyAddress, pepper);
+  const keyset = getAccountKeysetJson(
+    email,
+    openIDOptionsOrOpenIDHash,
+    localKeyData.localKeyAddress,
+    policyAddress,
+    pepper,
+  );
   const keysetHash = keyset.hash();
 
   const wallet = WalletsCreator.getPolygonProvider(keyset, config.env);
@@ -445,6 +452,7 @@ export const innerEstimateTransferGas = async (
         (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[]).length - 1
       ] = transferExecuteTx;
     } else {
+      transferExecuteTx.gasLimit = gasLimit;
       estimatedTxs = transferExecuteTx;
     }
   }
@@ -455,7 +463,7 @@ export const sendTransaction = async (
   tx: ExecuteTransaction | BundledTransaction,
   chainType: ChainType,
   config: UnipassWalletProps,
-  feeToken?: string
+  feeToken?: string,
 ) => {
   const user = await getUser();
 

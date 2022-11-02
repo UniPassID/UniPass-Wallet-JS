@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { getCreate2Address, hexlify, keccak256, randomBytes, solidityPack } from "ethers/lib/utils";
 import { DkimParams } from "@unipasswallet/dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
@@ -5,9 +6,23 @@ import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, ethers, Signer, Wallet as WalletEOA } from "ethers";
 import { EmailType } from "@unipasswallet/dkim-base";
 import { Wallet, generateEmailSubject } from "@unipasswallet/wallet";
-import { Keyset, KeyBase, KeyEmailDkim, KeySecp256k1Wallet, RoleWeight, SignType } from "@unipasswallet/keys";
+import {
+  Keyset,
+  KeyBase,
+  KeySecp256k1Wallet,
+  RoleWeight,
+  SignType,
+  KeyOpenIDWithEmail,
+  KeyOpenIDSignType,
+} from "@unipasswallet/keys";
+import NodeRSA from "node-rsa";
+import * as jose from "jose";
 
 export const optimalGasLimit = ethers.constants.Two.pow(21);
+
+export const OPENID_ISSUER = "unipass-wallet:test:issure";
+export const OPENID_KID = "unipass-wallet:test:kid:0";
+export const OPENID_AUDIENCE = "unipass-wallet:test:audience";
 
 export enum Role {
   Owner,
@@ -36,13 +51,21 @@ export function randomKeyset(len: number, withDkim: boolean): Keyset {
             ),
           );
         } else {
+          const rand = randomInt(1);
           ret.push(
-            new KeyEmailDkim(
-              "Raw",
-              `${Buffer.from(randomBytes(10)).toString("hex")}@gmail.com`,
-              hexlify(randomBytes(32)),
-              randomRoleWeight(role, len),
-            ),
+            new KeyOpenIDWithEmail({
+              emailOptionsOrEmailHash: {
+                type: "Raw",
+                emailFrom: `${Buffer.from(randomBytes(10)).toString("hex")}@gmail.com`,
+                pepper: hexlify(randomBytes(32)),
+              },
+              openIDOptionsOrOpenIDHash: {
+                issuer: OPENID_ISSUER,
+                sub: hexlify(randomBytes(8)),
+              },
+              roleWeight: randomRoleWeight(role, len),
+              signType: rand === 0 ? KeyOpenIDSignType.EmailSign : KeyOpenIDSignType.OpenIDSign,
+            }),
           );
         }
       } else {
@@ -86,7 +109,7 @@ export async function selectKeys(
   wallet: Wallet,
   emailType: EmailType,
   digestHash: string,
-  unipassPrivateKey: string,
+  unipassPrivateKey: NodeRSA,
   role: Role,
   threshold: number,
 ): Promise<[Wallet, number[]]> {
@@ -119,10 +142,29 @@ export async function selectKeys(
   const keys: KeyBase[] = await Promise.all(
     wallet.keyset.keys.map(async (key, i) => {
       if (indexes.includes(i)) {
-        if (KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") {
-          const dkimParams = await generateDkimParams(key.emailFrom, subject, unipassPrivateKey);
-          // eslint-disable-next-line no-param-reassign
-          key.setDkimParams(dkimParams);
+        if (KeyOpenIDWithEmail.isKeyOpenIDWithEmail(key)) {
+          if (key.signType === KeyOpenIDSignType.EmailSign && typeof key.emailOptionsOrEmailHash !== "string") {
+            const dkimParams = await generateDkimParams(
+              key.emailOptionsOrEmailHash.emailFrom,
+              subject,
+              unipassPrivateKey.exportKey("pkcs1"),
+            );
+            key = key.updateDkimParams(dkimParams);
+          } else if (
+            key.signType === KeyOpenIDSignType.OpenIDSign &&
+            typeof key.openIDOptionsOrOpenIDHash !== "string"
+          ) {
+            const privateKey = await jose.importPKCS8(unipassPrivateKey.exportKey("pkcs8-pem"), "RS256");
+            const accessToken = await new jose.SignJWT({ nonce: digestHash })
+              .setProtectedHeader({ alg: "RS256", kid: OPENID_KID })
+              .setIssuer(OPENID_ISSUER)
+              .setAudience(OPENID_AUDIENCE)
+              .setExpirationTime("2h")
+              .setIssuedAt(Date.now() / 1000 - 300)
+              .setSubject(key.openIDOptionsOrOpenIDHash.sub)
+              .sign(privateKey);
+            key = key.updateAccessToken(accessToken);
+          }
         }
       }
 

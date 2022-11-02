@@ -8,6 +8,8 @@ export * from "./keySecp256k1Wallet";
 
 export * from "./keyEmailDkim";
 
+export * from "./keyOpenIDWithEmail";
+
 export * from "./keyERC1271";
 
 export * from "./roleWeight";
@@ -17,7 +19,7 @@ export * from "./keyset";
 export enum KeyType {
   Secp256k1,
   ERC1271Wallet,
-  EmailDkim,
+  OpenIDWithEmail,
 }
 
 export enum SignType {
@@ -30,26 +32,17 @@ export enum SignFlag {
   Sign = 1,
 }
 
-export async function ethSign(
-  message: BytesLike,
-  key: Wallet
-): Promise<string> {
+export async function ethSign(message: BytesLike, key: Wallet): Promise<string> {
   return key.signMessage(utils.arrayify(message));
 }
 
 export function eip712Sign(_hash: BytesLike, _key: Wallet): string {
-  const sig = utils.joinSignature(
-    _key._signingKey().signDigest(utils.arrayify(_hash))
-  );
+  const sig = utils.joinSignature(_key._signingKey().signDigest(utils.arrayify(_hash)));
 
   return sig;
 }
 
-export async function sign(
-  hash: BytesLike,
-  key: Wallet,
-  signType: SignType
-): Promise<string> {
+export async function sign(hash: BytesLike, key: Wallet, signType: SignType): Promise<string> {
   let sig;
 
   switch (signType) {
