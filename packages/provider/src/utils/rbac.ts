@@ -1,4 +1,4 @@
-import { Keyset, KeyEmailDkim, KeySecp256k1, SignType, RoleWeight } from "@unipasswallet/keys";
+import { Keyset, KeyEmailDkim, KeySecp256k1, SignType, RoleWeight, OpenIDOptions } from "@unipasswallet/keys";
 
 import { Weight } from "./weight";
 
@@ -11,6 +11,7 @@ export interface ISendRecoveryAction {
 export function getAccountKeysetJson(
   // guardians: GuardianData[],
   email: string,
+  openIDOptionsOrOpenIDHash: OpenIDOptions | string,
   masterKeyAddress: string,
   policyAddress: string,
   pepper: string,
@@ -53,6 +54,7 @@ export function getAccountKeysetJson(
   const keysetData = Keyset.create(
     email,
     pepper,
+    openIDOptionsOrOpenIDHash,
     masterKeyData,
     guardiansList,
     policyData,

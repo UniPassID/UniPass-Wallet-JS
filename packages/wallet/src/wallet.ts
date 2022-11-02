@@ -119,7 +119,7 @@ export class Wallet extends Signer {
     }
 
     // FIX ME: use faked private key cost less time than create random key
-    this.callWallet = new WalletEOA('593f6bd6d96d75627e3d3b446ee16339cc5c45060d2fed97f913b8b158594035', this.provider);
+    this.callWallet = new WalletEOA("593f6bd6d96d75627e3d3b446ee16339cc5c45060d2fed97f913b8b158594035", this.provider);
   }
 
   static create(options: WalletOptions): Wallet {

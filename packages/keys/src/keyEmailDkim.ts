@@ -1,9 +1,10 @@
-import { BytesLike, defineReadOnly, hexlify } from "ethers/lib/utils";
+import { BytesLike, defineReadOnly, hexlify, keccak256, solidityPack } from "ethers/lib/utils";
 import { DkimParamsBase, pureEmailHash } from "@unipasswallet/dkim-base";
 import { obscureEmail } from "@unipasswallet/utils";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
-import { utils } from "ethers";
+import { constants, utils } from "ethers";
+import { KeyOpenIDSignType } from "./keyOpenIDWithEmail";
 
 export class KeyEmailDkim extends KeyBase {
   public readonly _isKeyEmailDkim: boolean;
@@ -11,6 +12,8 @@ export class KeyEmailDkim extends KeyBase {
   public readonly emailHash: string;
 
   public readonly pepper: string;
+
+  public readonly keyHash: string;
 
   constructor(
     public readonly type: "Raw" | "Hash",
@@ -38,10 +41,12 @@ export class KeyEmailDkim extends KeyBase {
           throw new Error("Expected hash for type `hash`");
         }
         this.emailHash = hash;
+        this.keyHash = keccak256(solidityPack(["bytes32", "bytes32"], [this.emailHash, constants.HashZero]));
         break;
       }
       case "Raw": {
         this.emailHash = pureEmailHash(emailFrom, _pepper);
+        this.keyHash = keccak256(solidityPack(["bytes32", "bytes32"], [this.emailHash, constants.HashZero]));
         break;
       }
       default: {
@@ -119,22 +124,30 @@ export class KeyEmailDkim extends KeyBase {
     }
 
     return utils.solidityPack(
-      ["uint8", "uint8", "bytes32", "bytes", "bytes"],
-      [KeyType.EmailDkim, SignFlag.Sign, this.pepper, this.dkimParams.serialize(), this.serializeRoleWeight()],
+      ["uint8", "uint8", "uint8", "bytes32", "bytes32", "bytes", "bytes"],
+      [
+        KeyType.OpenIDWithEmail,
+        SignFlag.Sign,
+        KeyOpenIDSignType.EmailSign,
+        constants.HashZero,
+        this.pepper,
+        this.dkimParams.serialize(),
+        this.serializeRoleWeight(),
+      ],
     );
   }
 
   public generateKey(): string {
     return utils.solidityPack(
       ["uint8", "uint8", "bytes32", "bytes"],
-      [KeyType.EmailDkim, SignFlag.NotSign, this.emailHash, this.serializeRoleWeight()],
+      [KeyType.OpenIDWithEmail, SignFlag.NotSign, this.keyHash, this.serializeRoleWeight()],
     );
   }
 
   public serialize(): string {
     return utils.solidityPack(
       ["uint8", "bytes32", "bytes"],
-      [KeyType.EmailDkim, this.emailHash, this.serializeRoleWeight()],
+      [KeyType.OpenIDWithEmail, this.keyHash, this.serializeRoleWeight()],
     );
   }
 }
