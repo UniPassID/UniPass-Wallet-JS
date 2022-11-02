@@ -234,6 +234,19 @@ export class KeyOpenIDWithEmail extends KeyBase {
     });
   }
 
+  public updateSignType(signType: KeyOpenIDSignType): KeyOpenIDWithEmail {
+    if (typeof this.emailOptionsOrEmailHash === "string") {
+      throw new Error("Please use email options but not hash");
+    }
+
+    return new KeyOpenIDWithEmail({
+      emailOptionsOrEmailHash: this.emailOptionsOrEmailHash,
+      openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
+      roleWeight: this.roleWeight,
+      signType,
+    });
+  }
+
   public async generateSignature(digestHash: string): Promise<string> {
     switch (this.signType) {
       case KeyOpenIDSignType.EmailSign: {
