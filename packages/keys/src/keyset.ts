@@ -32,7 +32,8 @@ export class Keyset {
       },
       openIDOptionsOrOpenIDHash,
       roleWeight: registerEmailRoleWeight,
-      signType: KeyOpenIDSignType.OpenIDSign,
+      signType:
+        typeof openIDOptionsOrOpenIDHash === "string" ? KeyOpenIDSignType.EmailSign : KeyOpenIDSignType.OpenIDSign,
     });
     const keys = [masterKey as KeyBase, registerEmailKey].concat(guardians);
 
