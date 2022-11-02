@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.26
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.30
+
 ## 0.0.1-alpha.25
 
 ### Patch Changes

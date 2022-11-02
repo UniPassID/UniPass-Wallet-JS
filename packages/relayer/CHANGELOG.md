@@ -1,5 +1,17 @@
 # @unipasswallet/relayer
 
+## 0.0.1-alpha.25
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.30
+  - @unipasswallet/keys@0.0.1-alpha.30
+  - @unipasswallet/network@0.0.1-alpha.30
+  - @unipasswallet/transactions@0.0.1-alpha.29
+  - @unipasswallet/utils@0.0.1-alpha.30
+
 ## 0.0.1-alpha.24
 
 ### Patch Changes

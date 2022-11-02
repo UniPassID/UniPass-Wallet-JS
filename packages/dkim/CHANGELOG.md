@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.0.1-alpha.29
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.30
+
 ## 0.0.1-alpha.28
 
 ### Patch Changes
