@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.0.1-alpha.31
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.32
+
 ## 0.0.1-alpha.30
 
 ### Patch Changes

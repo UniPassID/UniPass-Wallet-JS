@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.0.1-alpha.32
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+
 ## 0.0.1-alpha.31
 
 ### Patch Changes

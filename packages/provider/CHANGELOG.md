@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.40
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.32
+  - @unipasswallet/network@0.0.1-alpha.32
+  - @unipasswallet/relayer@0.0.1-alpha.27
+  - @unipasswallet/sdk@0.0.1-alpha.32
+  - @unipasswallet/transaction-builders@0.0.1-alpha.27
+  - @unipasswallet/transactions@0.0.1-alpha.31
+  - @unipasswallet/utils@0.0.1-alpha.32
+  - @unipasswallet/wallet@0.0.1-alpha.32
+
 ## 0.0.1-alpha.39
 
 ### Patch Changes
