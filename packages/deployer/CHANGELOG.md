@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.24
+
+### Patch Changes
+
+- #58: add openID validate
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.28
+
 ## 0.0.1-alpha.23
 
 ### Patch Changes

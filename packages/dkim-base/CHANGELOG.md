@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.0.1-alpha.28
+
+### Patch Changes
+
+- #58: add openID validate
+
 ## 0.0.1-alpha.27
 
 ### Patch Changes

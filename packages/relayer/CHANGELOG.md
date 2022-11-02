@@ -1,5 +1,17 @@
 # @unipasswallet/relayer
 
+## 0.0.1-alpha.23
+
+### Patch Changes
+
+- #58: add openID validate
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.28
+  - @unipasswallet/keys@0.0.1-alpha.28
+  - @unipasswallet/network@0.0.1-alpha.28
+  - @unipasswallet/transactions@0.0.1-alpha.27
+  - @unipasswallet/utils@0.0.1-alpha.28
+
 ## 0.0.1-alpha.22
 
 ### Patch Changes
