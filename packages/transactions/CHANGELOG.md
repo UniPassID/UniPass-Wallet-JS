@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.0.1-alpha.28
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.29
+  - @unipasswallet/utils@0.0.1-alpha.29
+
 ## 0.0.1-alpha.27
 
 ### Patch Changes

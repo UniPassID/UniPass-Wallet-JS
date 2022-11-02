@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.25
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.29
+
 ## 0.0.1-alpha.24
 
 ### Patch Changes

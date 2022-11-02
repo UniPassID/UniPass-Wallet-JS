@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.0.1-alpha.29
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+
 ## 0.0.1-alpha.28
 
 ### Patch Changes
