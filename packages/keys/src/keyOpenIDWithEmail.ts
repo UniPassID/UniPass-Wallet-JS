@@ -4,6 +4,7 @@ import { obscureEmail } from "@unipasswallet/utils";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
 import { constants, utils } from "ethers";
+import base64url from "base64url";
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
@@ -98,7 +99,7 @@ export class KeyOpenIDWithEmail extends KeyBase {
     if (typeof openIDOptionsOrOpenIDHash !== "string") {
       if (openIDOptionsOrOpenIDHash.idToken) {
         const [, payload] = openIDOptionsOrOpenIDHash.idToken.split(".");
-        const payloadJson = JSON.parse(Buffer.from(payload, "base64url").toString());
+        const payloadJson = JSON.parse(base64url.decode(payload));
         openIDOptionsOrOpenIDHash.issuer = payloadJson.iss!;
         openIDOptionsOrOpenIDHash.sub = payloadJson.sub!;
       }

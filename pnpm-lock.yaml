@@ -134,12 +134,14 @@ importers:
       '@types/node': ^18.7.18
       '@unipasswallet/dkim-base': workspace:^0.0.1-alpha.31
       '@unipasswallet/utils': workspace:^0.0.1-alpha.31
+      base64url: ^3.0.1
       ethers: ^5.7.1
       rimraf: ~3.0.2
       typescript: ~4.8.3
     dependencies:
       '@unipasswallet/dkim-base': link:../dkim-base
       '@unipasswallet/utils': link:../utils
+      base64url: 3.0.1
       ethers: 5.7.2
     devDependencies:
       '@types/node': 18.11.3
@@ -4341,6 +4343,11 @@ packages:
 
   /base64-js/1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+
+  /base64url/3.0.1:
+    resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
+    engines: {node: '>=6.0.0'}
+    dev: false
 
   /bech32/1.1.4:
     resolution: {integrity: sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==}
