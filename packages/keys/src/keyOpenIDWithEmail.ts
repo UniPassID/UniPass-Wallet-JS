@@ -30,7 +30,7 @@ export interface KeyEmailOptions {
 export interface OpenIDOptions {
   issuer?: string;
   sub?: string;
-  accessToken?: string;
+  idToken?: string;
   openIDHash?: string;
 }
 
@@ -96,8 +96,8 @@ export class KeyOpenIDWithEmail extends KeyBase {
 
     let openIDHash: string;
     if (typeof openIDOptionsOrOpenIDHash !== "string") {
-      if (openIDOptionsOrOpenIDHash.accessToken) {
-        const [, payload] = openIDOptionsOrOpenIDHash.accessToken.split(".");
+      if (openIDOptionsOrOpenIDHash.idToken) {
+        const [, payload] = openIDOptionsOrOpenIDHash.idToken.split(".");
         const payloadJson = JSON.parse(Buffer.from(payload, "base64url").toString());
         openIDOptionsOrOpenIDHash.issuer = payloadJson.iss!;
         openIDOptionsOrOpenIDHash.sub = payloadJson.sub!;
@@ -221,14 +221,14 @@ export class KeyOpenIDWithEmail extends KeyBase {
     });
   }
 
-  public updateAccessToken(v: string): KeyOpenIDWithEmail {
+  public updateIDToken(v: string): KeyOpenIDWithEmail {
     if (typeof this.openIDOptionsOrOpenIDHash === "string") {
       throw new Error("Please use email options but not hash");
     }
 
     return new KeyOpenIDWithEmail({
       emailOptionsOrEmailHash: this.emailOptionsOrEmailHash,
-      openIDOptionsOrOpenIDHash: { accessToken: v },
+      openIDOptionsOrOpenIDHash: { idToken: v },
       roleWeight: this.roleWeight,
       signType: this.signType,
     });
@@ -285,11 +285,11 @@ export class KeyOpenIDWithEmail extends KeyBase {
           throw new Error("Expect OpenID Options For OpenID Sign");
         }
 
-        if (this.openIDOptionsOrOpenIDHash.accessToken === undefined) {
+        if (this.openIDOptionsOrOpenIDHash.idToken === undefined) {
           throw new Error("Expected Access Token");
         }
 
-        const [headerBase64, payloadBase64, signatureBase64] = this.openIDOptionsOrOpenIDHash.accessToken.split(".");
+        const [headerBase64, payloadBase64, signatureBase64] = this.openIDOptionsOrOpenIDHash.idToken.split(".");
         const headerBuf = Buffer.from(headerBase64, "base64");
         const header = headerBuf.toString();
         const payloadBuf = Buffer.from(payloadBase64, "base64");
@@ -334,7 +334,7 @@ export class KeyOpenIDWithEmail extends KeyBase {
           audRightIndex < 0 ||
           nonceLeftIndex < 9
         ) {
-          throw new Error(`Invalid Access Token: ${this.openIDOptionsOrOpenIDHash.accessToken}`);
+          throw new Error(`Invalid ID Token: ${this.openIDOptionsOrOpenIDHash.idToken}`);
         }
 
         return solidityPack(

@@ -155,7 +155,7 @@ export async function selectKeys(
             typeof key.openIDOptionsOrOpenIDHash !== "string"
           ) {
             const privateKey = await jose.importPKCS8(unipassPrivateKey.exportKey("pkcs8-pem"), "RS256");
-            const accessToken = await new jose.SignJWT({ nonce: digestHash })
+            const idToken = await new jose.SignJWT({ nonce: digestHash })
               .setProtectedHeader({ alg: "RS256", kid: OPENID_KID })
               .setIssuer(OPENID_ISSUER)
               .setAudience(OPENID_AUDIENCE)
@@ -163,7 +163,7 @@ export async function selectKeys(
               .setIssuedAt(Date.now() / 1000 - 300)
               .setSubject(key.openIDOptionsOrOpenIDHash.sub)
               .sign(privateKey);
-            key = key.updateAccessToken(accessToken);
+            key = key.updateIDToken(idToken);
           }
         }
       }
