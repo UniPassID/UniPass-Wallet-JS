@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.0.1-alpha.30
+
+### Patch Changes
+
+- unipasswallet/keys: fix typo
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.31
+
 ## 0.0.1-alpha.29
 
 ### Patch Changes

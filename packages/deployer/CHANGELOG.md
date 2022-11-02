@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.27
+
+### Patch Changes
+
+- unipasswallet/keys: fix typo
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.31
+
 ## 0.0.1-alpha.26
 
 ### Patch Changes
