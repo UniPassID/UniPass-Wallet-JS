@@ -216,7 +216,7 @@ export class KeyOpenIDWithEmail extends KeyBase {
 
     return new KeyOpenIDWithEmail({
       emailOptionsOrEmailHash: { ...this.emailOptionsOrEmailHash, dkimParams: v },
-      openIDOptionsOrOpenIDHash: typeof this.openIDOptionsOrOpenIDHash,
+      openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
       roleWeight: this.roleWeight,
       signType: this.signType,
     });
