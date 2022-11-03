@@ -3,6 +3,7 @@ import scrypt from "scrypt-js";
 import { BytesLike } from "ethers";
 import {
   arrayify,
+  base64,
   Bytes,
   concat,
   hexlify,
@@ -21,15 +22,9 @@ type ScryptFunc<T> = (
   r: number,
   p: number,
   dkLen: number,
-  callback?: ProgressCallback
+  callback?: ProgressCallback,
 ) => T;
-type Pbkdf2Func<T> = (
-  pw: Uint8Array,
-  salt: Uint8Array,
-  c: number,
-  dkLen: number,
-  prfFunc: string
-) => T;
+type Pbkdf2Func<T> = (pw: Uint8Array, salt: Uint8Array, c: number, dkLen: number, prfFunc: string) => T;
 
 export type EncryptOptions = {
   iv?: BytesLike;
@@ -48,7 +43,7 @@ export async function encryptKeystore(
   input: BytesLike,
   password: Bytes | string,
   options?: EncryptOptions,
-  progressCallback?: ProgressCallback
+  progressCallback?: ProgressCallback,
 ): Promise<string> {
   if (typeof options === "function" && !progressCallback) {
     // eslint-disable-next-line no-param-reassign
@@ -123,49 +118,47 @@ export async function encryptKeystore(
   // We take 64 bytes:
   //   - 32 bytes   As normal for the Web3 secret storage (derivedKey, macPrefix)
   //   - 32 bytes   AES key to encrypt mnemonic with (required here to be Ethers Wallet)
-  return scrypt
-    .scrypt(passwordBytes, salt, N, r, p, 64, progressCallback)
-    .then((key) => {
-      // eslint-disable-next-line no-param-reassign
-      key = arrayify(key);
+  return scrypt.scrypt(passwordBytes, salt, N, r, p, 64, progressCallback).then((key) => {
+    // eslint-disable-next-line no-param-reassign
+    key = arrayify(key);
 
-      // This will be used to encrypt the wallet (as per Web3 secret storage)
-      const derivedKey = key.slice(0, 16);
-      const macPrefix = key.slice(16, 32);
+    // This will be used to encrypt the wallet (as per Web3 secret storage)
+    const derivedKey = key.slice(0, 16);
+    const macPrefix = key.slice(16, 32);
 
-      // Encrypt the private key
-      const counter = new aes.Counter(iv);
-      // eslint-disable-next-line new-cap
-      const aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
-      const ciphertext = arrayify(aesCtr.encrypt(inputBytes));
+    // Encrypt the private key
+    const counter = new aes.Counter(iv);
+    // eslint-disable-next-line new-cap
+    const aesCtr = new aes.ModeOfOperation.ctr(derivedKey, counter);
+    const ciphertext = arrayify(aesCtr.encrypt(inputBytes));
 
-      // Compute the message authentication code, used to check the password
-      const mac = keccak256(concat([macPrefix, ciphertext]));
+    // Compute the message authentication code, used to check the password
+    const mac = keccak256(concat([macPrefix, ciphertext]));
 
-      // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
-      const data: { [key: string]: any } = {
-        id: uuidV4(uuidRandom),
-        version: 3,
-        Crypto: {
-          cipher: "aes-128-ctr",
-          cipherparams: {
-            iv: hexlify(iv).substring(2),
-          },
-          ciphertext: hexlify(ciphertext).substring(2),
-          kdf: "scrypt",
-          kdfparams: {
-            salt: hexlify(salt).substring(2),
-            n: N,
-            dklen: 32,
-            p,
-            r,
-          },
-          mac: mac.substring(2),
+    // See: https://github.com/ethereum/wiki/wiki/Web3-Secret-Storage-Definition
+    const data: { [key: string]: any } = {
+      id: uuidV4(uuidRandom),
+      version: 3,
+      Crypto: {
+        cipher: "aes-128-ctr",
+        cipherparams: {
+          iv: hexlify(iv).substring(2),
         },
-      };
+        ciphertext: base64.encode(ciphertext),
+        kdf: "scrypt",
+        kdfparams: {
+          salt: hexlify(salt).substring(2),
+          n: N,
+          dklen: 32,
+          p,
+          r,
+        },
+        mac: mac.substring(2),
+      },
+    };
 
-      return JSON.stringify(data);
-    });
+    return JSON.stringify(data);
+  });
 }
 
 function _computeKdfKey<T>(
@@ -173,7 +166,7 @@ function _computeKdfKey<T>(
   password: Bytes | string,
   pbkdf2Func: Pbkdf2Func<T>,
   scryptFunc: ScryptFunc<T>,
-  progressCallback?: ProgressCallback
+  progressCallback?: ProgressCallback,
 ): T {
   const passwordBytes = getPassword(password);
 
@@ -181,9 +174,7 @@ function _computeKdfKey<T>(
 
   if (kdf && typeof kdf === "string") {
     const throwError = (name: string, value: any): never => {
-      throw new Error(
-        `invalid key-derivation function parameters: ${name} ${value}`
-      );
+      throw new Error(`invalid key-derivation function parameters: ${name} ${value}`);
     };
 
     if (kdf.toLowerCase() === "scrypt") {
@@ -246,7 +237,7 @@ function pbkdf2Sync(
   salt: Uint8Array,
   count: number,
   dkLen: number,
-  prfFunc: string
+  prfFunc: string,
 ): Uint8Array {
   return arrayify(_pbkdf2(passwordBytes, salt, count, dkLen, prfFunc));
 }
@@ -256,18 +247,12 @@ function pbkdf2(
   salt: Uint8Array,
   count: number,
   dkLen: number,
-  prfFunc: string
+  prfFunc: string,
 ): Promise<Uint8Array> {
-  return Promise.resolve(
-    pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc)
-  );
+  return Promise.resolve(pbkdf2Sync(passwordBytes, salt, count, dkLen, prfFunc));
 }
 
-function _decrypt(
-  data: any,
-  key: Uint8Array,
-  ciphertext: Uint8Array
-): Uint8Array {
+function _decrypt(data: any, key: Uint8Array, ciphertext: Uint8Array): Uint8Array {
   const cipher = searchPath(data, "crypto/cipher");
 
   if (cipher === "aes-128-ctr") {
@@ -284,11 +269,9 @@ function _decrypt(
 }
 
 function _getInput(data: any, key: Uint8Array): string {
-  const ciphertext = looseArrayify(searchPath(data, "crypto/ciphertext"));
+  const ciphertext = base64.decode(searchPath(data, "crypto/ciphertext"));
 
-  const computedMAC = hexlify(
-    keccak256(concat([key.slice(16, 32), ciphertext]))
-  ).substring(2);
+  const computedMAC = hexlify(keccak256(concat([key.slice(16, 32), ciphertext]))).substring(2);
 
   if (computedMAC !== searchPath(data, "crypto/mac").toLowerCase()) {
     throw new Error("invalid password");
@@ -302,17 +285,11 @@ function _getInput(data: any, key: Uint8Array): string {
 export async function decryptKeystore(
   json: string,
   password: Bytes | string,
-  progressCallback?: ProgressCallback
+  progressCallback?: ProgressCallback,
 ): Promise<string> {
   const data = JSON.parse(json);
 
-  const key = await _computeKdfKey(
-    data,
-    password,
-    pbkdf2,
-    scrypt.scrypt,
-    progressCallback
-  );
+  const key = await _computeKdfKey(data, password, pbkdf2, scrypt.scrypt, progressCallback);
 
   return _getInput(data, key);
 }
