@@ -1,5 +1,14 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.29
+
+### Patch Changes
+
+- @unipasswallet/provider bump lindell-ecdsa-wasm
+  @unipasswallet/keys fix typo
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.33
+
 ## 0.0.1-alpha.28
 
 ### Patch Changes
