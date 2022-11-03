@@ -258,9 +258,9 @@
           "type": "bytes32"
         },
         {
-          "internalType": "bytes",
-          "name": "sigHashHex",
-          "type": "bytes"
+          "internalType": "bytes32",
+          "name": "subjectHash",
+          "type": "bytes32"
         },
         {
           "internalType": "uint256",

@@ -2,7 +2,15 @@
 /* eslint-disable no-restricted-syntax */
 import { providers, Wallet as WalletEOA, Bytes, BigNumber, constants } from "ethers";
 import { BytesLike, concat, getCreate2Address, hexlify, keccak256, solidityPack } from "ethers/lib/utils";
-import { KeyEmailDkim, KeyERC1271, KeySecp256k1, KeySecp256k1Wallet, Keyset, SignType } from "@unipasswallet/keys";
+import {
+  KeyEmailDkim,
+  KeyERC1271,
+  KeyOpenIDWithEmail,
+  KeySecp256k1,
+  KeySecp256k1Wallet,
+  Keyset,
+  SignType,
+} from "@unipasswallet/keys";
 import { Relayer } from "@unipasswallet/relayer";
 import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
 import { EmailType } from "@unipasswallet/dkim-base";
@@ -54,23 +62,24 @@ export class GasEstimatingWallet extends Wallet {
     const fakeKeyset = new Keyset(
       keyset.keys.map((key) => {
         if (KeyERC1271.isKeyERC1271(key)) {
-          throw new Error(`Cannot Create KeyERC1271`);
+          return key;
         }
 
         if (KeyEmailDkim.isKeyEmailDkim(key)) {
-          return new KeyEmailDkim(
-            key.type,
-            key.emailFrom,
-            key.pepper,
-            key.roleWeight,
-            key.getDkimParams(),
-            key.emailHash,
-          );
+          return key;
+        }
+
+        if (KeyOpenIDWithEmail.isKeyOpenIDWithEmail(key)) {
+          return key;
         }
 
         if (KeySecp256k1.isKeySecp256k1(key) || KeySecp256k1Wallet.isKeySecp256k1Wallet(key)) {
           // FIX ME: use faked private key cost less time than create random key
-          return new KeySecp256k1Wallet(new WalletEOA('593f6bd6d96d75627e3d3b446ee16339cc5c45060d2fed97f913b8b158594035'), key.roleWeight, SignType.EthSign);
+          return new KeySecp256k1Wallet(
+            new WalletEOA("593f6bd6d96d75627e3d3b446ee16339cc5c45060d2fed97f913b8b158594035"),
+            key.roleWeight,
+            SignType.EthSign,
+          );
         }
 
         throw new Error(`Invalid Key: ${key}`);

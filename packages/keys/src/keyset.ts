@@ -1,6 +1,7 @@
 import { KeySecp256k1, KeyEmailDkim, RoleWeight, KeyBase, KeySecp256k1Wallet, KeyERC1271 } from ".";
 import { BytesLike } from "ethers";
 import { hexlify, keccak256, solidityPack } from "ethers/lib/utils";
+import { KeyOpenIDSignType, KeyOpenIDWithEmail, OpenIDOptions } from "./keyOpenIDWithEmail";
 
 export function getKeysetHash(keys: KeyBase[]): string {
   let keysetHash = "0x";
@@ -17,17 +18,23 @@ export class Keyset {
   static create(
     registerEmail: string,
     registerEmailPepper: BytesLike,
+    openIDOptionsOrOpenIDHash: OpenIDOptions | string,
     masterKey: KeySecp256k1,
     guardians: KeyBase[],
     policy?: KeyBase,
     registerEmailRoleWeight: RoleWeight = new RoleWeight(60, 0, 60),
   ): Keyset {
-    const registerEmailKey = new KeyEmailDkim(
-      "Raw",
-      registerEmail,
-      hexlify(registerEmailPepper),
-      registerEmailRoleWeight,
-    );
+    const registerEmailKey = new KeyOpenIDWithEmail({
+      emailOptionsOrEmailHash: {
+        type: "Raw",
+        emailFrom: registerEmail,
+        pepper: hexlify(registerEmailPepper),
+      },
+      openIDOptionsOrOpenIDHash,
+      roleWeight: registerEmailRoleWeight,
+      signType:
+        typeof openIDOptionsOrOpenIDHash === "string" ? KeyOpenIDSignType.EmailSign : KeyOpenIDSignType.OpenIDSign,
+    });
     const keys = [masterKey as KeyBase, registerEmailKey].concat(guardians);
 
     if (policy) {
@@ -56,6 +63,10 @@ export class Keyset {
       .map((v) => {
         if (KeyEmailDkim.isKeyEmailDkim(v)) {
           return `{"KeyEmailDkim":${v.toJson()}}`;
+        }
+
+        if (KeyOpenIDWithEmail.isKeyOpenIDWithEmail(v)) {
+          return `{"KeyOpenIDWithEmail":${v.toJson()}}`;
         }
 
         if (KeyERC1271.isKeyERC1271(v)) {
@@ -91,6 +102,10 @@ export class Keyset {
 
         if (v.KeySecp256k1Wallet) {
           return KeySecp256k1Wallet.fromJsonObj(v.KeySecp256k1Wallet);
+        }
+
+        if (v.KeyOpenIDWithEmail) {
+          return KeyOpenIDWithEmail.fromJsonObj(v.KeyOpenIDWithEmail);
         }
         throw new Error("Invalid KeyBase");
       }),

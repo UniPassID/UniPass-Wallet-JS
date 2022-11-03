@@ -1,5 +1,45 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.28
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.32
+
+## 0.0.1-alpha.27
+
+### Patch Changes
+
+- unipasswallet/keys: fix typo
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.31
+
+## 0.0.1-alpha.26
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.30
+
+## 0.0.1-alpha.25
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.29
+
+## 0.0.1-alpha.24
+
+### Patch Changes
+
+- #58: add openID validate
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.28
+
 ## 0.0.1-alpha.23
 
 ### Patch Changes

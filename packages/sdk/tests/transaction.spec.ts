@@ -1,4 +1,4 @@
-import { formatEther, hexlify, parseEther, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
+import { formatEther, hexlify, keccak256, parseEther, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
 import { BigNumber, constants, Wallet as WalletEOA } from "ethers";
 import {
   CallTxBuilder,
@@ -41,7 +41,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       hexlify(hash),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       100,
     );
@@ -67,7 +67,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.SyncAccount,
       txBuilder.digestMessage(),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -81,7 +81,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       digestHash,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       100,
     );
@@ -121,7 +121,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.UpdateKeysetHash,
       txBuilder.digestMessage(),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -134,7 +134,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       digestHash,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       100,
     );
@@ -195,7 +195,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.UpdateKeysetHash,
       txBuilder.digestMessage(),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -224,7 +224,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.LockKeysetHash,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Guardian,
       50,
     );
@@ -256,7 +256,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       sessionKey.digestPermitMessage(timestamp, weight),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       weight,
     );
@@ -283,7 +283,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       weight,
     );
@@ -308,7 +308,7 @@ describe("Test Transactions", () => {
     expect(ret[0]).toBe(true);
     expect(ret[1]).toBe(EmailType.CallOtherContract);
     expect(ret[2]).toBe(pureEmailHash(emailFrom, pepper));
-    expect(ret[3]).toBe(hexlify(toUtf8Bytes(digestHash)));
+    expect(ret[3]).toBe(keccak256(toUtf8Bytes(digestHash)));
   });
 
   it("Update TimeLock During Should Success", async () => {
@@ -325,7 +325,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.UpdateTimeLockDuring,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -354,7 +354,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.UpdateTimeLockDuring,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -380,7 +380,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.LockKeysetHash,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Guardian,
       50,
     );
@@ -425,7 +425,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.LockKeysetHash,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Guardian,
       50,
     );
@@ -449,7 +449,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.CancelLockKeysetHash,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       1,
     );
@@ -475,7 +475,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.UpdateImplementation,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -506,7 +506,7 @@ describe("Test Transactions", () => {
       walletContext.wallet,
       EmailType.SyncAccount,
       subject,
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );

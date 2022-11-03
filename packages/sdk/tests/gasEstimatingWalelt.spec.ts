@@ -52,7 +52,7 @@ describe("Test Gas Estimating Wallet", () => {
         walletContext.wallet,
         emailType,
         digestTxHash(context.chainId, walletContext.wallet.address, walletContext.nonce, [tx]),
-        context.unipassPrivateKey.exportKey("pkcs1"),
+        context.unipassPrivateKey,
         role,
         weight,
       );
@@ -68,7 +68,7 @@ describe("Test Gas Estimating Wallet", () => {
         walletContext.wallet,
         emailType,
         digestTxHash(context.chainId, walletContext.wallet.address, walletContext.nonce, estimatedTx.txs),
-        context.unipassPrivateKey.exportKey("pkcs1"),
+        context.unipassPrivateKey,
         role,
         weight,
       );
@@ -79,7 +79,7 @@ describe("Test Gas Estimating Wallet", () => {
         walletContext.wallet,
         emailType,
         txBuilder.digestMessage(),
-        context.unipassPrivateKey.exportKey("pkcs1"),
+        context.unipassPrivateKey,
         role,
         weight,
       );
@@ -233,7 +233,7 @@ describe("Test Gas Estimating Wallet", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       sessionKey.digestPermitMessage(timestamp, weight),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       weight,
     );
@@ -272,7 +272,7 @@ describe("Test Gas Estimating Wallet", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       sessionKey.digestPermitMessage(timestamp, weight),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       weight,
     );
@@ -322,7 +322,7 @@ describe("Test Gas Estimating Wallet", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       syncAccountTxBuilder.digestMessage(),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.Owner,
       100,
     );
@@ -344,7 +344,7 @@ describe("Test Gas Estimating Wallet", () => {
       walletContext.wallet,
       EmailType.CallOtherContract,
       sessionKey.digestPermitMessage(timestamp, weight),
-      context.unipassPrivateKey.exportKey("pkcs1"),
+      context.unipassPrivateKey,
       Role.AssetsOp,
       weight,
     );

@@ -1,5 +1,35 @@
 # @unipasswallet/abi
 
+## 0.0.1-alpha.32
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+
+## 0.0.1-alpha.31
+
+### Patch Changes
+
+- unipasswallet/keys: fix typo
+
+## 0.0.1-alpha.30
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+
+## 0.0.1-alpha.29
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+
+## 0.0.1-alpha.28
+
+### Patch Changes
+
+- #58: add openID validate
+
 ## 0.0.1-alpha.27
 
 ### Patch Changes

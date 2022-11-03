@@ -1,5 +1,80 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.40
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.32
+  - @unipasswallet/network@0.0.1-alpha.32
+  - @unipasswallet/relayer@0.0.1-alpha.27
+  - @unipasswallet/sdk@0.0.1-alpha.32
+  - @unipasswallet/transaction-builders@0.0.1-alpha.27
+  - @unipasswallet/transactions@0.0.1-alpha.31
+  - @unipasswallet/utils@0.0.1-alpha.32
+  - @unipasswallet/wallet@0.0.1-alpha.32
+
+## 0.0.1-alpha.39
+
+### Patch Changes
+
+- unipasswallet/keys: fix typo
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.31
+  - @unipasswallet/network@0.0.1-alpha.31
+  - @unipasswallet/relayer@0.0.1-alpha.26
+  - @unipasswallet/sdk@0.0.1-alpha.31
+  - @unipasswallet/transaction-builders@0.0.1-alpha.26
+  - @unipasswallet/transactions@0.0.1-alpha.30
+  - @unipasswallet/utils@0.0.1-alpha.31
+  - @unipasswallet/wallet@0.0.1-alpha.31
+
+## 0.0.1-alpha.38
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.30
+  - @unipasswallet/network@0.0.1-alpha.30
+  - @unipasswallet/relayer@0.0.1-alpha.25
+  - @unipasswallet/sdk@0.0.1-alpha.30
+  - @unipasswallet/transaction-builders@0.0.1-alpha.25
+  - @unipasswallet/transactions@0.0.1-alpha.29
+  - @unipasswallet/utils@0.0.1-alpha.30
+  - @unipasswallet/wallet@0.0.1-alpha.30
+
+## 0.0.1-alpha.37
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.29
+  - @unipasswallet/network@0.0.1-alpha.29
+  - @unipasswallet/relayer@0.0.1-alpha.24
+  - @unipasswallet/sdk@0.0.1-alpha.29
+  - @unipasswallet/transaction-builders@0.0.1-alpha.24
+  - @unipasswallet/transactions@0.0.1-alpha.28
+  - @unipasswallet/utils@0.0.1-alpha.29
+  - @unipasswallet/wallet@0.0.1-alpha.29
+
+## 0.0.1-alpha.36
+
+### Patch Changes
+
+- #58: add openID validate
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.28
+  - @unipasswallet/network@0.0.1-alpha.28
+  - @unipasswallet/relayer@0.0.1-alpha.23
+  - @unipasswallet/sdk@0.0.1-alpha.28
+  - @unipasswallet/transaction-builders@0.0.1-alpha.23
+  - @unipasswallet/transactions@0.0.1-alpha.27
+  - @unipasswallet/utils@0.0.1-alpha.28
+  - @unipasswallet/wallet@0.0.1-alpha.28
+
 ## 0.0.1-alpha.35
 
 ### Patch Changes

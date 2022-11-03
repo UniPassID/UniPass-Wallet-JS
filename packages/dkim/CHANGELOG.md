@@ -1,5 +1,45 @@
 # @unipasswallet/dkim
 
+## 0.0.1-alpha.31
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix base64url for browser
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.32
+
+## 0.0.1-alpha.30
+
+### Patch Changes
+
+- unipasswallet/keys: fix typo
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.31
+
+## 0.0.1-alpha.29
+
+### Patch Changes
+
+- @unipasswallet/keys: fix signType for Keyset create
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.30
+
+## 0.0.1-alpha.28
+
+### Patch Changes
+
+- @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.29
+
+## 0.0.1-alpha.27
+
+### Patch Changes
+
+- #58: add openID validate
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.28
+
 ## 0.0.1-alpha.26
 
 ### Patch Changes
