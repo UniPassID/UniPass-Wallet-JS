@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.30
+
+### Patch Changes
+
+- @unipasswallet/utils: update ciphertext encrypt
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.34
+
 ## 0.0.1-alpha.29
 
 ### Patch Changes

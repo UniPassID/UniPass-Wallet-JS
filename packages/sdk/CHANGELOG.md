@@ -1,5 +1,21 @@
 # @unipasswallet/sdk
 
+## 0.0.1-alpha.34
+
+### Patch Changes
+
+- @unipasswallet/utils: update ciphertext encrypt
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.34
+  - @unipasswallet/dkim-base@0.0.1-alpha.34
+  - @unipasswallet/keys@0.0.1-alpha.34
+  - @unipasswallet/network@0.0.1-alpha.34
+  - @unipasswallet/relayer@0.0.1-alpha.29
+  - @unipasswallet/transaction-builders@0.0.1-alpha.29
+  - @unipasswallet/transactions@0.0.1-alpha.33
+  - @unipasswallet/utils@0.0.1-alpha.34
+  - @unipasswallet/wallet@0.0.1-alpha.34
+
 ## 0.0.1-alpha.33
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.0.1-alpha.34
+
+### Patch Changes
+
+- @unipasswallet/utils: update ciphertext encrypt
+
 ## 0.0.1-alpha.33
 
 ### Patch Changes
