@@ -490,7 +490,7 @@ export class Wallet extends Signer {
       };
       return receipt;
     }
-    const recipt = await this.provider.waitForTransaction(ret.txHash, confirmations, timeout);
+    const recipt = await this.provider.waitForTransaction(ret.txHash);
     recipt.status = ret.status;
     return recipt;
   }
