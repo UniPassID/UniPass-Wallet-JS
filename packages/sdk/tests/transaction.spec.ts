@@ -111,7 +111,7 @@ describe("Test Transactions", () => {
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
     const newKeysetHash = randomBytes(32);
     let signerIndexes: number[];
-    const txBuilder = await new UpdateKeysetHashTxBuilder(
+    const txBuilder = new UpdateKeysetHashTxBuilder(
       walletContext.wallet.address,
       walletContext.metaNonce,
       newKeysetHash,

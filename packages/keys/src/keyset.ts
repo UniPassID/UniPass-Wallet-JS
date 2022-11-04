@@ -50,7 +50,7 @@ export class Keyset {
 
   public obscure(): Keyset {
     const keys = this.keys.map((key) => {
-      if (KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") {
+      if ((KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") || KeyOpenIDWithEmail.isKeyOpenIDWithEmail(key)) {
         return key.obscure();
       }
       return key;
