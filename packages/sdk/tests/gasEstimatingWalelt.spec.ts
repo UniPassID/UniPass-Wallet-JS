@@ -244,6 +244,7 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [tx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionKey,
+      preSignTransactionFunc: undefined,
     };
 
     executeTx = await walletContext.fakeWallet.estimateExecuteTxsGasLimits(
@@ -283,6 +284,7 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [tx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionKey,
+      preSignTransactionFunc: undefined,
     };
 
     let bundledTx: BundledTransaction = {
@@ -332,6 +334,7 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [syncAccountTx],
       sessionKeyOrSignerIndex: [],
       gasLimit: constants.Zero,
+      preSignTransactionFunc: undefined,
     };
     walletContext.wallet = walletContext.wallet.setKeyset(newKeyset);
     walletContext.fakeWallet = walletContext.fakeWallet.setKeyset(newKeyset);
@@ -356,6 +359,7 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [transferTx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionKey,
+      preSignTransactionFunc: undefined,
     };
 
     let bundledTx: BundledTransaction = {

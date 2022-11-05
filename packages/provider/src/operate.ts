@@ -231,6 +231,12 @@ const doLogout = async (email: string) => {
   await DB.delUser(email ?? "");
 };
 
+const preSignFunc = (chainId: number, address: string, txs: Transaction[], nonce: BigNumber): Promise<boolean> => {
+  return new Promise((resolve) => {
+    resolve(true);
+  });
+};
+
 const syncEmail = async (email: string, chainType: ChainType, env: Environment) => {
   if (!email) throw new WalletError(402004);
   checkEmailFormat(email);
@@ -293,6 +299,7 @@ export const innerGenerateTransferTx = async (
             transactions,
             sessionKeyOrSignerIndex: [],
             gasLimit: constants.Zero,
+            preSignFunc,
           };
         }
       } else if (transactions.length === 2) {
@@ -306,6 +313,7 @@ export const innerGenerateTransferTx = async (
           transactions: transactions[1],
           sessionKeyOrSignerIndex: [],
           gasLimit: constants.Zero,
+          preSignFunc,
         };
       }
     }
@@ -405,6 +413,7 @@ export const innerEstimateTransferGas = async (
       transactions: [transaction],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionkey,
+      preSignFunc,
     };
   } else {
     transferExecuteTx = {
@@ -412,6 +421,7 @@ export const innerEstimateTransferGas = async (
       transactions: [transaction, feeTx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionkey,
+      preSignFunc,
     };
   }
 
