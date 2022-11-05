@@ -45,7 +45,7 @@ interface TransactionFee {
 }
 
 interface TransactionProps {
-  keyset: Keyset;
+  keyset?: Keyset;
   tx: UniTransaction;
   fee?: TransactionFee;
   chain?: ChainType;
