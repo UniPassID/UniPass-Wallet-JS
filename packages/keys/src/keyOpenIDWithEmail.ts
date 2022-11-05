@@ -216,7 +216,7 @@ export class KeyOpenIDWithEmail extends KeyBase {
 
     return new KeyOpenIDWithEmail({
       emailOptionsOrEmailHash: { ...this.emailOptionsOrEmailHash, dkimParams: v },
-      openIDOptionsOrOpenIDHash: typeof this.openIDOptionsOrOpenIDHash,
+      openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
       roleWeight: this.roleWeight,
       signType: this.signType,
     });
@@ -291,15 +291,13 @@ export class KeyOpenIDWithEmail extends KeyBase {
         }
 
         const [headerBase64, payloadBase64, signatureBase64] = this.openIDOptionsOrOpenIDHash.idToken.split(".");
-        const headerBuf = Buffer.from(headerBase64, "base64");
-        const header = headerBuf.toString();
-        const payloadBuf = Buffer.from(payloadBase64, "base64");
-        const payload = payloadBuf.toString();
-        const signature = Buffer.from(signatureBase64, "base64");
+        const header = base64url.toBuffer(headerBase64);
+        const payload = base64url.toBuffer(payloadBase64);
+        const signature = base64url.toBuffer(signatureBase64);
 
-        const payloadObj = JSON.parse(payload);
+        const payloadObj = JSON.parse(payload.toString());
         if (payloadObj.nonce !== digestHash) {
-          throw new Error(`Expected subject ${payloadObj.nonce}, got ${digestHash}`);
+          throw new Error(`Expected nonce ${payloadObj.nonce}, got ${digestHash}`);
         }
 
         const issLeftIndex = payload.indexOf('"iss":"') + 7;
@@ -381,10 +379,10 @@ export class KeyOpenIDWithEmail extends KeyBase {
             nonceLeftIndex,
             iatLeftIndex,
             expLeftIndex,
-            headerBuf.length,
-            headerBuf,
-            payloadBuf.length,
-            payloadBuf,
+            header.length,
+            header,
+            payload.length,
+            payload,
             signature.length,
             signature,
             this.serializeRoleWeight(),

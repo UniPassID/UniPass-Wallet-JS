@@ -157,6 +157,7 @@ export async function selectKeys(
             const privateKey = await jose.importPKCS8(unipassPrivateKey.exportKey("pkcs8-pem"), "RS256");
             const idToken = await new jose.SignJWT({ nonce: digestHash })
               .setProtectedHeader({ alg: "RS256", kid: OPENID_KID })
+              .setJti("Test 中文")
               .setIssuer(OPENID_ISSUER)
               .setAudience(OPENID_AUDIENCE)
               .setExpirationTime("2h")

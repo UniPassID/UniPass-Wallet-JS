@@ -81,7 +81,7 @@ export const getApiConfig = (props: UnipassWalletProps) => {
   if (props.url_config) return props.url_config;
   switch (props.env) {
     case "testnet":
-      return dev_api_config;
+      return test_api_config;
     case "mainnet":
       return mainnet_api_config;
     default:

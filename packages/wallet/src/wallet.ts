@@ -443,48 +443,56 @@ export class Wallet extends Signer {
       data: signedTransactions.data,
       value: constants.Zero,
       wait: async (confirmations?: number, timeout: number = 30) => {
-        let ret = await this.relayer.wait(hash);
-        let i = 0;
-        while (ret === undefined || ret === null) {
-          if (i < timeout) {
-            // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            // eslint-disable-next-line no-await-in-loop
-            ret = await this.relayer.wait(hash);
-          } else {
-            return Promise.reject(new Error("Timeout Error"));
-          }
-          i++;
-        }
-        if (ret.txHash === constants.HashZero) {
-          return Promise.reject(new Error(`transactions revert: ${ret.revertReason}`));
-        }
-        if (confirmations === 0) {
-          const receipt: providers.TransactionReceipt = {
-            transactionHash: ret.txHash,
-            confirmations,
-            status: ret.status,
-            from: constants.AddressZero,
-            to: this.address,
-            contractAddress: constants.AddressZero,
-            transactionIndex: 0,
-            gasUsed: constants.Zero,
-            logsBloom: "",
-            blockHash: "",
-            logs: [],
-            blockNumber: 0,
-            cumulativeGasUsed: constants.Zero,
-            effectiveGasPrice: constants.Zero,
-            byzantium: false,
-            type: 0,
-          };
-          return receipt;
-        }
-        const recipt = await this.provider.waitForTransaction(ret.txHash);
-        recipt.status = ret.status;
-        return recipt;
+        return this.waitForTransaction(hash, confirmations, timeout);
       },
     };
+  }
+
+  async waitForTransaction(
+    txHash: string,
+    confirmations: number = 1,
+    timeout: number,
+  ): Promise<providers.TransactionReceipt> {
+    let ret = await this.relayer.wait(txHash);
+    let i = 0;
+    while (ret === undefined || ret === null) {
+      if (i < timeout) {
+        // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // eslint-disable-next-line no-await-in-loop
+        ret = await this.relayer.wait(txHash);
+      } else {
+        return Promise.reject(new Error("Timeout Error"));
+      }
+      i++;
+    }
+    if (ret.txHash === constants.HashZero) {
+      return Promise.reject(new Error(`transactions revert: ${ret.revertReason}`));
+    }
+    if (confirmations === 0) {
+      const receipt: providers.TransactionReceipt = {
+        transactionHash: ret.txHash,
+        confirmations,
+        status: ret.status,
+        from: constants.AddressZero,
+        to: this.address,
+        contractAddress: constants.AddressZero,
+        transactionIndex: 0,
+        gasUsed: constants.Zero,
+        logsBloom: "",
+        blockHash: "",
+        logs: [],
+        blockNumber: 0,
+        cumulativeGasUsed: constants.Zero,
+        effectiveGasPrice: constants.Zero,
+        byzantium: false,
+        type: 0,
+      };
+      return receipt;
+    }
+    const recipt = await this.provider.waitForTransaction(ret.txHash);
+    recipt.status = ret.status;
+    return recipt;
   }
 
   async isSyncKeysetHash(): Promise<boolean> {
