@@ -76,6 +76,7 @@ export const innerGenerateTransferTx = async (
             transactions,
             sessionKeyOrSignerIndex: [],
             gasLimit: constants.Zero,
+            preSignFunc,
           };
         }
       } else if (transactions.length === 2) {
@@ -89,6 +90,7 @@ export const innerGenerateTransferTx = async (
           transactions: transactions[1],
           sessionKeyOrSignerIndex: [],
           gasLimit: constants.Zero,
+          preSignFunc,
         };
       }
     }
