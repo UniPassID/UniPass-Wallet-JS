@@ -51,6 +51,7 @@ export type ExecuteTransaction = {
   type: "Execute";
   transactions: Transactionish[] | Transactionish;
   sessionKeyOrSignerIndex: SessionKey | number[];
+  preSignFunc?: (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => Promise<boolean>;
   gasLimit: BigNumber;
 };
 
@@ -234,6 +235,17 @@ export class Wallet extends Signer {
     sessionKeyOrSignerIndexes: SessionKey | number[] = [],
     innerNonce?: BigNumber,
     innerGasLimit: BigNumber = constants.Zero,
+    preSignFunc: (
+      chainId: number,
+      address: string,
+      transactions: Transaction[],
+      nonce: BigNumber,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ) => Promise<boolean> = (_chainId, _address, _transactions, _nonce) => {
+      return new Promise((resolve) => {
+        resolve(true);
+      });
+    },
   ): Promise<SignedTransactions> {
     const txs = await resolveArrayProperties<InputTransaction>(transaction);
 
@@ -280,6 +292,9 @@ export class Wallet extends Signer {
         nonce = await this.relayer.getNonce(this.address);
       }
       digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
+      if (txs.preSignFunc && !(await txs.preSignFunc(chainId, this.address, transactions, nonce))) {
+        throw new Error(`pre Sign Transactions[${transactions}],nonce[${nonce.toNumber()}] Failed`);
+      }
       signature = await this.signMessage(arrayify(digest), txs.sessionKeyOrSignerIndex);
       address = this.address;
       gasLimit = txs.gasLimit;
@@ -292,6 +307,9 @@ export class Wallet extends Signer {
       nonce = innerNonce;
       if (nonce === undefined) {
         nonce = await this.relayer.getNonce(this.address);
+      }
+      if (!(await preSignFunc(chainId, this.address, transactions, nonce))) {
+        throw new Error(`pre Sign Transactions[${transactions}],nonce[${nonce.toNumber()}] Failed`);
       }
       digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
       signature = await this.signMessage(arrayify(digest), sessionKeyOrSignerIndexes);
