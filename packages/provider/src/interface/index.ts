@@ -1,5 +1,5 @@
 import { Transaction } from "@unipasswallet/transactions";
-import { AuthChainNode, ChainType } from "./unipassWalletProvider";
+import { AuthChainNode } from "./unipassWalletProvider";
 
 // --- tss input output ----
 export interface StartKeyGenInput {
@@ -260,29 +260,6 @@ export interface FinishKeygenInput {
 
 export type StepType = "register" | "recovery";
 
-export interface User {
-  email: string;
-  account: string;
-  keyset: {
-    hash: string;
-    masterKeyAddress: string;
-    keysetJson: string;
-  };
-  sessionKey: {
-    localKey: {
-      keystore: string;
-      address: string;
-    };
-    aesKey: CryptoKey;
-    authorization: string;
-    expires: number;
-    weight: number;
-  };
-  committed: boolean;
-  step?: StepType;
-  stepData?: any;
-}
-
 export interface AccountStatusInput {
   email: string;
   authChainNode: AuthChainNode;
@@ -326,4 +303,46 @@ export interface SyncTransactionOutput {
     transactions: Array<Transaction>;
     initKeysetHash: string;
   };
+}
+
+export interface AccountInfo {
+  email: string;
+  id_token: string;
+  password: string;
+  keyStore: string;
+  address: string;
+  keyset: {
+    hash: string;
+    masterKeyAddress: string;
+    keysetJson: string;
+  };
+}
+
+export interface IdTokenParams {
+  email: string;
+  name: string;
+  iss: string;
+  exp: number;
+}
+
+export enum OAuthProvider {
+  GOOGLE,
+  AUTH0,
+}
+
+export interface UnipassInfo {
+  keyset: string;
+  address: string;
+  keystore: string;
+}
+
+export interface LocalUserInfo {
+  outh_provider: OAuthProvider;
+  up_jwt_token: {
+    refreshToken: string;
+    authorization: string;
+  };
+  id_token: string;
+  expires_at: string;
+  unipass_info?: UnipassInfo;
 }
