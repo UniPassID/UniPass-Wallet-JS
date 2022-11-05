@@ -265,6 +265,30 @@ export interface AccountStatusInput {
   authChainNode: AuthChainNode;
 }
 
+export enum SignType {
+  PersonalSign = 0,
+  EIP712Sign,
+  Transaction,
+}
+
+export interface TssAuditInput {
+  type: SignType;
+  content: Transaction | string;
+  msg: string;
+}
+
+export enum AuditStatus {
+  Approved = 0,
+  Rejected,
+  Confirming,
+}
+
+export interface TssAuditOutput {
+  data: {
+    approveStatus: AuditStatus;
+  };
+}
+
 // 0=synced,1:server synced, 2:not received sync email, 3:not synced
 export enum SyncStatusEnum {
   Synced,

@@ -50,14 +50,14 @@ export default class UnipassWalletProvider implements WalletProvider {
     return innerEstimateTransferGas(transactions, chain, this.config, fee);
   }
 
-  public async sendTransaction(
-    transactions: wallets.BundledTransaction | wallets.ExecuteTransaction,
-    chainType?: ChainType,
-    feeToken?: string,
-  ) {
-    const chain = chainType ?? "polygon";
-    return sendTransaction(transactions, chain, this.config, feeToken);
-  }
+  // public async sendTransaction(
+  //   transactions: wallets.BundledTransaction | wallets.ExecuteTransaction,
+  //   chainType?: ChainType,
+  //   feeToken?: string,
+  // ) {
+  //   const chain = chainType ?? "polygon";
+  //   return sendTransaction(transactions, chain, this.config, keyset, feeToken);
+  // }
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
     const { tx, chain, fee } = props;
@@ -68,7 +68,7 @@ export default class UnipassWalletProvider implements WalletProvider {
     // FIX ME: set gas limit for rangers to disable estimate gas in wallet
     if (_chain === "rangers") transactions.gasLimit = BigNumber.from("1000000");
 
-    return sendTransaction(transactions, chain, this.config, fee.token);
+    return sendTransaction(transactions, chain, this.config, props.keyset, fee.token);
   }
 
   public async signMessage(message: string) {

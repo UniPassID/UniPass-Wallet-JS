@@ -11,7 +11,7 @@ export default function requestFactory(backendUrl: string) {
     baseURL: backendUrl + API_VERSION_PREFIX,
     timeout: DEFAULT_TIMEOUT,
   });
-  axios.interceptors.request.use(
+  instance.interceptors.request.use(
     (config) => {
       try {
         const _local_user_info = LocalStorageService.get("OAUTH_INFO");
@@ -23,7 +23,7 @@ export default function requestFactory(backendUrl: string) {
           };
         }
       } catch (e) {
-        //
+        console.error(e);
       }
       return config;
     },

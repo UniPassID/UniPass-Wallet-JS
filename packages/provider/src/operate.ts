@@ -1,10 +1,10 @@
-import { AccountInfo } from "./interface/index";
+import { AccountInfo, AuditStatus, SignType } from "./interface/index";
 import { arrayify, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
 import dayjs from "dayjs";
-import { BigNumber, constants, ethers } from "ethers";
+import { BigNumber, constants, ethers, utils } from "ethers";
 import { ExecuteTransaction, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
-import { Keyset, OpenIDOptions } from "@unipasswallet/keys";
-import { Transaction, Transactionish } from "@unipasswallet/transactions";
+import { KeySecp256k1, Keyset, OpenIDOptions } from "@unipasswallet/keys";
+import { digestTxHash, Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
 import Tss, { SIG_PREFIX } from "./utils/tss";
 import api from "./api/backend";
@@ -53,6 +53,21 @@ export const innerGenerateTransferTx = async (
 
   let deployTx: Transaction;
   let syncAccountTx: ExecuteTransaction;
+  const preSignFunc = async (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => {
+    const {
+      data: { approveStatus },
+    } = await api.tssAudit({
+      type: SignType.PersonalSign,
+      content: JSON.stringify({
+        chainId,
+        address,
+        txs,
+        nonce: nonce.toNumber(),
+      }),
+      msg: digestTxHash(chainId, address, nonce.toNumber(), txs),
+    });
+    return approveStatus === AuditStatus.Approved;
+  };
   if (chainType !== "polygon") {
     const syncStatus = await checkAccountStatus(user.email, chainType, config.env);
     if (syncStatus === SyncStatusEnum.ServerSynced) {
@@ -258,11 +273,11 @@ export const sendTransaction = async (
   tx: ExecuteTransaction | BundledTransaction,
   chainType: ChainType,
   config: UnipassWalletProps,
+  keyset: Keyset,
   feeToken?: string,
 ) => {
   const user = await getUser();
 
-  const keyset = Keyset.fromJson(user.keyset.keysetJson);
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
 

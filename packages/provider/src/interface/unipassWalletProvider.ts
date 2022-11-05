@@ -1,3 +1,4 @@
+import { Keyset } from "./../../../keys/src/keyset";
 import { Wallet } from "@unipasswallet/wallet";
 import { BigNumber, BytesLike, providers } from "ethers";
 
@@ -44,6 +45,7 @@ interface TransactionFee {
 }
 
 interface TransactionProps {
+  keyset: Keyset;
   tx: UniTransaction;
   fee?: TransactionFee;
   chain?: ChainType;
