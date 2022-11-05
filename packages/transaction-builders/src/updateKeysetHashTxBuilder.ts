@@ -28,9 +28,10 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
     public readonly metaNonce: number,
     keysetHash: BytesLike,
     public readonly revertOnError: boolean,
-    signature?: BytesLike
+    signature?: BytesLike,
+    preGenerateSignatureFunc?: (builder: UpdateKeysetHashTxBuilder) => Promise<boolean>,
   ) {
-    super(signature);
+    super(signature, preGenerateSignatureFunc);
     this.userAddr = hexlify(userAddr);
     this.keysetHash = hexlify(keysetHash);
   }
@@ -46,21 +47,14 @@ export class UpdateKeysetHashTxBuilder extends BaseTxBuilder {
       keccak256(
         solidityPack(
           ["uint8", "uint32", "bytes32"],
-          [
-            AccountLayerActionType.UpdateKeysetHash,
-            this.metaNonce,
-            this.keysetHash,
-          ]
-        )
-      )
+          [AccountLayerActionType.UpdateKeysetHash, this.metaNonce, this.keysetHash],
+        ),
+      ),
     );
   }
 
   validateRoleWeight(roleWeight: RoleWeight): boolean {
-    return (
-      roleWeight.ownerWeight >= this.OWNER_THRESHOLD ||
-      roleWeight.guardianWeight >= this.GUARDIAN_THRESHOLD
-    );
+    return roleWeight.ownerWeight >= this.OWNER_THRESHOLD || roleWeight.guardianWeight >= this.GUARDIAN_THRESHOLD;
   }
 
   public build(): Transaction {

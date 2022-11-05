@@ -16,9 +16,10 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
     public readonly metaNonce: number,
     public readonly timeLockDuring: number,
     public readonly revertOnError: boolean,
-    signature?: BytesLike
+    signature?: BytesLike,
+    preGenerateSignatureFunc?: (builder: UpdateTimeLockDuringTxBuilder) => Promise<boolean>,
   ) {
-    super(signature);
+    super(signature, preGenerateSignatureFunc);
     this.userAddr = utils.hexlify(userAddr);
   }
 
@@ -33,13 +34,9 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
       keccak256(
         solidityPack(
           ["uint8", "uint32", "uint32"],
-          [
-            AccountLayerActionType.UpdateTimeLockDuring,
-            this.metaNonce,
-            this.timeLockDuring,
-          ]
-        )
-      )
+          [AccountLayerActionType.UpdateTimeLockDuring, this.metaNonce, this.timeLockDuring],
+        ),
+      ),
     );
   }
 
@@ -48,10 +45,11 @@ export class UpdateTimeLockDuringTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData(
-      "updateTimeLockDuring",
-      [this.metaNonce, this.timeLockDuring, this.signature]
-    );
+    const data = this.contractInterface.encodeFunctionData("updateTimeLockDuring", [
+      this.metaNonce,
+      this.timeLockDuring,
+      this.signature,
+    ]);
 
     return {
       _isUnipassWalletTransaction: true,

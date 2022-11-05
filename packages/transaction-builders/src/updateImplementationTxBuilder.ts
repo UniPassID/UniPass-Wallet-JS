@@ -26,9 +26,10 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
     public readonly metaNonce: number,
     implemenation: BytesLike,
     public readonly revertOnError: boolean,
-    signature?: BytesLike
+    signature?: BytesLike,
+    preGenerateSignatureFunc?: (builder: UpdateImplementationTxBuilder) => Promise<boolean>,
   ) {
-    super(signature);
+    super(signature, preGenerateSignatureFunc);
     this.userAddr = utils.hexlify(userAddr);
     this.implementation = utils.hexlify(implemenation);
   }
@@ -44,13 +45,9 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
       keccak256(
         solidityPack(
           ["uint8", "uint32", "address"],
-          [
-            AccountLayerActionType.UpdateImplementation,
-            this.metaNonce,
-            this.implementation,
-          ]
-        )
-      )
+          [AccountLayerActionType.UpdateImplementation, this.metaNonce, this.implementation],
+        ),
+      ),
     );
   }
 
@@ -59,10 +56,11 @@ export class UpdateImplementationTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData(
-      "updateImplementation",
-      [this.metaNonce, this.implementation, this.signature]
-    );
+    const data = this.contractInterface.encodeFunctionData("updateImplementation", [
+      this.metaNonce,
+      this.implementation,
+      this.signature,
+    ]);
 
     return {
       _isUnipassWalletTransaction: true,
