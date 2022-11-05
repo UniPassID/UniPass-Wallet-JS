@@ -1,15 +1,11 @@
-import { providers, Wallet as WalletEOA } from "ethers";
+import { providers } from "ethers";
 import { GasEstimatingWallet, Wallet } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
-import { RpcRelayer, LocalRelayer } from "@unipasswallet/relayer";
+import { RpcRelayer } from "@unipasswallet/relayer";
 import { AuthChainNode, ChainType, Environment, UnipassWalletProps } from "../interface/unipassWalletProvider";
 import { unipassWalletContext } from "@unipasswallet/network";
 import { dkimParams } from "@unipasswallet/sdk";
-import { chain_config, dev_api_config, mainnet_api_config, testnet_api_config } from "../config/index";
-import { User } from "../interface";
-import { decryptSessionKey } from "./session-key";
-import { signMsg } from "./cloud-key";
-import { SIG_PREFIX } from "./tss";
+import { chain_config, dev_api_config, mainnet_api_config } from "../config/index";
 
 const genProviders = (config: UnipassWalletProps) => {
   let polygon_url = "";
@@ -220,22 +216,4 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
         return "polygon-mainnet";
     }
   }
-};
-
-export const genSessionKeyPermit = async (user: User, prefix: keyof typeof SIG_PREFIX) => {
-  const timestamp = user.sessionKey.expires;
-  const sessionKeyAddress = user.sessionKey.localKey.address;
-  const permit = user.sessionKey.authorization;
-  const sessionKeyPrivateKey = await decryptSessionKey(user.sessionKey.aesKey, user.sessionKey.localKey.keystore);
-  const sig = await signMsg(SIG_PREFIX[prefix] + timestamp, sessionKeyPrivateKey, false);
-
-  const sessionKeyPermit = {
-    timestamp,
-    timestampNow: timestamp,
-    permit,
-    sessionKeyAddress,
-    sig,
-    weight: 100,
-  };
-  return sessionKeyPermit;
 };

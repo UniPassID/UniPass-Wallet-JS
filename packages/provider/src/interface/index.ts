@@ -263,7 +263,6 @@ export type StepType = "register" | "recovery";
 export interface AccountStatusInput {
   email: string;
   authChainNode: AuthChainNode;
-  sessionKeyPermit: SessionKeyPermit;
 }
 
 // 0=synced,1:server synced, 2:not received sync email, 3:not synced
@@ -293,7 +292,6 @@ export interface SyncEmailOutput {
 
 export interface SyncTransactionInput {
   email: string;
-  sessionKeyPermit: SessionKeyPermit;
   authChainNode: AuthChainNode;
 }
 

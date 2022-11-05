@@ -22,8 +22,6 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   public static request: AxiosInstance;
 
-  private email: string | undefined;
-
   private config: UnipassWalletProps | undefined;
 
   static getInstance(props: UnipassWalletProps) {
@@ -74,17 +72,17 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async signMessage(message: string) {
-    const result = await genSignMessage(message, this.email, this.config);
+    const result = await genSignMessage(message, this.config);
     return result;
   }
 
   public async verifySignMessage(message: string, signature: string): Promise<boolean> {
-    const isValid = await verifySignature(message, signature, this.email, this.config);
+    const isValid = await verifySignature(message, signature, this.config);
     return isValid;
   }
 
   public async wallet(chain: ChainType = "polygon") {
-    const wallet = await getWallet(this.email, this.config, chain);
+    const wallet = await getWallet(this.config, chain);
     return wallet;
   }
 }

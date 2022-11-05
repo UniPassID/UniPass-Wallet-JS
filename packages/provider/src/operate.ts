@@ -22,235 +22,18 @@ import {
   UnipassWalletProps,
   UniTransaction,
 } from "./interface/unipassWalletProvider";
-import { genSessionKeyPermit, WalletsCreator, getAuthNodeChain } from "./utils/unipass";
+import { WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
 import { FeeOption, Relayer } from "@unipasswallet/relayer";
 import { getAccountInfo } from "./utils/storages";
 
-const getVerifyCode = async (email: string, action: OtpAction, mailServices: Array<string>) => {
-  checkEmailFormat(email, mailServices);
-  await api.sendOtpCode({ email, action, authType: AuthType.Email });
-};
-
-const verifyOtpCode = async (email: string, code: string, action: OtpAction, mailServices: Array<string>) => {
-  checkEmailFormat(email, mailServices);
-  const { data } = await api.verifyOtpCode({
-    email,
-    code,
-    action,
-    authType: AuthType.Email,
-  });
-  return data.upAuthToken;
-};
-
-const doRegister = async (
-  password: string,
-  email: string,
-  openIDOptionsOrOpenIDHash: OpenIDOptions | string,
-  upAuthToken: string,
-  policyAddress: string,
-  config: UnipassWalletProps,
-) => {
-  if (!email || !upAuthToken || !policyAddress) throw new WalletError(402004);
-  // 1、verify password
-  const formattedPsw = formatPassword(password);
-  checkPassword(formattedPsw);
-  const kdfPassword = generateKdfPassword(formattedPsw);
-  // 2、生成localKeyData
-  const pepper = Tss.createRandom();
-  const localKeyData = await Tss.generateLocalKey(
-    {
-      email,
-      upAuthToken,
-      action: "signUp",
-    },
-    formattedPsw,
-  );
-  if (!localKeyData) throw new WalletError(402001);
-  // 3. 获取accountAddress
-  const keyset = getAccountKeysetJson(
-    email,
-    openIDOptionsOrOpenIDHash,
-    localKeyData.localKeyAddress,
-    policyAddress,
-    pepper,
-  );
-  const keysetHash = keyset.hash();
-
-  const wallet = WalletsCreator.getPolygonProvider(keyset, config.env);
-  const accountAddress = wallet.address;
-  if (!accountAddress) throw new WalletError(402002);
-  const timestamp = dayjs().add(4, "hour").unix();
-  // 4. 生成sessionKey
-  const sessionKey = await generateSessionKey();
-  // 5. 生成permit
-  const permit = await Tss.generateTssPermit(
-    email,
-    localKeyData.upAuthToken,
-    "signUp",
-    localKeyData.keystore,
-    localKeyData.localKeyAddress,
-    formattedPsw,
-    timestamp,
-    sessionKey.address,
-    100,
-    accountAddress,
-  );
-  // 6 生成sessionKeyPermit
-  const sig = await signMsg(SIG_PREFIX.UPLOAD + timestamp, sessionKey.privkey, false);
-  console.log("[sig] sig", sig);
-
-  const sessionKeyPermit = {
-    timestamp,
-    timestampNow: timestamp,
-    permit,
-    sessionKeyAddress: sessionKey.address,
-    sig,
-    weight: 100,
-  };
-  const signData: SignUpAccountInput = {
-    email,
-    pepper,
-    upAuthToken: localKeyData.upAuthToken,
-    keysetJson: keyset.toJson(),
-    masterKey: {
-      kdfPassword,
-      masterKeyAddress: localKeyData.localKeyAddress,
-      keyStore: localKeyData.keystore,
-    },
-    sessionKeyPermit,
-  };
-  // 7. 开始注册
-  const { data } = await api.signUpAccount(signData);
-  if (data.address !== accountAddress) throw new WalletError(402003);
-  // const user: User = {
-  //   email,
-  //   account: accountAddress,
-  //   keyset: {
-  //     hash: keysetHash,
-  //     masterKeyAddress: localKeyData.localKeyAddress,
-  //     keysetJson: keyset.obscure().toJson(),
-  //   },
-  //   sessionKey: {
-  //     localKey: {
-  //       keystore: sessionKey.encryptedKey,
-  //       address: sessionKey.address,
-  //     },
-  //     aesKey: sessionKey.aesKey,
-  //     authorization: permit,
-  //     expires: timestamp,
-  //     weight: 100,
-  //   },
-  //   committed: false,
-  //   step: "register",
-  // };
-  // console.log("register success", user);
-  // await DB.setUser(user);
-};
-
-const getPasswordToken = async (email: string, password: string) => {
-  const kdfPassword = generateKdfPassword(password);
-  const { data } = await api.getPasswordToken({
-    email,
-    kdfPassword,
-    captchaToken: "",
-  });
-  const { upAuthToken, pending } = data;
-
-  if (pending) throw new WalletError(402005);
-  if (!upAuthToken) throw new WalletError(402006);
-  return upAuthToken;
-};
-
-const doLogin = async (email: string, password: string, upAuthToken: string, pwsToken: string) => {
-  if (!email || !upAuthToken || !pwsToken) throw new WalletError(402004);
-  const loginData = {
-    email,
-    upAuthToken: pwsToken,
-    auth2FaToken: [
-      {
-        type: 0,
-        upAuthToken,
-      },
-    ],
-  };
-  const { data: loginRes } = await api.loign(loginData);
-  const { keystore, localKeyAddress, address, upAuthToken: token } = loginRes;
-  const sessionKey = await generateSessionKey();
-  const timestampNow = dayjs().add(1, "minute").unix();
-  const sig = await signMsg(SIG_PREFIX.LOGIN + timestampNow, sessionKey.privkey, false);
-  const timestamp = dayjs().add(4, "hour").unix();
-  const permit = await Tss.generateTssPermit(
-    email,
-    token,
-    "signIn",
-    keystore,
-    localKeyAddress,
-    password,
-    timestamp,
-    sessionKey.address,
-    100,
-    address,
-  );
-  const { data: accountKeyset } = await api.queryAccountKeyset({
-    email,
-    upAuthToken: "",
-    sessionKeyPermit: {
-      timestamp,
-      timestampNow,
-      permit,
-      sessionKeyAddress: sessionKey.address,
-      sig,
-      weight: 100,
-    },
-  });
-  const { masterKeyAddress, accountAddress } = accountKeyset;
-  const keyset = Keyset.fromJson(accountKeyset.keyset);
-  // const user: User = {
-  //   email,
-  //   account: accountAddress,
-  //   keyset: {
-  //     hash: keyset.hash(),
-  //     masterKeyAddress,
-  //     keysetJson: accountKeyset.keyset,
-  //   },
-  //   sessionKey: {
-  //     localKey: {
-  //       keystore: sessionKey.encryptedKey,
-  //       address: sessionKey.address,
-  //     },
-  //     aesKey: sessionKey.aesKey,
-  //     authorization: permit,
-  //     expires: timestamp,
-  //     weight: 100,
-  //   },
-  //   committed: true,
-  // };
-  // await DB.setUser(user);
-};
-
-const doLogout = async (email: string) => {
-  // await DB.delUser(email ?? "");
-};
-
-const syncEmail = async (email: string, chainType: ChainType, env: Environment) => {
-  if (!email) throw new WalletError(402004);
-  checkEmailFormat(email);
-  const user = await getUser();
-  const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
-  await api.syncEmail({ email, sessionKeyPermit, authChainNode: getAuthNodeChain(env, chainType) });
-};
-
 const checkAccountStatus = async (email: string, chainType: ChainType, env: Environment) => {
   checkEmailFormat(email);
-  const user = await getUser();
-  const sessionKeyPermit = await genSessionKeyPermit(user, "QUERY_SYNC_STATUS");
   const {
     data: { syncStatus },
   } = await api.accountStatus({
     email,
     authChainNode: getAuthNodeChain(env, chainType),
-    sessionKeyPermit,
   });
   return syncStatus;
 };
@@ -272,13 +55,11 @@ export const innerGenerateTransferTx = async (
   let syncAccountTx: ExecuteTransaction;
   if (chainType !== "polygon") {
     const syncStatus = await checkAccountStatus(user.email, chainType, config.env);
-    const sessionKeyPermit = await genSessionKeyPermit(user, "GET_SYNC_TRANSACTION");
     if (syncStatus === SyncStatusEnum.ServerSynced) {
       const {
         data: { transactions = [], isNeedDeploy },
       } = await api.syncTransaction({
         email: user.email,
-        sessionKeyPermit,
         authChainNode: getAuthNodeChain(config.env, chainType),
       });
       transactions.forEach((v, i) => {
@@ -318,6 +99,9 @@ export const innerGenerateTransferTx = async (
     }
   }
   const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
+  console.log("tx");
+  console.log(tx);
+
   const transaction = new CallTxBuilder(revertOnError, gasLimit, target, value, data).build();
 
   return { deployTx, syncAccountTx, transaction };
@@ -435,6 +219,11 @@ export const innerEstimateTransferGas = async (
   }
 
   let gasLimit;
+  console.log("gasEstimator");
+  console.log(gasEstimator);
+  console.log("estimatedTxs");
+  console.log(estimatedTxs);
+
   if (chainType === "rangers") {
     gasLimit = parseEther("0.001");
   } else if (isBundledTransaction(estimatedTxs)) {
@@ -444,6 +233,9 @@ export const innerEstimateTransferGas = async (
     estimatedTxs = await gasEstimator.estimateExecuteTxsGasLimits(estimatedTxs, nonce);
     gasLimit = estimatedTxs.gasLimit;
   }
+
+  console.log("gasLimit");
+  console.log(gasLimit);
 
   if (feeValue && feeValue.eq(0)) {
     feeTx = await getFeeTxByGasLimit(fee.token, gasLimit, wallet.relayer!);
@@ -476,7 +268,7 @@ export const sendTransaction = async (
   return ret;
 };
 
-const genSignMessage = async (message: string, _email: string, config: UnipassWalletProps) => {
+const genSignMessage = async (message: string, config: UnipassWalletProps) => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
@@ -484,7 +276,7 @@ const genSignMessage = async (message: string, _email: string, config: UnipassWa
   return signedMessage;
 };
 
-const verifySignature = async (message: string, sig: string, _email: string, config: UnipassWalletProps) => {
+const verifySignature = async (message: string, sig: string, config: UnipassWalletProps) => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
@@ -492,7 +284,7 @@ const verifySignature = async (message: string, sig: string, _email: string, con
   return signedMessage;
 };
 
-const getWallet = async (_email: string, config: UnipassWalletProps, chainType: ChainType) => {
+const getWallet = async (config: UnipassWalletProps, chainType: ChainType) => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
   const wallet = WalletsCreator.getInstance(keyset, user.address, config)[chainType];
@@ -524,16 +316,4 @@ const getUser = async (): Promise<AccountInfo | undefined> => {
   throw new WalletError(402007);
 };
 
-export {
-  getVerifyCode,
-  verifyOtpCode,
-  doRegister,
-  getPasswordToken,
-  doLogin,
-  doLogout,
-  syncEmail,
-  genSignMessage,
-  checkLocalStatus,
-  verifySignature,
-  getWallet,
-};
+export { genSignMessage, checkLocalStatus, verifySignature, getWallet };
