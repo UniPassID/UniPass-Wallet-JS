@@ -10,7 +10,15 @@ export abstract class BaseTxBuilder {
 
   private _signature: string;
 
-  constructor(signature?: BytesLike) {
+  constructor(
+    signature?: BytesLike,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public readonly preGenerateSignatureFunc: (builder: BaseTxBuilder) => Promise<boolean> = (_) => {
+      return new Promise((resolve) => {
+        resolve(true);
+      });
+    },
+  ) {
     this.contractInterface = new utils.Interface(moduleMain.abi);
 
     if (signature) {
@@ -30,10 +38,10 @@ export abstract class BaseTxBuilder {
 
   abstract digestMessage(): string;
 
-  async generateSignature(
-    wallet: Wallet,
-    signerIndexes: number[]
-  ): Promise<BaseTxBuilder> {
+  async generateSignature(wallet: Wallet, signerIndexes: number[]): Promise<BaseTxBuilder> {
+    if (!(await this.preGenerateSignatureFunc(this))) {
+      throw new Error("PreGenerateSignature Failed");
+    }
     const digestHash = this.digestMessage();
     const sig = await wallet.signMessage(arrayify(digestHash), signerIndexes);
 

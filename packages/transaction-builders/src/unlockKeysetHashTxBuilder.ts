@@ -13,9 +13,10 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
   constructor(
     public readonly userAddr: string,
     public readonly metaNonce: number,
-    public readonly revertOnError: boolean
+    public readonly revertOnError: boolean,
+    preGenerateSignatureFunc?: (builder: UnlockKeysetHashTxBuilder) => Promise<boolean>,
   ) {
-    super();
+    super(undefined, preGenerateSignatureFunc);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -29,9 +30,7 @@ export class UnlockKeysetHashTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData("unlockKeysetHash", [
-      this.metaNonce,
-    ]);
+    const data = this.contractInterface.encodeFunctionData("unlockKeysetHash", [this.metaNonce]);
 
     return {
       _isUnipassWalletTransaction: true,

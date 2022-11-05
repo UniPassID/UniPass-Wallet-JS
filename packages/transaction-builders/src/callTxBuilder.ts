@@ -13,9 +13,10 @@ export class CallTxBuilder extends BaseTxBuilder {
     public readonly gasLimit: BigNumber,
     _target: BytesLike,
     public readonly value: BigNumber,
-    _data: BytesLike
+    _data: BytesLike,
+    preGenerateSignatureFunc?: (builder: CallTxBuilder) => Promise<boolean>,
   ) {
-    super();
+    super(undefined, preGenerateSignatureFunc);
     this.target = utils.hexlify(_target);
     this.data = utils.hexlify(_data);
   }

@@ -27,8 +27,9 @@ export class UpdateKeysetHashWithTimeLockTxBuilder extends BaseTxBuilder {
     keysetHash: BytesLike,
     public readonly revertOnError: boolean,
     signature?: BytesLike,
+    preGenerateSignatureFunc?: (builder: UpdateKeysetHashWithTimeLockTxBuilder) => Promise<boolean>,
   ) {
-    super(signature);
+    super(signature, preGenerateSignatureFunc);
     this.userAddr = utils.hexlify(userAddr);
     this.keysetHash = utils.hexlify(keysetHash);
   }
