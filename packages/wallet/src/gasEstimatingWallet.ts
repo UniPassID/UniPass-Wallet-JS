@@ -207,7 +207,7 @@ export class GasEstimatingWallet extends Wallet {
     return hexlify(
       concat(
         await Promise.all(
-          this.keyset.keys.map(async (key, index) => {
+          this.fakeKeyset.keys.map(async (key, index) => {
             if (signerIndexer.includes(index)) {
               if (KeyEmailDkim.isKeyEmailDkim(key)) {
                 throw new Error("Cannot Estimate Gas For Transactions Signed By Email Key");
@@ -236,7 +236,7 @@ export class GasEstimatingWallet extends Wallet {
         return "0x";
       }
       const signRet = await Promise.all(
-        this.keyset.keys.map(async (key, index) => {
+        this.fakeKeyset.keys.map(async (key, index) => {
           if (signerIndexes.includes(index)) {
             if (KeyEmailDkim.isKeyEmailDkim(key) && key.type === "Raw") {
               throw new Error("Cannot Sign Message By Email Key");

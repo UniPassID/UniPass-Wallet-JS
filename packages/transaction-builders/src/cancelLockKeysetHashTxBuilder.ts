@@ -22,9 +22,10 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
     _userAddr: BytesLike,
     public readonly metaNonce: number,
     public readonly revertOnError: boolean,
-    signature?: string
+    signature?: string,
+    preGenerateSignatureFunc?: (builder: CancelLockKeysetHashTxBuilder) => Promise<boolean>,
   ) {
-    super(signature);
+    super(signature, preGenerateSignatureFunc);
     this.userAddr = utils.hexlify(_userAddr);
   }
 
@@ -36,12 +37,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
     return subDigest(
       0,
       this.userAddr,
-      keccak256(
-        solidityPack(
-          ["uint8", "uint32"],
-          [AccountLayerActionType.CancelLockKeysetHash, this.metaNonce]
-        )
-      )
+      keccak256(solidityPack(["uint8", "uint32"], [AccountLayerActionType.CancelLockKeysetHash, this.metaNonce])),
     );
   }
 
@@ -50,10 +46,7 @@ export class CancelLockKeysetHashTxBuilder extends BaseTxBuilder {
   }
 
   public build(): Transaction {
-    const data = this.contractInterface.encodeFunctionData(
-      "cancelLockKeysetHash",
-      [this.metaNonce, this.signature]
-    );
+    const data = this.contractInterface.encodeFunctionData("cancelLockKeysetHash", [this.metaNonce, this.signature]);
 
     return {
       _isUnipassWalletTransaction: true,

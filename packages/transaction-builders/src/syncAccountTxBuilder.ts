@@ -31,9 +31,10 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
     public readonly timeLockDuring: number,
     implementation: BytesLike,
     public readonly revertOnError: boolean,
-    signature?: BytesLike
+    signature?: BytesLike,
+    preGenerateSignatureFunc?: (builder: SyncAccountTxBuilder) => Promise<boolean>,
   ) {
-    super(signature);
+    super(signature, preGenerateSignatureFunc);
     this.userAddr = utils.hexlify(userAddr);
     this.keysetHash = utils.hexlify(keysetHash);
     this.implementation = utils.hexlify(implementation);
@@ -56,9 +57,9 @@ export class SyncAccountTxBuilder extends BaseTxBuilder {
             this.keysetHash,
             this.timeLockDuring,
             this.implementation,
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
