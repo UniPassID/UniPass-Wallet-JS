@@ -150,6 +150,7 @@ export class KeyOpenIDWithEmail extends KeyBase {
       const { emailOptionsOrEmailHash } = this;
       emailOptionsOrEmailHash.emailFrom = obscureEmail(this.emailOptionsOrEmailHash.emailFrom);
       emailOptionsOrEmailHash.pepper = "0x";
+      emailOptionsOrEmailHash.type = "Hash";
       return new KeyOpenIDWithEmail({
         openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
         emailOptionsOrEmailHash: this.emailOptionsOrEmailHash,
