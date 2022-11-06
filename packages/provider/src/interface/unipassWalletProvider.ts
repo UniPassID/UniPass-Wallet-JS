@@ -1,4 +1,4 @@
-import { Keyset } from "./../../../keys/src/keyset";
+import { Keyset } from "@unipasswallet/keys";
 import { Wallet } from "@unipasswallet/wallet";
 import { BigNumber, BytesLike, providers } from "ethers";
 
