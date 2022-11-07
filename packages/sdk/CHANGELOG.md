@@ -1,5 +1,23 @@
 # @unipasswallet/sdk
 
+## 0.0.1-alpha.35
+
+### Patch Changes
+
+- @unipasswallet/keys: add KeyOpenIDWithEmail
+  @unipasswallet/providers: add OpenID Login Support
+  @unipasswallet/transactions-builders: add preGenerateSignatureFunc For Transaction Builder
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.35
+  - @unipasswallet/dkim-base@0.0.1-alpha.35
+  - @unipasswallet/keys@0.0.1-alpha.35
+  - @unipasswallet/network@0.0.1-alpha.35
+  - @unipasswallet/relayer@0.0.1-alpha.30
+  - @unipasswallet/transaction-builders@0.0.1-alpha.30
+  - @unipasswallet/transactions@0.0.1-alpha.34
+  - @unipasswallet/utils@0.0.1-alpha.35
+  - @unipasswallet/wallet@0.0.1-alpha.35
+
 ## 0.0.1-alpha.34
 
 ### Patch Changes
