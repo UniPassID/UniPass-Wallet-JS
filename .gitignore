@@ -12,3 +12,4 @@ config.ts
 .secret
 *.DS_Store
 .vscode
+examples/UniPass-Wallet-Frontend

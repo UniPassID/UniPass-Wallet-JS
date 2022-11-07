@@ -1,4 +1,4 @@
-import { SyncTransactionOutput } from "./../interface/index";
+import { SyncTransactionOutput, TssAuditInput, TssAuditOutput } from "./../interface/index";
 import {
   AccountStatusInput,
   AccountStatusOutput,
@@ -83,6 +83,10 @@ function accountStatus(data: AccountStatusInput) {
   return getAxiosInstance().post<any, AccountStatusOutput>("/sync/status", data);
 }
 
+function tssAudit(data: TssAuditInput) {
+  return getAxiosInstance().post<any, TssAuditOutput>("/tss/audit", data);
+}
+
 function syncEmail(data: SyncEmailInput) {
   return getAxiosInstance().post<any, SyncEmailOutput>("/sync/send/auth.email", data);
 }
@@ -105,6 +109,7 @@ export default {
   startKeygen,
   finishKeygen,
   accountStatus,
+  tssAudit,
   syncEmail,
   syncTransaction,
 };

@@ -1,3 +1,4 @@
+import { Keyset } from "@unipasswallet/keys";
 import { Wallet } from "@unipasswallet/wallet";
 import { BigNumber, BytesLike, providers } from "ethers";
 
@@ -44,6 +45,7 @@ interface TransactionFee {
 }
 
 interface TransactionProps {
+  keyset?: Keyset;
   tx: UniTransaction;
   fee?: TransactionFee;
   chain?: ChainType;
@@ -51,42 +53,6 @@ interface TransactionProps {
 
 abstract class WalletProvider {
   private constructor() {}
-
-  /**
-   * get email verify code when registry
-   * @params email
-   * * */
-  public abstract registerCode(email: string): Promise<void | never>;
-
-  /**
-   * verify your code when register
-   * @params code
-   * * */
-  public abstract verifyRegisterCode(code: string): Promise<void | never>;
-
-  /**
-   * register
-   * @params password
-   * * */
-  public abstract register(password: string): Promise<void | never>;
-
-  /**
-   * check password
-   * @params password
-   * * */
-  public abstract passwordToken(email: string, password: string): Promise<void | never>;
-
-  /**
-   * get email verify code when login
-   * @params email
-   * * */
-  public abstract loginCode(email: string): Promise<void | never>;
-
-  /**
-   * login
-   * @params login
-   * * */
-  public abstract login(code: string): Promise<void | never>;
 
   /**
    * send a transaction
@@ -111,16 +77,6 @@ abstract class WalletProvider {
    * @params chain: ChainType
    * * */
   public abstract wallet(chain: ChainType): Promise<Wallet>;
-
-  /**
-   * isLoggedIn
-   */
-  public abstract isLoggedIn(): Promise<boolean>;
-
-  /**
-   * logout
-   */
-  public abstract logout(): Promise<void | never>;
 }
 
 export {
