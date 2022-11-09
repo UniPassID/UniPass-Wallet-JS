@@ -179,10 +179,6 @@ export class GasEstimatingWallet extends Wallet {
     if (this.provider instanceof providers.JsonRpcProvider) {
       let signature: string;
       if (to === this.address) {
-        // FIX ME: reduce useless nonce fetching from chain
-        console.log("signerIndexesOrSessionKey");
-        console.log(signerIndexesOrSessionKey);
-
         signature = (await this.signTransactions(transactions, signerIndexesOrSessionKey, nonce)).signature;
       } else {
         signature = "0x";
@@ -196,7 +192,6 @@ export class GasEstimatingWallet extends Wallet {
         },
         overwrite,
       );
-      console.log({ txs, total });
 
       return { txs, total };
     }

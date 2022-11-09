@@ -16,15 +16,15 @@ export interface UnipassWalletContext {
 }
 
 export const unipassWalletContext: UnipassWalletContext = {
-  moduleMain: "0x0B9B8631501DF5Fc9D7444CEb88080eCb77b4fBb",
-  moduleMainUpgradable: "0xACb3b9f3BfE579b0DB0372a317AB4243189695fa",
-  moduleGuest: "0xA9dC809f017320362cAa0f973c4eB34234FefB77",
+  moduleMain: "0x62A2c503353BBc4861DF32e90734105aE1e96633",
+  moduleMainUpgradable: "0x03A93f37A9c8b382E043D0Bde2730606d3eF5Ed1",
+  moduleGuest: "0x176C1CD760768E3aaD920A42d3f68E91428A86Ed",
 
-  dkimKeys: "0xffEF85eb9b6FDd5462E7255FA4ab6E09Dc98e2aE",
-  openID:"0x0E12aDcD52376614A14653f389801B7E25887aE5",
-  moduleWhiteList: "0x40F589896987eF460CaD5f37460d717d2Bf6d3FE",
+  dkimKeys: "0x9B83C19CdE636b9c8dFcB40326D28626b0766D35",
+  openID: "0xaFc5526be0F5CcF5Da4B4d54A31f1d761Fe62C7f",
+  moduleWhiteList: "0x28101Ce1aDFf9a017C818e9d522992bE6D490048",
 
-  gasEstimator: "0x6041ae26F00BCec8c04a27190cB75f400a6582d3",
+  gasEstimator: "0x9E14b7098B2BBE2D24D665Fc4E8f5E7B6612d44D",
   moduleMainGasEstimatorCode: ModuleMainGasEstimatorCode,
   moduleMainUpgradableGasEstimatorCode: ModuleMainUpgradableGasEstimatorCode,
 };

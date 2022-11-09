@@ -8,6 +8,7 @@ import {
   Keyset,
   KeyOpenIDWithEmail,
   KeyOpenIDSignType,
+  KeyEmailDkimSignType,
 } from "@unipasswallet/keys";
 import { BytesLike, Wallet, utils } from "ethers";
 import { hexlify } from "ethers/lib/utils";
@@ -42,6 +43,7 @@ describe("Test Keyset", () => {
       new KeyOpenIDWithEmail({
         emailOptionsOrEmailHash: {
           type: "Raw",
+          signType: KeyEmailDkimSignType.DkimZK,
           emailFrom: registerEmail,
           pepper: hexlify(registerEmailPepper),
         },

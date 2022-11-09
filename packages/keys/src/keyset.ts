@@ -1,7 +1,7 @@
 import { KeySecp256k1, KeyEmailDkim, RoleWeight, KeyBase, KeySecp256k1Wallet, KeyERC1271 } from ".";
 import { BytesLike } from "ethers";
 import { hexlify, keccak256, solidityPack } from "ethers/lib/utils";
-import { KeyOpenIDSignType, KeyOpenIDWithEmail, OpenIDOptions } from "./keyOpenIDWithEmail";
+import { KeyEmailDkimSignType, KeyOpenIDSignType, KeyOpenIDWithEmail, OpenIDOptions } from "./keyOpenIDWithEmail";
 
 export function getKeysetHash(keys: KeyBase[]): string {
   let keysetHash = "0x";
@@ -27,6 +27,7 @@ export class Keyset {
     const registerEmailKey = new KeyOpenIDWithEmail({
       emailOptionsOrEmailHash: {
         type: "Raw",
+        signType: KeyEmailDkimSignType.DkimZK,
         emailFrom: registerEmail,
         pepper: hexlify(registerEmailPepper),
       },

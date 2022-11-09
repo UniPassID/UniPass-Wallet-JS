@@ -18,10 +18,12 @@ import { Interface, parseEther } from "ethers/lib/utils";
 import { BigNumber, constants, Contract, Wallet } from "ethers";
 import { randomKeyset, Role, selectKeys } from "./utils/common";
 import { Transaction, digestTxHash } from "@unipasswallet/transactions";
+import fetchPonyfill from "fetch-ponyfill";
 
 describe("Test Gas Estimating Wallet", () => {
   let context: TestContext;
   let walletContext: WalletContext;
+  const { fetch } = fetchPonyfill();
   const difference: number = 5000;
   const gasEstimator = async (
     txBuilder: BaseTxBuilder,
@@ -51,6 +53,8 @@ describe("Test Gas Estimating Wallet", () => {
       [walletContext.wallet, executeSignerIndexes] = await selectKeys(
         walletContext.wallet,
         emailType,
+        context.zkServerUrl,
+        fetch,
         digestTxHash(context.chainId, walletContext.wallet.address, walletContext.nonce, [tx]),
         context.unipassPrivateKey,
         role,
@@ -67,6 +71,8 @@ describe("Test Gas Estimating Wallet", () => {
       [walletContext.wallet, newExecuteSignerIndexes] = await selectKeys(
         walletContext.wallet,
         emailType,
+        context.zkServerUrl,
+        fetch,
         digestTxHash(context.chainId, walletContext.wallet.address, walletContext.nonce, estimatedTx.txs),
         context.unipassPrivateKey,
         role,
@@ -78,6 +84,8 @@ describe("Test Gas Estimating Wallet", () => {
       [walletContext.wallet, signerIndexes] = await selectKeys(
         walletContext.wallet,
         emailType,
+        context.zkServerUrl,
+        fetch,
         txBuilder.digestMessage(),
         context.unipassPrivateKey,
         role,
@@ -232,6 +240,8 @@ describe("Test Gas Estimating Wallet", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       sessionKey.digestPermitMessage(timestamp, weight),
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -244,7 +254,6 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [tx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionKey,
-      preSignTransactionFunc: undefined,
     };
 
     executeTx = await walletContext.fakeWallet.estimateExecuteTxsGasLimits(
@@ -272,6 +281,8 @@ describe("Test Gas Estimating Wallet", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       sessionKey.digestPermitMessage(timestamp, weight),
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -284,7 +295,6 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [tx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionKey,
-      preSignTransactionFunc: undefined,
     };
 
     let bundledTx: BundledTransaction = {
@@ -323,6 +333,8 @@ describe("Test Gas Estimating Wallet", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       syncAccountTxBuilder.digestMessage(),
       context.unipassPrivateKey,
       Role.Owner,
@@ -334,7 +346,6 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [syncAccountTx],
       sessionKeyOrSignerIndex: [],
       gasLimit: constants.Zero,
-      preSignTransactionFunc: undefined,
     };
     walletContext.wallet = walletContext.wallet.setKeyset(newKeyset);
     walletContext.fakeWallet = walletContext.fakeWallet.setKeyset(newKeyset);
@@ -346,6 +357,8 @@ describe("Test Gas Estimating Wallet", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       sessionKey.digestPermitMessage(timestamp, weight),
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -359,7 +372,6 @@ describe("Test Gas Estimating Wallet", () => {
       transactions: [transferTx],
       gasLimit: constants.Zero,
       sessionKeyOrSignerIndex: sessionKey,
-      preSignTransactionFunc: undefined,
     };
 
     let bundledTx: BundledTransaction = {

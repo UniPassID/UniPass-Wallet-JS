@@ -1,12 +1,5 @@
 /* eslint-disable no-param-reassign */
-import {
-  base64,
-  BytesLike,
-  hexlify,
-  solidityPack,
-  toUtf8Bytes,
-  toUtf8String,
-} from "ethers/lib/utils";
+import { base64, BytesLike, hexlify, solidityPack, toUtf8Bytes, toUtf8String } from "ethers/lib/utils";
 
 export interface Signature {
   signature: Uint8Array;
@@ -28,10 +21,12 @@ export enum EmailType {
 export class DkimParamsBase {
   public readonly dkimSig: string;
 
+  public readonly hexEmailHeader: string;
+
   /**
    *
    * @param emailType What this email used for
-   * @param emailHeader The original message For Dkim, UTF8 string or Uint8Array
+   * @param emailHeader The original message For Dkim, Hex String
    * @param _dkimSig The Dkim Signature
    * @param fromIndex The From Header Index Of emailHeader
    * @param fromLeftIndex The Start Index Of From Email Address in the From Header
@@ -47,7 +42,7 @@ export class DkimParamsBase {
    */
   constructor(
     public readonly emailType: EmailType,
-    public readonly emailHeader: string,
+    emailHeader: string,
     _dkimSig: BytesLike,
     public readonly fromIndex: number,
     public readonly fromLeftIndex: number,
@@ -59,9 +54,15 @@ export class DkimParamsBase {
     public readonly sdidIndex: number,
     public readonly sdidRightIndex: number,
     public readonly selectorIndex: number,
-    public readonly selectorRightIndex: number
+    public readonly selectorRightIndex: number,
   ) {
     this.dkimSig = hexlify(_dkimSig);
+
+    if (emailHeader.startsWith("0x")) {
+      this.hexEmailHeader = emailHeader;
+    } else {
+      this.hexEmailHeader = hexlify(toUtf8Bytes(emailHeader));
+    }
   }
 
   public static create(
@@ -71,7 +72,7 @@ export class DkimParamsBase {
     emailHeader: string,
     dkimSig: string,
     sdid: string,
-    selector: string
+    selector: string,
   ): DkimParamsBase {
     const fromIndex = emailHeader.indexOf("from:");
     const fromEndIndex = emailHeader.indexOf("\r\n", fromIndex);
@@ -86,6 +87,7 @@ export class DkimParamsBase {
     const fromRightIndex = fromLeftIndex + fromHeader.length - 1;
 
     const subjectIndex = emailHeader.indexOf("subject:");
+    const subjectRightIndex = emailHeader.indexOf("\r\n", subjectIndex);
     const dkimHeaderIndex = emailHeader.indexOf("dkim-signature:");
     const sdidIndex = emailHeader.indexOf(sdid, dkimHeaderIndex);
     const sdidRightIndex = sdidIndex + sdid.length;
@@ -101,12 +103,31 @@ export class DkimParamsBase {
       fromRightIndex,
       digestHash,
       subjectIndex,
-      emailHeader.indexOf("\r\n", subjectIndex),
+      subjectRightIndex,
       dkimHeaderIndex,
       sdidIndex,
       sdidRightIndex,
       selectorIndex,
-      selectorRightIndex
+      selectorRightIndex,
+    );
+  }
+
+  public updateEmailHeader(emailHeaer: string): DkimParamsBase {
+    return new DkimParamsBase(
+      this.emailType,
+      emailHeaer,
+      this.dkimSig,
+      this.fromIndex,
+      this.fromLeftIndex,
+      this.fromRightIndex,
+      this.digestHash,
+      this.subjectIndex,
+      this.subjectRightIndex,
+      this.dkimHeaderIndex,
+      this.sdidIndex,
+      this.sdidRightIndex,
+      this.selectorIndex,
+      this.selectorRightIndex,
     );
   }
 
@@ -116,19 +137,7 @@ export class DkimParamsBase {
    */
   public serialize(): string {
     let sig = solidityPack(
-      [
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-        "uint32",
-      ],
+      ["uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint32", "uint32"],
       [
         this.emailType,
         this.subjectIndex,
@@ -141,16 +150,10 @@ export class DkimParamsBase {
         this.selectorRightIndex,
         this.sdidIndex,
         this.sdidRightIndex,
-      ]
+      ],
     );
-    sig = solidityPack(
-      ["bytes", "uint32", "bytes"],
-      [sig, this.emailHeader.length, toUtf8Bytes(this.emailHeader)]
-    );
-    sig = solidityPack(
-      ["bytes", "uint32", "bytes"],
-      [sig, this.dkimSig.length / 2 - 1, this.dkimSig]
-    );
+    sig = solidityPack(["bytes", "uint32", "bytes"], [sig, this.hexEmailHeader.length / 2 - 1, this.hexEmailHeader]);
+    sig = solidityPack(["bytes", "uint32", "bytes"], [sig, this.dkimSig.length / 2 - 1, this.dkimSig]);
 
     return sig;
   }
@@ -169,7 +172,7 @@ export class DkimParamsBase {
       selectorRightIndex: this.selectorRightIndex,
       sdidIndex: this.sdidIndex,
       sdidRightIndex: this.sdidRightIndex,
-      emailHeader: this.emailHeader,
+      emailHeader: this.hexEmailHeader,
       dkimSig: hexlify(this.dkimSig),
     };
   }
@@ -193,7 +196,7 @@ export class DkimParamsBase {
       obj.sdidIndex,
       obj.sdidRightIndex,
       obj.selectorIndex,
-      obj.selectorRightIndex
+      obj.selectorRightIndex,
     );
   }
 
@@ -212,7 +215,7 @@ export class DkimParamsBase {
       subsAllLen: number;
       subjectPadding: string;
       subIsBase64: boolean[];
-    }
+    },
   ) {
     if (ret.subsAllLen >= 66) {
       return;
@@ -238,11 +241,9 @@ export class DkimParamsBase {
           }
           ret.subs.push(
             subPart.slice(
-              subPart.length -
-                ((decodedPart.length - IndexOf0x - remainder) / 3) * 4,
-              subPart.length -
-                ((decodedPart.length - IndexOf0x - ret.subsAllLen) / 3) * 4
-            )
+              subPart.length - ((decodedPart.length - IndexOf0x - remainder) / 3) * 4,
+              subPart.length - ((decodedPart.length - IndexOf0x - ret.subsAllLen) / 3) * 4,
+            ),
           );
           ret.subIsBase64.push(true);
         }

@@ -12,7 +12,7 @@ import {
   defaultAbiCoder,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
-import { Relayer, PendingExecuteCallArgs, ExecuteCall, toUnipassTransaction } from "@unipasswallet/relayer";
+import { Relayer, PendingExecuteCallArgs, ExecuteCall, toUnipassTransaction, TxnReceiptResult } from "@unipasswallet/relayer";
 import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain, gasEstimator } from "@unipasswallet/abi";
 import {
@@ -471,14 +471,14 @@ export class Wallet extends Signer {
     confirmations: number = 1,
     timeout: number,
   ): Promise<providers.TransactionReceipt> {
-    let ret = await this.relayer.wait(txHash);
+    let ret: TxnReceiptResult;
     let i = 0;
     while (ret === undefined || ret === null) {
       if (i < timeout) {
-        // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-        await new Promise((resolve) => setTimeout(resolve, 1000));
         // eslint-disable-next-line no-await-in-loop
         ret = await this.relayer.wait(txHash);
+        // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } else {
         return Promise.reject(new Error("Timeout Error"));
       }

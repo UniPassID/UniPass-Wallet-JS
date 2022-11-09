@@ -18,44 +18,24 @@ describe("Test DkimParamsBase", () => {
       randomInt(100),
       randomInt(100),
       randomInt(100),
-      randomInt(100)
+      randomInt(100),
     );
-    const parsedDkimParamsBase = DkimParamsBase.fromString(
-      dkimParamsBase.toString()
-    );
-    expect(dkimParamsBase.emailHeader).toEqual(
-      parsedDkimParamsBase.emailHeader
-    );
+    const parsedDkimParamsBase = DkimParamsBase.fromString(dkimParamsBase.toString());
+    expect(dkimParamsBase.hexEmailHeader).toEqual(parsedDkimParamsBase.hexEmailHeader);
     expect(Buffer.from(dkimParamsBase.dkimSig).toString("hex")).toEqual(
-      Buffer.from(parsedDkimParamsBase.dkimSig).toString("hex")
+      Buffer.from(parsedDkimParamsBase.dkimSig).toString("hex"),
     );
     expect(dkimParamsBase.fromIndex).toEqual(parsedDkimParamsBase.fromIndex);
-    expect(dkimParamsBase.fromLeftIndex).toEqual(
-      parsedDkimParamsBase.fromLeftIndex
-    );
-    expect(dkimParamsBase.fromRightIndex).toEqual(
-      parsedDkimParamsBase.fromRightIndex
-    );
+    expect(dkimParamsBase.fromLeftIndex).toEqual(parsedDkimParamsBase.fromLeftIndex);
+    expect(dkimParamsBase.fromRightIndex).toEqual(parsedDkimParamsBase.fromRightIndex);
     expect(dkimParamsBase.digestHash).toEqual(parsedDkimParamsBase.digestHash);
-    expect(dkimParamsBase.subjectIndex).toEqual(
-      parsedDkimParamsBase.subjectIndex
-    );
-    expect(dkimParamsBase.subjectRightIndex).toEqual(
-      parsedDkimParamsBase.subjectRightIndex
-    );
+    expect(dkimParamsBase.subjectIndex).toEqual(parsedDkimParamsBase.subjectIndex);
+    expect(dkimParamsBase.subjectRightIndex).toEqual(parsedDkimParamsBase.subjectRightIndex);
 
-    expect(dkimParamsBase.dkimHeaderIndex).toEqual(
-      parsedDkimParamsBase.dkimHeaderIndex
-    );
+    expect(dkimParamsBase.dkimHeaderIndex).toEqual(parsedDkimParamsBase.dkimHeaderIndex);
     expect(dkimParamsBase.sdidIndex).toEqual(parsedDkimParamsBase.sdidIndex);
-    expect(dkimParamsBase.sdidRightIndex).toEqual(
-      parsedDkimParamsBase.sdidRightIndex
-    );
-    expect(dkimParamsBase.selectorIndex).toEqual(
-      parsedDkimParamsBase.selectorIndex
-    );
-    expect(dkimParamsBase.selectorRightIndex).toEqual(
-      parsedDkimParamsBase.selectorRightIndex
-    );
+    expect(dkimParamsBase.sdidRightIndex).toEqual(parsedDkimParamsBase.sdidRightIndex);
+    expect(dkimParamsBase.selectorIndex).toEqual(parsedDkimParamsBase.selectorIndex);
+    expect(dkimParamsBase.selectorRightIndex).toEqual(parsedDkimParamsBase.selectorRightIndex);
   });
 });

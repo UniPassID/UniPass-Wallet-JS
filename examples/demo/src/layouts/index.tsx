@@ -12,18 +12,7 @@ export default function Layout() {
   useEffect(() => {
     if (unipassWallet) {
       setPageLoading(true);
-      unipassWallet
-        .isLoggedIn()
-        .then((loggedIn) => {
-          if (loggedIn) {
-            history.push("/success");
-          } else {
-            history.replace("/");
-          }
-        })
-        .finally(() => {
-          setPageLoading(false);
-        });
+      history.replace("/success");
     }
   }, [unipassWallet]);
 
