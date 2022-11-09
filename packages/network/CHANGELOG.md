@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.0.1-alpha.38
+
+### Patch Changes
+
+- @unipasswallet/dkim: fix email subject error
+
 ## 0.0.1-alpha.37
 
 ### Patch Changes
