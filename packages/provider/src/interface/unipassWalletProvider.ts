@@ -49,6 +49,7 @@ interface TransactionProps {
   tx: UniTransaction;
   fee?: TransactionFee;
   chain?: ChainType;
+  timeout?: number;
 }
 
 abstract class WalletProvider {

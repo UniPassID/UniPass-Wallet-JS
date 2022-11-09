@@ -1,9 +1,9 @@
-import { defineReadOnly, keccak256, solidityPack, toUtf8Bytes } from "ethers/lib/utils";
+import { defineReadOnly, keccak256, solidityPack, toUtf8Bytes, toUtf8String } from "ethers/lib/utils";
 import { DkimParamsBase, pureEmailHash } from "@unipasswallet/dkim-base";
 import { obscureEmail } from "@unipasswallet/utils";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
-import { constants, utils } from "ethers";
+import { BigNumber, constants, utils } from "ethers";
 import base64url from "base64url";
 
 export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -11,6 +11,11 @@ export type RequiredField<T, K extends keyof T> = T & Required<Pick<T, K>>;
 export enum KeyOpenIDSignType {
   EmailSign = 1,
   OpenIDSign = 2,
+}
+
+export enum KeyEmailDkimSignType {
+  RawEmail = 0,
+  DkimZK = 1,
 }
 
 export interface KeyOpenIDWithEmailOptions {
@@ -23,9 +28,18 @@ export interface KeyOpenIDWithEmailOptions {
 export interface KeyEmailOptions {
   type: "Raw" | "Hash";
   emailFrom: string;
+  signType: KeyEmailDkimSignType;
   pepper: string;
   dkimParams?: DkimParamsBase;
+  zkParams?: ZKParams;
   emailHash?: string;
+}
+
+export interface ZKParams {
+  domainSize: BigNumber;
+  publicInputs: string[];
+  vkData: string[];
+  proof: string[];
 }
 
 export interface OpenIDOptions {
@@ -60,10 +74,11 @@ export class KeyOpenIDWithEmail extends KeyBase {
     let emailHash: string;
     if (typeof emailOptionsOrEmailHash !== "string") {
       if (
+        emailOptionsOrEmailHash.signType === KeyEmailDkimSignType.RawEmail &&
         emailOptionsOrEmailHash.type === "Raw" &&
         emailOptionsOrEmailHash.dkimParams !== undefined &&
         emailOptionsOrEmailHash.emailFrom !==
-          emailOptionsOrEmailHash.dkimParams.emailHeader.slice(
+          toUtf8String(emailOptionsOrEmailHash.dkimParams.hexEmailHeader).slice(
             emailOptionsOrEmailHash.dkimParams.fromLeftIndex,
             emailOptionsOrEmailHash.dkimParams.fromRightIndex + 1,
           )
@@ -182,13 +197,14 @@ export class KeyOpenIDWithEmail extends KeyBase {
   }
 
   static fromJsonObj(obj: any): KeyOpenIDWithEmail {
-    let emailOptionsOrEmailHash: any;
+    let emailOptionsOrEmailHash: string | KeyEmailOptions;
     if (typeof obj.emailOptionsOrEmailHash === "string") {
       emailOptionsOrEmailHash = obj.emailOptionsOrEmailHash;
     } else {
       emailOptionsOrEmailHash = {
         ...obj.emailOptionsOrEmailHash,
         dkimParams: obj.dkimParams ? DkimParamsBase.fromJsonObj(obj.dkimParams) : undefined,
+        signType: obj.emailOptionsOrEmailHash.signType || KeyEmailDkimSignType.DkimZK,
       };
     }
     return new KeyOpenIDWithEmail({
@@ -205,18 +221,48 @@ export class KeyOpenIDWithEmail extends KeyBase {
   }
 
   public updateDkimParams(v: DkimParamsBase): KeyOpenIDWithEmail {
-    const emailFrom = v.emailHeader.slice(v.fromLeftIndex, v.fromRightIndex + 1);
-
     if (typeof this.emailOptionsOrEmailHash === "string") {
       throw new Error("Please use email options but not hash");
     }
 
-    if (this.emailOptionsOrEmailHash.type === "Raw" && this.emailOptionsOrEmailHash.emailFrom !== emailFrom) {
+    if (
+      this.emailOptionsOrEmailHash.signType === KeyEmailDkimSignType.RawEmail &&
+      this.emailOptionsOrEmailHash.type === "Raw" &&
+      this.emailOptionsOrEmailHash.signType === KeyEmailDkimSignType.RawEmail &&
+      this.emailOptionsOrEmailHash.emailFrom !==
+        toUtf8String(v.hexEmailHeader).slice(v.fromLeftIndex, v.fromRightIndex + 1)
+    ) {
       throw new Error("Not Matched EmailFrom And DkimParams");
     }
 
     return new KeyOpenIDWithEmail({
       emailOptionsOrEmailHash: { ...this.emailOptionsOrEmailHash, dkimParams: v },
+      openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
+      roleWeight: this.roleWeight,
+      signType: this.signType,
+    });
+  }
+
+  public updateEmailDkimSignType(signType: KeyEmailDkimSignType): KeyOpenIDWithEmail {
+    if (typeof this.emailOptionsOrEmailHash === "string") {
+      throw new Error("Please use email options but not hash");
+    }
+
+    return new KeyOpenIDWithEmail({
+      emailOptionsOrEmailHash: { ...this.emailOptionsOrEmailHash, signType },
+      openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
+      roleWeight: this.roleWeight,
+      signType: this.signType,
+    });
+  }
+
+  public updateZKParams(zkParams: ZKParams): KeyOpenIDWithEmail {
+    if (typeof this.emailOptionsOrEmailHash === "string") {
+      throw new Error("Please use email options but not hash");
+    }
+
+    return new KeyOpenIDWithEmail({
+      emailOptionsOrEmailHash: { ...this.emailOptionsOrEmailHash, zkParams },
       openIDOptionsOrOpenIDHash: this.openIDOptionsOrOpenIDHash,
       roleWeight: this.roleWeight,
       signType: this.signType,
@@ -255,9 +301,6 @@ export class KeyOpenIDWithEmail extends KeyBase {
         if (typeof this.emailOptionsOrEmailHash === "string") {
           throw new Error("Expect Email Options For Email Sign");
         }
-        if (this.emailOptionsOrEmailHash.type !== "Raw") {
-          throw new Error("Expected Raw Inner");
-        }
 
         if (this.emailOptionsOrEmailHash.dkimParams === undefined) {
           throw new Error("Expected DkimParams");
@@ -267,20 +310,72 @@ export class KeyOpenIDWithEmail extends KeyBase {
           throw new Error(`Expected subject ${this.emailOptionsOrEmailHash.dkimParams!.digestHash}, got ${digestHash}`);
         }
 
-        return solidityPack(
-          ["uint8", "uint8", "uint8", "bytes32", "bytes32", "bytes", "bytes"],
-          [
-            KeyType.OpenIDWithEmail,
-            SignFlag.Sign,
-            KeyOpenIDSignType.EmailSign,
-            typeof this.openIDOptionsOrOpenIDHash === "string"
-              ? this.openIDOptionsOrOpenIDHash
-              : this.openIDOptionsOrOpenIDHash.openIDHash,
-            this.emailOptionsOrEmailHash.pepper,
-            this.emailOptionsOrEmailHash.dkimParams.serialize(),
-            this.serializeRoleWeight(),
-          ],
-        );
+        switch (this.emailOptionsOrEmailHash.signType) {
+          case KeyEmailDkimSignType.RawEmail: {
+            if (this.emailOptionsOrEmailHash.type !== "Raw") {
+              throw new Error("Expected Raw Inner");
+            }
+            return solidityPack(
+              ["uint8", "uint8", "uint8", "bytes32", "uint8", "bytes", "bytes32", "bytes"],
+              [
+                KeyType.OpenIDWithEmail,
+                SignFlag.Sign,
+                KeyOpenIDSignType.EmailSign,
+                typeof this.openIDOptionsOrOpenIDHash === "string"
+                  ? this.openIDOptionsOrOpenIDHash
+                  : this.openIDOptionsOrOpenIDHash.openIDHash,
+                this.emailOptionsOrEmailHash.signType,
+                this.emailOptionsOrEmailHash.dkimParams.serialize(),
+                this.emailOptionsOrEmailHash.pepper,
+                this.serializeRoleWeight(),
+              ],
+            );
+          }
+          case KeyEmailDkimSignType.DkimZK: {
+            if (this.emailOptionsOrEmailHash.zkParams === undefined) {
+              throw new Error("Expected ZK Params For ZK Sign");
+            }
+            return solidityPack(
+              [
+                "uint8",
+                "uint8",
+                "uint8",
+                "bytes32",
+                "uint8",
+                "bytes",
+                "uint128",
+                "uint32",
+                "uint256[]",
+                "uint32",
+                "uint256[]",
+                "uint32",
+                "uint256[]",
+                "bytes",
+              ],
+              [
+                KeyType.OpenIDWithEmail,
+                SignFlag.Sign,
+                KeyOpenIDSignType.EmailSign,
+                typeof this.openIDOptionsOrOpenIDHash === "string"
+                  ? this.openIDOptionsOrOpenIDHash
+                  : this.openIDOptionsOrOpenIDHash.openIDHash,
+                this.emailOptionsOrEmailHash.signType,
+                this.emailOptionsOrEmailHash.dkimParams.serialize(),
+                this.emailOptionsOrEmailHash.zkParams.domainSize,
+                this.emailOptionsOrEmailHash.zkParams.publicInputs.length,
+                this.emailOptionsOrEmailHash.zkParams.publicInputs,
+                this.emailOptionsOrEmailHash.zkParams.vkData.length,
+                this.emailOptionsOrEmailHash.zkParams.vkData,
+                this.emailOptionsOrEmailHash.zkParams.proof.length,
+                this.emailOptionsOrEmailHash.zkParams.proof,
+                this.serializeRoleWeight(),
+              ],
+            );
+          }
+          default: {
+            throw new Error(`Invalid Key Email Sign Type: ${this.emailOptionsOrEmailHash.signType}`);
+          }
+        }
       }
       case KeyOpenIDSignType.OpenIDSign: {
         if (typeof this.openIDOptionsOrOpenIDHash === "string") {

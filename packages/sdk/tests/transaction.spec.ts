@@ -1,4 +1,4 @@
-import { formatEther, hexlify, keccak256, parseEther, randomBytes, toUtf8Bytes } from "ethers/lib/utils";
+import { formatEther, hexlify, parseEther, randomBytes } from "ethers/lib/utils";
 import { BigNumber, constants, Wallet as WalletEOA } from "ethers";
 import {
   CallTxBuilder,
@@ -10,24 +10,20 @@ import {
   UpdateImplementationTxBuilder,
   SyncAccountTxBuilder,
 } from "@unipasswallet/transaction-builders";
-import { generateDkimParams, randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
-import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
-import {
-  SessionKey,
-  generateEmailSubject,
-  getWalletDeployTransaction,
-  Wallet,
-  ExecuteTransaction,
-} from "@unipasswallet/wallet";
+import { randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
+import { EmailType } from "@unipasswallet/dkim-base";
+import { SessionKey, getWalletDeployTransaction, Wallet, ExecuteTransaction } from "@unipasswallet/wallet";
 import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
 import { digestTxHash } from "@unipasswallet/transactions";
 
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
+import fetchPonyfill from "fetch-ponyfill";
 
 describe("Test Transactions", () => {
   let context: TestContext;
   let walletContext: WalletContext;
+  const { fetch } = fetchPonyfill();
   beforeAll(async () => {
     context = await initTestContext();
   });
@@ -40,6 +36,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       hexlify(hash),
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -53,7 +51,7 @@ describe("Test Transactions", () => {
   it("Test DeployTx + SyncAccountTx + TransferTx", async () => {
     walletContext = await initWalletContext(context, false, true);
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, walletContext.wallet.keyset.hash());
-    const newKeyset = randomKeyset(10, true);
+    const newKeyset = randomKeyset(20, true);
     let signerIndexes: number[];
     const txBuilder = new SyncAccountTxBuilder(
       walletContext.wallet.address,
@@ -66,6 +64,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.SyncAccount,
+      context.zkServerUrl,
+      fetch,
       txBuilder.digestMessage(),
       context.unipassPrivateKey,
       Role.Owner,
@@ -80,6 +80,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       digestHash,
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -120,6 +122,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.UpdateKeysetHash,
+      context.zkServerUrl,
+      fetch,
       txBuilder.digestMessage(),
       context.unipassPrivateKey,
       Role.Owner,
@@ -133,6 +137,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       digestHash,
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -194,6 +200,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.UpdateKeysetHash,
+      context.zkServerUrl,
+      fetch,
       txBuilder.digestMessage(),
       context.unipassPrivateKey,
       Role.Owner,
@@ -223,6 +231,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.LockKeysetHash,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Guardian,
@@ -255,6 +265,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       sessionKey.digestPermitMessage(timestamp, weight),
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -282,6 +294,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CallOtherContract,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.AssetsOp,
@@ -293,22 +307,6 @@ describe("Test Transactions", () => {
     const ret = await (await walletContext.wallet.sendTransaction([tx], sessionKey)).wait();
     expect(ret.status).toEqual(1);
     expect(Number.parseInt(formatEther(await context.provider.getBalance(to.address)), 10)).toEqual(10);
-  });
-
-  it("Dkim Verify Should Success", async function () {
-    const digestHash = constants.HashZero;
-    const emailFrom = `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`;
-    const email = await generateDkimParams(
-      emailFrom,
-      generateEmailSubject(EmailType.CallOtherContract, digestHash),
-      context.unipassPrivateKey.exportKey("pkcs1"),
-    );
-    const pepper = hexlify(randomBytes(32));
-    const ret = await context.dkimKeys.dkimVerify(pepper, 0, email.serialize());
-    expect(ret[0]).toBe(true);
-    expect(ret[1]).toBe(EmailType.CallOtherContract);
-    expect(ret[2]).toBe(pureEmailHash(emailFrom, pepper));
-    expect(ret[3]).toBe(keccak256(toUtf8Bytes(digestHash)));
   });
 
   it("Update TimeLock During Should Success", async () => {
@@ -324,6 +322,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.UpdateTimeLockDuring,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Owner,
@@ -353,6 +353,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.UpdateTimeLockDuring,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Owner,
@@ -379,6 +381,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.LockKeysetHash,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Guardian,
@@ -424,6 +428,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.LockKeysetHash,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Guardian,
@@ -448,6 +454,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.CancelLockKeysetHash,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Owner,
@@ -474,6 +482,8 @@ describe("Test Transactions", () => {
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.UpdateImplementation,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Owner,
@@ -501,10 +511,12 @@ describe("Test Transactions", () => {
       true,
     );
     const subject = txBuilder.digestMessage();
-    let signerIndexes;
+    let signerIndexes: number[];
     [walletContext.wallet, signerIndexes] = await selectKeys(
       walletContext.wallet,
       EmailType.SyncAccount,
+      context.zkServerUrl,
+      fetch,
       subject,
       context.unipassPrivateKey,
       Role.Owner,

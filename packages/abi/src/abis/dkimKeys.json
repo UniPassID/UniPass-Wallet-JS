@@ -6,10 +6,26 @@
           "internalType": "address",
           "name": "_admin",
           "type": "address"
+        },
+        {
+          "internalType": "contract IDkimZK",
+          "name": "_dkimZK",
+          "type": "address"
         }
       ],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "_reason",
+          "type": "bytes"
+        }
+      ],
+      "name": "GetEmailHashByZKRevert",
+      "type": "error"
     },
     {
       "inputs": [
@@ -20,6 +36,17 @@
         }
       ],
       "name": "InvalidEmailType",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "_emailVerifyType",
+          "type": "uint8"
+        }
+      ],
+      "name": "InvalidEmailVerifyType",
       "type": "error"
     },
     {
@@ -210,6 +237,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "_readDkimZK",
+      "outputs": [
+        {
+          "internalType": "contract IDkimZK",
+          "name": "dkimZK",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "bytes",
@@ -225,13 +265,8 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "_pepper",
-          "type": "bytes32"
-        },
-        {
           "internalType": "uint256",
-          "name": "_index",
+          "name": "_dkimParamsStartIndex",
           "type": "uint256"
         },
         {
@@ -264,7 +299,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "index",
+          "name": "dkimParamsEndIndex",
           "type": "uint256"
         }
       ],
@@ -298,6 +333,19 @@
           "internalType": "bytes",
           "name": "",
           "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDkimZK",
+      "outputs": [
+        {
+          "internalType": "contract IDkimZK",
+          "name": "dkimZK",
+          "type": "address"
         }
       ],
       "stateMutability": "view",

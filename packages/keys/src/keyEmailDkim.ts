@@ -1,10 +1,10 @@
-import { BytesLike, defineReadOnly, hexlify, keccak256, solidityPack } from "ethers/lib/utils";
+import { BytesLike, defineReadOnly, hexlify, keccak256, solidityPack, toUtf8String } from "ethers/lib/utils";
 import { DkimParamsBase, pureEmailHash } from "@unipasswallet/dkim-base";
 import { obscureEmail } from "@unipasswallet/utils";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
 import { constants, utils } from "ethers";
-import { KeyOpenIDSignType } from "./keyOpenIDWithEmail";
+import { KeyEmailDkimSignType, KeyOpenIDSignType } from "./keyOpenIDWithEmail";
 
 export class KeyEmailDkim extends KeyBase {
   public readonly _isKeyEmailDkim: boolean;
@@ -28,7 +28,8 @@ export class KeyEmailDkim extends KeyBase {
     if (
       type === "Raw" &&
       dkimParams !== undefined &&
-      emailFrom !== dkimParams.emailHeader.slice(dkimParams.fromLeftIndex, dkimParams.fromRightIndex + 1)
+      emailFrom !==
+        toUtf8String(dkimParams.hexEmailHeader).slice(dkimParams.fromLeftIndex, dkimParams.fromRightIndex + 1)
     ) {
       throw new Error("Not Matched DkimParams With Email Address");
     }
@@ -102,7 +103,7 @@ export class KeyEmailDkim extends KeyBase {
   }
 
   public setDkimParams(v: DkimParamsBase) {
-    const emailFrom = v.emailHeader.slice(v.fromLeftIndex, v.fromRightIndex + 1);
+    const emailFrom = toUtf8String(v.hexEmailHeader).slice(v.fromLeftIndex, v.fromRightIndex + 1);
 
     if (this.type === "Raw" && this.emailFrom !== emailFrom) {
       throw new Error("Not Matched EmailFrom And DkimParams");
@@ -124,14 +125,15 @@ export class KeyEmailDkim extends KeyBase {
     }
 
     return utils.solidityPack(
-      ["uint8", "uint8", "uint8", "bytes32", "bytes32", "bytes", "bytes"],
+      ["uint8", "uint8", "uint8", "bytes32", "uint8", "bytes", "bytes32", "bytes"],
       [
         KeyType.OpenIDWithEmail,
         SignFlag.Sign,
         KeyOpenIDSignType.EmailSign,
         constants.HashZero,
-        this.pepper,
+        KeyEmailDkimSignType.RawEmail,
         this.dkimParams.serialize(),
+        this.pepper,
         this.serializeRoleWeight(),
       ],
     );

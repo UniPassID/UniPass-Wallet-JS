@@ -9,13 +9,14 @@ import ModuleMainUpgradableArtifact from "../../../../artifacts/unipass-wallet-c
 import ModuleMainGasEstimatorArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleMainGasEstimator.sol/ModuleMainGasEstimator.json";
 import ModuleGuestArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleGuest.sol/ModuleGuest.json";
 import DkimKeysArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/DkimKeys.sol/DkimKeys.json";
+import DkimZKArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/DkimZK.sol/DkimZK.json";
 import OpenIDArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/OpenID.sol/OpenID.json";
 import WhiteListArtifact from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol/ModuleWhiteList.json";
 import TestERC20Artifact from "../../../../artifacts/contracts/tests/TestERC20.sol/TestERC20.json";
 import GreeterArtifact from "../../../../artifacts/contracts/tests/Greeter.sol/Greeter.json";
 import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/GasEstimator.sol/GasEstimator.json";
 import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
-import { OPENID_AUDIENCE, OPENID_ISSUER, OPENID_KID, randomKeyset, transferEth } from "./common";
+import { initDkimZK, OPENID_AUDIENCE, OPENID_ISSUER, OPENID_KID, randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { GasEstimatingWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
 import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
@@ -39,6 +40,7 @@ export interface TestContext {
   feeEstimator: Contract;
   unipassWalletContext: UnipassWalletContext;
   relayer: Relayer;
+  zkServerUrl: string;
 }
 
 export async function initTestContext(): Promise<TestContext> {
@@ -46,6 +48,8 @@ export async function initTestContext(): Promise<TestContext> {
   const jsonRpcNode = process.env.JSON_RPC_NODE;
   const provider = new providers.JsonRpcProvider(jsonRpcNode);
   const { chainId } = await provider.getNetwork();
+
+  const zkServerUrl = process.env.ZK_SERVER_URL!;
 
   const signer = provider.getSigner();
   const deployer = await new Deployer(signer).init();
@@ -57,9 +61,15 @@ export async function initTestContext(): Promise<TestContext> {
   const unipassPrivateKey = new NodeRSA({ b: 2048 });
   const instance = 0;
 
+  const DkimZK = new ContractFactory(new Interface(DkimZKArtifact.abi), DkimZKArtifact.bytecode, signer);
+  const dkimZKAdmin = Wallet.createRandom().connect(provider);
+  const dkimZK = (await deployer.deployContract(DkimZK, instance, txParams, dkimZKAdmin.address)).connect(dkimZKAdmin);
+  await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), dkimZKAdmin.address, parseEther("10"));
+  await initDkimZK(dkimZK);
+
   const DkimKeys = new ContractFactory(new Interface(DkimKeysArtifact.abi), DkimKeysArtifact.bytecode, signer);
   const dkimKeysAdmin = Wallet.createRandom().connect(provider);
-  const dkimKeys = await deployer.deployContract(DkimKeys, instance, txParams, dkimKeysAdmin.address);
+  const dkimKeys = await deployer.deployContract(DkimKeys, instance, txParams, dkimKeysAdmin.address, dkimZK.address);
   await transferEth(new Wallet(process.env.HARDHAT_PRIVATE_KEY, provider), dkimKeysAdmin.address, parseEther("10"));
   const keyServer = solidityPack(
     ["bytes32", "bytes32"],
@@ -218,6 +228,7 @@ export async function initTestContext(): Promise<TestContext> {
     whiteListAdmin,
     gasEstimator,
     feeEstimator,
+    zkServerUrl,
   };
 }
 
@@ -249,7 +260,7 @@ export async function initWalletContext(
   );
   const greeter = await Greeter.deploy();
 
-  const keyset = randomKeyset(10, withDkim);
+  const keyset = randomKeyset(20, withDkim);
   const wallet = UnipassWallet.create({
     keyset,
     context: context.unipassWalletContext,
