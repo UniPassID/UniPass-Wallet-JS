@@ -16,6 +16,7 @@ import {
   KeyOpenIDWithEmail,
   KeyOpenIDSignType,
   KeyEmailDkimSignType,
+  KeyEmailDkim,
 } from "@unipasswallet/keys";
 import NodeRSA from "node-rsa";
 import * as jose from "jose";
@@ -64,7 +65,7 @@ export function randomKeyset(len: number, withDkim: boolean): Keyset {
   for (let i = 0; i < len; i++) {
     [Role.Owner, Role.AssetsOp, Role.Guardian].forEach((role) => {
       if (withDkim) {
-        const random = randomInt(1);
+        const random = randomInt(2);
 
         if (random === 0) {
           ret.push(
@@ -74,7 +75,7 @@ export function randomKeyset(len: number, withDkim: boolean): Keyset {
               randomInt(10) % 2 === 1 ? SignType.EIP712Sign : SignType.EthSign,
             ),
           );
-        } else {
+        } else if (random === 1) {
           const rand = randomInt(2);
           ret.push(
             new KeyOpenIDWithEmail({
@@ -91,6 +92,19 @@ export function randomKeyset(len: number, withDkim: boolean): Keyset {
               roleWeight: randomRoleWeight(role, len),
               signType: rand === 0 ? KeyOpenIDSignType.OpenIDSign : KeyOpenIDSignType.EmailSign,
             }),
+          );
+        } else {
+          const rand = randomInt(2);
+          ret.push(
+            new KeyEmailDkim(
+              "Raw",
+              `${Buffer.from(randomBytes(10)).toString("hex")}@gmail.com`,
+              randomBytes(32),
+              randomRoleWeight(role, len),
+              undefined,
+              undefined,
+              rand === 0 ? KeyEmailDkimSignType.RawEmail : KeyEmailDkimSignType.DkimZK,
+            ),
           );
         }
       } else {
@@ -130,11 +144,54 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
   }
 }
 
+export async function updateEmailKeySignature(
+  key: any,
+  zkServerUrl: string,
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
+  dkimParams: DkimParams,
+) {
+  let res = await fetch(`${zkServerUrl}/request_proof`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      emailHeader: dkimParams.hexEmailHeader,
+      fromPepper: key.emailOptionsOrEmailHash ? key.emailOptionsOrEmailHash.pepper : key.pepper,
+      headerHash: sha256(dkimParams.hexEmailHeader),
+    }),
+  });
+  const hash = await buildResponse(res);
+  console.log("hash:", hash);
+  let ret;
+  let i = 0;
+  while (!ret && i < 6000) {
+    // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // eslint-disable-next-line no-await-in-loop
+    res = await fetch(`${zkServerUrl}/query_proof/${hash}`, {
+      method: "GET",
+    });
+    // eslint-disable-next-line no-await-in-loop
+    ret = await buildResponse(res);
+    i++;
+  }
+
+  console.log("ret", ret);
+  dkimParams = dkimParams.updateEmailHeader(ret.headerPubMatch);
+  return key
+    .updateZKParams({
+      domainSize: BigNumber.from(ret.domainSize),
+      publicInputs: ret.publicInputs,
+      vkData: ret.vkData,
+      proof: ret.proof,
+    })
+    .updateDkimParams(dkimParams);
+}
+
 export async function selectKeys(
   wallet: Wallet,
   emailType: EmailType,
   zkServerUrl: string,
-  fetch: any,
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
   digestHash: string,
   unipassPrivateKey: NodeRSA,
   role: Role,
@@ -171,7 +228,7 @@ export async function selectKeys(
       if (indexes.includes(i)) {
         if (KeyOpenIDWithEmail.isKeyOpenIDWithEmail(key)) {
           if (key.signType === KeyOpenIDSignType.EmailSign && typeof key.emailOptionsOrEmailHash !== "string") {
-            let dkimParams = await generateDkimParams(
+            const dkimParams = await generateDkimParams(
               key.emailOptionsOrEmailHash.emailFrom,
               subject,
               unipassPrivateKey.exportKey("pkcs1"),
@@ -179,41 +236,7 @@ export async function selectKeys(
             if (key.emailOptionsOrEmailHash.signType === KeyEmailDkimSignType.RawEmail) {
               key = key.updateDkimParams(dkimParams);
             } else {
-              let res = await fetch(`${zkServerUrl}/request_proof`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  emailHeader: dkimParams.hexEmailHeader,
-                  fromPepper: key.emailOptionsOrEmailHash.pepper,
-                  headerHash: sha256(dkimParams.hexEmailHeader),
-                }),
-              });
-              const hash = await buildResponse(res);
-              console.log("hash:", hash);
-              let ret;
-              let i = 0;
-              while (!ret && i < 6000) {
-                // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                // eslint-disable-next-line no-await-in-loop
-                res = await fetch(`${zkServerUrl}/query_proof/${hash}`, {
-                  method: "GET",
-                });
-                // eslint-disable-next-line no-await-in-loop
-                ret = await buildResponse(res);
-                i++;
-              }
-
-              console.log("ret", ret);
-              dkimParams = dkimParams.updateEmailHeader(ret.headerPubMatch);
-              key = key
-                .updateZKParams({
-                  domainSize: BigNumber.from(ret.domainSize),
-                  publicInputs: ret.publicInputs,
-                  vkData: ret.vkData,
-                  proof: ret.proof,
-                })
-                .updateDkimParams(dkimParams);
+              key = await updateEmailKeySignature(key, zkServerUrl, fetch, dkimParams);
             }
           } else if (
             key.signType === KeyOpenIDSignType.OpenIDSign &&
@@ -231,6 +254,9 @@ export async function selectKeys(
               .sign(privateKey);
             key = key.updateIDToken(idToken);
           }
+        } else if (KeyEmailDkim.isKeyEmailDkim(key)) {
+          const dkimParams = await generateDkimParams(key.emailFrom, subject, unipassPrivateKey.exportKey("pkcs1"));
+          key = await updateEmailKeySignature(key, zkServerUrl, fetch, dkimParams);
         }
       }
 

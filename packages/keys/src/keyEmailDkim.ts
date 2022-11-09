@@ -4,7 +4,7 @@ import { obscureEmail } from "@unipasswallet/utils";
 import { KeyType, RoleWeight, SignFlag } from ".";
 import { KeyBase } from "./keyBase";
 import { constants, utils } from "ethers";
-import { KeyEmailDkimSignType, KeyOpenIDSignType } from "./keyOpenIDWithEmail";
+import { KeyEmailDkimSignType, KeyOpenIDSignType, ZKParams } from "./keyOpenIDWithEmail";
 
 export class KeyEmailDkim extends KeyBase {
   public readonly _isKeyEmailDkim: boolean;
@@ -22,6 +22,8 @@ export class KeyEmailDkim extends KeyBase {
     roleWeight: RoleWeight,
     private dkimParams?: DkimParamsBase,
     hash?: string,
+    public readonly emailSignType: KeyEmailDkimSignType = KeyEmailDkimSignType.DkimZK,
+    public readonly zkParams?: ZKParams,
   ) {
     super(roleWeight);
 
@@ -73,6 +75,7 @@ export class KeyEmailDkim extends KeyBase {
       this.roleWeight,
       this.dkimParams,
       this.emailHash,
+      this.emailSignType,
     );
   }
 
@@ -84,6 +87,7 @@ export class KeyEmailDkim extends KeyBase {
       emailHash: this.emailHash,
       roleWeight: this.roleWeight.toJsonObj(),
       dkimParams: this.dkimParams ? this.dkimParams.toJsonObj() : this.dkimParams,
+      emailSignType: this.emailSignType,
     });
   }
 
@@ -95,6 +99,7 @@ export class KeyEmailDkim extends KeyBase {
       RoleWeight.fromJsonObj(obj.roleWeight),
       obj.dkimParams ? DkimParamsBase.fromJsonObj(obj.dkimParams) : obj.dkimParams,
       obj.emailHash,
+      obj.emailSignType || KeyEmailDkimSignType.DkimZK,
     );
   }
 
@@ -111,31 +116,122 @@ export class KeyEmailDkim extends KeyBase {
     this.dkimParams = v;
   }
 
+  public updateDkimParams(v: DkimParamsBase): KeyEmailDkim {
+    if (
+      this.emailSignType === KeyEmailDkimSignType.RawEmail &&
+      this.type === "Raw" &&
+      this.emailFrom !== toUtf8String(v.hexEmailHeader).slice(v.fromLeftIndex, v.fromRightIndex + 1)
+    ) {
+      throw new Error("Not Matched EmailFrom And DkimParams");
+    }
+    return new KeyEmailDkim(
+      this.type,
+      this.emailFrom,
+      this.pepper,
+      this.roleWeight,
+      this.dkimParams,
+      this.keyHash,
+      this.emailSignType,
+      this.zkParams,
+    );
+  }
+
   public async generateSignature(digestHash: string): Promise<string> {
     if (this.type !== "Raw") {
       throw new Error("Expected Raw Inner");
-    }
-
-    if (this.dkimParams === undefined) {
-      throw new Error("Expected DkimParams");
     }
 
     if (this.dkimParams!.digestHash !== digestHash) {
       throw new Error(`Expected subject ${this.dkimParams!.digestHash}, got ${digestHash}`);
     }
 
-    return utils.solidityPack(
-      ["uint8", "uint8", "uint8", "bytes32", "uint8", "bytes", "bytes32", "bytes"],
-      [
-        KeyType.OpenIDWithEmail,
-        SignFlag.Sign,
-        KeyOpenIDSignType.EmailSign,
-        constants.HashZero,
-        KeyEmailDkimSignType.RawEmail,
-        this.dkimParams.serialize(),
-        this.pepper,
-        this.serializeRoleWeight(),
-      ],
+    switch (this.emailSignType) {
+      case KeyEmailDkimSignType.DkimZK: {
+        if (this.zkParams === undefined) {
+          throw new Error("Expected ZK Params");
+        }
+        return solidityPack(
+          [
+            "uint8",
+            "uint8",
+            "uint8",
+            "bytes32",
+            "uint8",
+            "bytes",
+            "uint128",
+            "uint32",
+            "uint256[]",
+            "uint32",
+            "uint256[]",
+            "uint32",
+            "uint256[]",
+            "bytes",
+          ],
+          [
+            KeyType.OpenIDWithEmail,
+            SignFlag.Sign,
+            KeyOpenIDSignType.EmailSign,
+            constants.HashZero,
+            this.emailSignType,
+            this.dkimParams.serialize(),
+            this.zkParams.domainSize,
+            this.zkParams.publicInputs.length,
+            this.zkParams.publicInputs,
+            this.zkParams.vkData.length,
+            this.zkParams.vkData,
+            this.zkParams.proof.length,
+            this.zkParams.proof,
+            this.serializeRoleWeight(),
+          ],
+        );
+      }
+      case KeyEmailDkimSignType.RawEmail: {
+        if (this.dkimParams === undefined) {
+          throw new Error("Expected DkimParams");
+        }
+        return utils.solidityPack(
+          ["uint8", "uint8", "uint8", "bytes32", "uint8", "bytes", "bytes32", "bytes"],
+          [
+            KeyType.OpenIDWithEmail,
+            SignFlag.Sign,
+            KeyOpenIDSignType.EmailSign,
+            constants.HashZero,
+            this.emailSignType,
+            this.dkimParams.serialize(),
+            this.pepper,
+            this.serializeRoleWeight(),
+          ],
+        );
+      }
+      default: {
+        throw new Error(`Unknown emailSignType: ${this.emailSignType}`);
+      }
+    }
+  }
+
+  public updateZKParams(zkParams: ZKParams): KeyEmailDkim {
+    return new KeyEmailDkim(
+      this.type,
+      this.emailFrom,
+      this.pepper,
+      this.roleWeight,
+      this.dkimParams,
+      this.keyHash,
+      this.emailSignType,
+      zkParams,
+    );
+  }
+
+  public updateEmailSignType(emailSignType: KeyEmailDkimSignType): KeyEmailDkim {
+    return new KeyEmailDkim(
+      this.type,
+      this.emailFrom,
+      this.pepper,
+      this.roleWeight,
+      this.dkimParams,
+      this.keyHash,
+      emailSignType,
+      this.zkParams,
     );
   }
 
