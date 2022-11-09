@@ -1,5 +1,21 @@
 # @unipasswallet/sdk
 
+## 0.0.1-alpha.38
+
+### Patch Changes
+
+- @unipasswallet/dkim: fix email subject error
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.38
+  - @unipasswallet/dkim-base@0.0.1-alpha.38
+  - @unipasswallet/keys@0.0.1-alpha.38
+  - @unipasswallet/network@0.0.1-alpha.38
+  - @unipasswallet/relayer@0.0.1-alpha.33
+  - @unipasswallet/transaction-builders@0.0.1-alpha.33
+  - @unipasswallet/transactions@0.0.1-alpha.37
+  - @unipasswallet/utils@0.0.1-alpha.38
+  - @unipasswallet/wallet@0.0.1-alpha.38
+
 ## 0.0.1-alpha.37
 
 ### Patch Changes
