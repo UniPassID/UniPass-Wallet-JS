@@ -273,7 +273,7 @@ export function generateEmailSubject(emailType: EmailType, digestHash: string): 
     }
 
     case EmailType.SyncAccount: {
-      return `UniPass-Deploy-Account-${digestHash}`;
+      return `UniPass-Sync-Account-${digestHash}`;
     }
 
     case EmailType.CallOtherContract: {

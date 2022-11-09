@@ -136,7 +136,7 @@ export class DkimParams extends DkimParamsBase {
       return [EmailType.UpdateImplementation, emailSubject.slice(30)];
     }
 
-    if (emailSubject.startsWith("UniPass-Deploy-Account-0x") && emailSubject.length === 89) {
+    if (emailSubject.startsWith("UniPass-Sync-Account-0x") && emailSubject.length === 87) {
       return [EmailType.SyncAccount, emailSubject.slice(23)];
     }
 
