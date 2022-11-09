@@ -81,7 +81,7 @@ const LoginSuccess: React.FC = () => {
         // await unipassWallet.transaction(params);
         const estimatedTxs = await unipassWallet.estimateTransferTransactionsGasLimits(params);
         console.log("estiamted txs", estimatedTxs);
-        const receipt = await unipassWallet.sendTransaction(estimatedTxs, chain);
+        const receipt = await unipassWallet.sendTransaction(estimatedTxs, (await unipassWallet.wallet()).keyset, chain, undefined, 5);
         console.log("receipt:", receipt);
         message.success("send native token successfully");
       } catch (e: any) {
@@ -162,7 +162,7 @@ const LoginSuccess: React.FC = () => {
   };
 
   return (
-    <Spin spinning={sendLoading}>
+    <Spin spinning={false}>
       <h3>login successfully</h3>
       <h4>Address: {address}</h4>
       <Divider />

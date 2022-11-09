@@ -1,19 +1,14 @@
 import { AccountInfo, AuditStatus, SignType } from "./interface/index";
 import { arrayify, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
-import dayjs from "dayjs";
-import { BigNumber, constants, ethers, utils } from "ethers";
+import { BigNumber, constants, ethers } from "ethers";
 import { ExecuteTransaction, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
-import { KeySecp256k1, Keyset, OpenIDOptions } from "@unipasswallet/keys";
+import { Keyset } from "@unipasswallet/keys";
 import { digestTxHash, Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
-import Tss, { SIG_PREFIX } from "./utils/tss";
 import api from "./api/backend";
-import { checkEmailFormat, checkPassword, formatPassword } from "./utils/rules";
-import { AuthType, OtpAction, SignUpAccountInput, SyncStatusEnum } from "./interface";
-import { generateKdfPassword, signMsg } from "./utils/cloud-key";
+import { checkEmailFormat } from "./utils/rules";
+import { SyncStatusEnum } from "./interface";
 import WalletError from "./constant/error_map";
-import { generateSessionKey } from "./utils/session-key";
-import { getAccountKeysetJson } from "./utils/rbac";
 // import DB from "./utils/db";
 import {
   ChainType,
@@ -116,8 +111,6 @@ export const innerGenerateTransferTx = async (
     }
   }
   const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
-  console.log("tx");
-  console.log(tx);
 
   const transaction = new CallTxBuilder(revertOnError, gasLimit, target, value, data).build();
 
@@ -236,10 +229,6 @@ export const innerEstimateTransferGas = async (
   }
 
   let gasLimit;
-  console.log("gasEstimator");
-  console.log(gasEstimator);
-  console.log("estimatedTxs");
-  console.log(estimatedTxs);
 
   if (chainType === "rangers") {
     gasLimit = parseEther("0.001");
@@ -250,9 +239,6 @@ export const innerEstimateTransferGas = async (
     estimatedTxs = await gasEstimator.estimateExecuteTxsGasLimits(estimatedTxs, nonce);
     gasLimit = estimatedTxs.gasLimit;
   }
-
-  console.log("gasLimit");
-  console.log(gasLimit);
 
   if (feeValue && feeValue.eq(0)) {
     feeTx = await getFeeTxByGasLimit(fee.token, gasLimit, wallet.relayer!);
@@ -275,13 +261,14 @@ export const sendTransaction = async (
   config: UnipassWalletProps,
   keyset: Keyset,
   feeToken?: string,
+  timeout?: number,
 ) => {
   const user = await getUser();
 
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
 
-  const ret = await (await wallet.sendTransaction(tx, [0], feeToken, tx.gasLimit)).wait(1);
+  const ret = await ((await wallet.sendTransaction(tx, [0], feeToken, tx.gasLimit)).wait as any)(1, timeout);
   return ret;
 };
 
