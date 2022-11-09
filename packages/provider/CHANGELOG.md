@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.45
+
+### Patch Changes
+
+- @unipasswallet/keys: add dkim zk for KeyEmailDkim
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.37
+  - @unipasswallet/network@0.0.1-alpha.37
+  - @unipasswallet/relayer@0.0.1-alpha.32
+  - @unipasswallet/sdk@0.0.1-alpha.37
+  - @unipasswallet/transaction-builders@0.0.1-alpha.32
+  - @unipasswallet/transactions@0.0.1-alpha.36
+  - @unipasswallet/utils@0.0.1-alpha.37
+  - @unipasswallet/wallet@0.0.1-alpha.37
+
 ## 0.0.1-alpha.44
 
 ### Patch Changes
