@@ -1,5 +1,18 @@
 # @unipasswallet/deployer
 
+## 0.0.1-alpha.32
+
+### Patch Changes
+
+- @unipasswallet/keys:
+
+  - Update KeyOpenIDWithEmail and KeyEmailDkim For ZK Verify
+  - Update DkimParams EmailHeader For ZK Verify
+  - Update context
+
+- Updated dependencies
+  - @unipasswallet/utils@0.0.1-alpha.36
+
 ## 0.0.1-alpha.31
 
 ### Patch Changes
