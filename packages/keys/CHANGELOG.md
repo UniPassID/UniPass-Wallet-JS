@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.0.1-alpha.39
+
+### Patch Changes
+
+- @unipasswallet/network: update context for new contract
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.39
+  - @unipasswallet/utils@0.0.1-alpha.39
+
 ## 0.0.1-alpha.38
 
 ### Patch Changes

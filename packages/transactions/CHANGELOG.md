@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.0.1-alpha.38
+
+### Patch Changes
+
+- @unipasswallet/network: update context for new contract
+- Updated dependencies
+  - @unipasswallet/abi@0.0.1-alpha.39
+  - @unipasswallet/utils@0.0.1-alpha.39
+
 ## 0.0.1-alpha.37
 
 ### Patch Changes
