@@ -42,6 +42,7 @@ interface UniTransaction {
 interface TransactionFee {
   value: BigNumber;
   token: string;
+  receiver: string;
 }
 
 interface TransactionProps {
@@ -60,13 +61,13 @@ abstract class WalletProvider {
    * send a transaction
    * @params props: TransactionProps
    * * */
-  public abstract transaction(props: TransactionProps): Promise<providers.TransactionReceipt>;
+  public abstract transaction(props: TransactionProps): Promise<providers.TransactionResponse>;
 
   /**
    * signMessage
    * @params message: string
    * * */
-  public abstract signMessage(message: string): Promise<string>;
+  public abstract signMessage(message: string, keyset: Keyset): Promise<string>;
 
   /**
    * verifySignMessage
