@@ -1,5 +1,11 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.49
+
+### Patch Changes
+
+- @unipasswallet/provider: update signMessage
+
 ## 0.0.1-alpha.48
 
 ### Patch Changes
