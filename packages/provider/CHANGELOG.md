@@ -1,5 +1,21 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.48
+
+### Patch Changes
+
+- @unipasswallet/keys: add getting dkim verify data method
+  @unipasswallet/provider: add transaction gaslimit for estimating gas
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.40
+  - @unipasswallet/network@0.0.1-alpha.40
+  - @unipasswallet/relayer@0.0.1-alpha.35
+  - @unipasswallet/sdk@0.0.1-alpha.40
+  - @unipasswallet/transaction-builders@0.0.1-alpha.35
+  - @unipasswallet/transactions@0.0.1-alpha.39
+  - @unipasswallet/utils@0.0.1-alpha.40
+  - @unipasswallet/wallet@0.0.1-alpha.40
+
 ## 0.0.1-alpha.47
 
 ### Patch Changes

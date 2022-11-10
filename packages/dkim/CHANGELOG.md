@@ -1,5 +1,14 @@
 # @unipasswallet/dkim
 
+## 0.0.1-alpha.39
+
+### Patch Changes
+
+- @unipasswallet/keys: add getting dkim verify data method
+  @unipasswallet/provider: add transaction gaslimit for estimating gas
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.0.1-alpha.40
+
 ## 0.0.1-alpha.38
 
 ### Patch Changes
