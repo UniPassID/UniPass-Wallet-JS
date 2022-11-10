@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.47
+
+### Patch Changes
+
+- @unipasswallet/network: update context for new contract
+- Updated dependencies
+  - @unipasswallet/keys@0.0.1-alpha.39
+  - @unipasswallet/network@0.0.1-alpha.39
+  - @unipasswallet/relayer@0.0.1-alpha.34
+  - @unipasswallet/sdk@0.0.1-alpha.39
+  - @unipasswallet/transaction-builders@0.0.1-alpha.34
+  - @unipasswallet/transactions@0.0.1-alpha.38
+  - @unipasswallet/utils@0.0.1-alpha.39
+  - @unipasswallet/wallet@0.0.1-alpha.39
+
 ## 0.0.1-alpha.46
 
 ### Patch Changes
