@@ -45,10 +45,10 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async estimateTransferTransactionsGasLimits(props: TransactionProps) {
-    const { tx, chain, fee } = props;
+    const { tx, chain, fee, gasLimit } = props;
     const _chain = chain ?? "polygon";
     const transactions = await innerGenerateTransferTx(tx, _chain, this.config);
-    return innerEstimateTransferGas(transactions, chain, this.config, fee);
+    return innerEstimateTransferGas(transactions, chain, this.config, fee, gasLimit);
   }
 
   public async sendTransaction(
@@ -63,10 +63,10 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
-    const { tx, chain, fee, keyset, timeout } = props;
+    const { tx, chain, fee, keyset, timeout, gasLimit } = props;
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
-    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee);
+    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee, gasLimit);
 
     // FIX ME: set gas limit for rangers to disable estimate gas in wallet
     if (_chain === "rangers") transactions.gasLimit = BigNumber.from("1000000");
