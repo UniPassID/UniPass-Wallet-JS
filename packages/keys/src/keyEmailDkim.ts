@@ -30,6 +30,7 @@ export class KeyEmailDkim extends KeyBase {
     if (
       type === "Raw" &&
       dkimParams !== undefined &&
+      emailSignType === KeyEmailDkimSignType.RawEmail &&
       emailFrom !==
         toUtf8String(dkimParams.hexEmailHeader).slice(dkimParams.fromLeftIndex, dkimParams.fromRightIndex + 1)
     ) {
@@ -117,19 +118,18 @@ export class KeyEmailDkim extends KeyBase {
   }
 
   public updateDkimParams(v: DkimParamsBase): KeyEmailDkim {
-    if (
-      this.emailSignType === KeyEmailDkimSignType.RawEmail &&
-      this.type === "Raw" &&
-      this.emailFrom !== toUtf8String(v.hexEmailHeader).slice(v.fromLeftIndex, v.fromRightIndex + 1)
-    ) {
-      throw new Error("Not Matched EmailFrom And DkimParams");
+    if (this.emailSignType === KeyEmailDkimSignType.RawEmail && this.type === "Raw") {
+      const emailFrom = toUtf8String(v.hexEmailHeader).slice(v.fromLeftIndex, v.fromRightIndex + 1);
+      if (emailFrom !== this.emailFrom) {
+        throw new Error(`Unmatched EmailFrom[${this.emailFrom}] With EmailFrom[${emailFrom}] in the dkim Pramams`);
+      }
     }
     return new KeyEmailDkim(
       this.type,
       this.emailFrom,
       this.pepper,
       this.roleWeight,
-      this.dkimParams,
+      v,
       this.keyHash,
       this.emailSignType,
       this.zkParams,

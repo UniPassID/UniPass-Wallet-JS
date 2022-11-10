@@ -163,7 +163,7 @@ export async function updateEmailKeySignature(
   console.log("hash:", hash);
   let ret;
   let i = 0;
-  while (!ret && i < 6000) {
+  while (!ret) {
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // eslint-disable-next-line no-await-in-loop
@@ -175,7 +175,7 @@ export async function updateEmailKeySignature(
     i++;
   }
 
-  console.log("ret", ret);
+  console.log("ret", ret.domainSize);
   dkimParams = dkimParams.updateEmailHeader(ret.headerPubMatch);
   return key
     .updateZKParams({
@@ -256,7 +256,11 @@ export async function selectKeys(
           }
         } else if (KeyEmailDkim.isKeyEmailDkim(key)) {
           const dkimParams = await generateDkimParams(key.emailFrom, subject, unipassPrivateKey.exportKey("pkcs1"));
-          key = await updateEmailKeySignature(key, zkServerUrl, fetch, dkimParams);
+          if (key.emailSignType === KeyEmailDkimSignType.RawEmail) {
+            key = key.updateDkimParams(dkimParams);
+          } else {
+            key = await updateEmailKeySignature(key, zkServerUrl, fetch, dkimParams);
+          }
         }
       }
 
