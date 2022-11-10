@@ -50,6 +50,7 @@ interface TransactionProps {
   fee?: TransactionFee;
   chain?: ChainType;
   timeout?: number;
+  gasLimit?: BigNumber;
 }
 
 abstract class WalletProvider {

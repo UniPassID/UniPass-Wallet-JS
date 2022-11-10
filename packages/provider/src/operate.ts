@@ -168,6 +168,7 @@ export const innerEstimateTransferGas = async (
   chainType: ChainType,
   config: UnipassWalletProps,
   fee?: TransactionFee,
+  gasLimit?: BigNumber,
 ): Promise<ExecuteTransaction | BundledTransaction> => {
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
@@ -228,16 +229,18 @@ export const innerEstimateTransferGas = async (
     estimatedTxs = transferExecuteTx;
   }
 
-  let gasLimit;
-
-  if (chainType === "rangers") {
-    gasLimit = parseEther("0.001");
-  } else if (isBundledTransaction(estimatedTxs)) {
-    estimatedTxs = await gasEstimator.estimateBundledTxGasLimits(estimatedTxs, nonce);
-    gasLimit = estimatedTxs.gasLimit;
+  if (!gasLimit) {
+    if (chainType === "rangers") {
+      gasLimit = parseEther("0.001");
+    } else if (isBundledTransaction(estimatedTxs)) {
+      estimatedTxs = await gasEstimator.estimateBundledTxGasLimits(estimatedTxs, nonce);
+      gasLimit = estimatedTxs.gasLimit;
+    } else {
+      estimatedTxs = await gasEstimator.estimateExecuteTxsGasLimits(estimatedTxs, nonce);
+      gasLimit = estimatedTxs.gasLimit;
+    }
   } else {
-    estimatedTxs = await gasEstimator.estimateExecuteTxsGasLimits(estimatedTxs, nonce);
-    gasLimit = estimatedTxs.gasLimit;
+    estimatedTxs.gasLimit = gasLimit;
   }
 
   if (feeValue && feeValue.eq(0)) {
