@@ -4,7 +4,7 @@ import { DkimParams } from "@unipasswallet/dkim";
 import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, Contract, ethers, Signer, Wallet as WalletEOA } from "ethers";
-import { EmailType } from "@unipasswallet/dkim-base";
+import { DkimParamsBase, EmailType } from "@unipasswallet/dkim-base";
 import { Wallet, generateEmailSubject } from "@unipasswallet/wallet";
 import { WebRPCError } from "@unipasswallet/relayer";
 import {
@@ -17,6 +17,7 @@ import {
   KeyOpenIDSignType,
   KeyEmailDkimSignType,
   KeyEmailDkim,
+  ZKParams,
 } from "@unipasswallet/keys";
 import NodeRSA from "node-rsa";
 import * as jose from "jose";
@@ -144,25 +145,24 @@ export function randomRoleWeight(role: Role, len: number): RoleWeight {
   }
 }
 
-export async function updateEmailKeySignature(
-  key: any,
+export async function getZKParams(
+  pepper: string,
   zkServerUrl: string,
   fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
-  dkimParams: DkimParams,
-) {
+  dkimParams: DkimParamsBase,
+): Promise<[string, ZKParams]> {
   let res = await fetch(`${zkServerUrl}/request_proof`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       emailHeader: dkimParams.hexEmailHeader,
-      fromPepper: key.emailOptionsOrEmailHash ? key.emailOptionsOrEmailHash.pepper : key.pepper,
+      fromPepper: pepper,
       headerHash: sha256(dkimParams.hexEmailHeader),
     }),
   });
   const hash = await buildResponse(res);
   console.log("hash:", hash);
   let ret;
-  let i = 0;
   while (!ret) {
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -172,19 +172,32 @@ export async function updateEmailKeySignature(
     });
     // eslint-disable-next-line no-await-in-loop
     ret = await buildResponse(res);
-    i++;
   }
-
-  console.log("ret", ret.domainSize);
-  dkimParams = dkimParams.updateEmailHeader(ret.headerPubMatch);
-  return key
-    .updateZKParams({
+  return [
+    ret.headerPubMatch,
+    {
       domainSize: BigNumber.from(ret.domainSize),
       publicInputs: ret.publicInputs,
       vkData: ret.vkData,
       proof: ret.proof,
-    })
-    .updateDkimParams(dkimParams);
+    },
+  ];
+}
+
+export async function updateEmailKeySignature(
+  key: any,
+  zkServerUrl: string,
+  fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
+  dkimParams: DkimParams,
+) {
+  const [headerPubMatch, zkParams] = await getZKParams(
+    key.emailOptionsOrEmailHash ? key.emailOptionsOrEmailHash.pepper : key.pepper,
+    zkServerUrl,
+    fetch,
+    dkimParams,
+  );
+  dkimParams = dkimParams.updateEmailHeader(headerPubMatch);
+  return key.updateZKParams(zkParams).updateDkimParams(dkimParams);
 }
 
 export async function selectKeys(
