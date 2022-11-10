@@ -10,15 +10,29 @@ import {
   UpdateImplementationTxBuilder,
   SyncAccountTxBuilder,
 } from "@unipasswallet/transaction-builders";
-import { randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
-import { EmailType } from "@unipasswallet/dkim-base";
-import { SessionKey, getWalletDeployTransaction, Wallet, ExecuteTransaction } from "@unipasswallet/wallet";
-import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
+import { generateDkimParams, getZKParams, randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
+import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
+import {
+  SessionKey,
+  getWalletDeployTransaction,
+  Wallet,
+  ExecuteTransaction,
+  generateEmailSubject,
+} from "@unipasswallet/wallet";
+import {
+  getDkimVerifyMessage,
+  KeyEmailDkimSignType,
+  KeySecp256k1Wallet,
+  Keyset,
+  RoleWeight,
+  SignType,
+} from "@unipasswallet/keys";
 import { digestTxHash } from "@unipasswallet/transactions";
 
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
 import fetchPonyfill from "fetch-ponyfill";
+import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
 
 describe("Test Transactions", () => {
   let context: TestContext;
@@ -307,6 +321,45 @@ describe("Test Transactions", () => {
     const ret = await (await walletContext.wallet.sendTransaction([tx], sessionKey)).wait();
     expect(ret.status).toEqual(1);
     expect(Number.parseInt(formatEther(await context.provider.getBalance(to.address)), 10)).toEqual(10);
+  });
+
+  it("Dkim Verify For Raw Email Should Success", async function () {
+    const digestHash = constants.HashZero;
+    const emailFrom = `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`;
+    const email = await generateDkimParams(
+      emailFrom,
+      generateEmailSubject(EmailType.CallOtherContract, digestHash),
+      context.unipassPrivateKey.exportKey("pkcs1"),
+    );
+    const pepper = hexlify(randomBytes(32));
+    const ret = await context.dkimKeys.dkimVerify(
+      0,
+      getDkimVerifyMessage(email, KeyEmailDkimSignType.RawEmail, { pepper }),
+    );
+    expect(ret[0]).toBe(true);
+    expect(ret[1]).toBe(EmailType.CallOtherContract);
+    expect(ret[2]).toBe(pureEmailHash(emailFrom, pepper));
+    expect(ret[3]).toBe(keccak256(toUtf8Bytes(digestHash)));
+  });
+
+  it("Dkim Verify For DkimZK Should Success", async function () {
+    const digestHash = constants.HashZero;
+    const emailFrom = `${Buffer.from(randomBytes(10)).toString("hex")}@unipass.com`;
+    let email = await generateDkimParams(
+      emailFrom,
+      generateEmailSubject(EmailType.CallOtherContract, digestHash),
+      context.unipassPrivateKey.exportKey("pkcs1"),
+    );
+    const pepper = hexlify(randomBytes(32));
+    const [headerPubMatch, zkParams] = await getZKParams(pepper, context.zkServerUrl, fetch, email);
+    email = email.updateEmailHeader(headerPubMatch);
+    const data = getDkimVerifyMessage(email, KeyEmailDkimSignType.DkimZK, { zkParams });
+
+    const ret = await context.dkimKeys.dkimVerify(0, data);
+    expect(ret[0]).toBe(true);
+    expect(ret[1]).toBe(EmailType.CallOtherContract);
+    expect(ret[2]).toBe(pureEmailHash(emailFrom, pepper));
+    expect(ret[3]).toBe(keccak256(toUtf8Bytes(digestHash)));
   });
 
   it("Update TimeLock During Should Success", async () => {

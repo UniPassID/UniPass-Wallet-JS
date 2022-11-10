@@ -16,6 +16,10 @@ export * from "./roleWeight";
 
 export * from "./keyset";
 
+import { DkimParamsBase } from "@unipasswallet/dkim-base";
+import { KeyEmailDkimSignType, ZKParams } from "./keyOpenIDWithEmail";
+import { solidityPack } from "ethers/lib/utils";
+
 export enum KeyType {
   Secp256k1,
   ERC1271Wallet,
@@ -64,4 +68,44 @@ export async function sign(hash: BytesLike, key: Wallet, signType: SignType): Pr
   }
 
   return utils.solidityPack(["bytes", "uint8"], [sig, signType]);
+}
+
+export function getDkimVerifyMessage(
+  dkimParams: DkimParamsBase,
+  emailSignType: KeyEmailDkimSignType,
+  options: {
+    zkParams?: ZKParams;
+    pepper?: string;
+  },
+): string {
+  switch (emailSignType) {
+    case KeyEmailDkimSignType.RawEmail: {
+      if (!options.pepper) {
+        throw new Error("Expected Pepper For Raw Email");
+      }
+      return solidityPack(["uint8", "bytes", "bytes32"], [emailSignType, dkimParams.serialize(), options.pepper]);
+    }
+    case KeyEmailDkimSignType.DkimZK: {
+      if (!options.zkParams) {
+        throw new Error("Expected ZK Params For ZK Sign");
+      }
+      return solidityPack(
+        ["uint8", "bytes", "uint128", "uint32", "uint256[]", "uint32", "uint256[]", "uint32", "uint256[]"],
+        [
+          emailSignType,
+          dkimParams.serialize(),
+          options.zkParams.domainSize,
+          options.zkParams.publicInputs.length,
+          options.zkParams.publicInputs,
+          options.zkParams.vkData.length,
+          options.zkParams.vkData,
+          options.zkParams.proof.length,
+          options.zkParams.proof,
+        ],
+      );
+    }
+    default: {
+      throw new Error(`Invalid Key Email Sign Type: ${emailSignType}`);
+    }
+  }
 }
