@@ -62,7 +62,7 @@ export default class UnipassWalletProvider implements WalletProvider {
     return sendTransaction(transactions, chain, this.config, keyset, feeToken, timeout);
   }
 
-  public async transaction(props: TransactionProps): Promise<providers.TransactionReceipt> {
+  public async transaction(props: TransactionProps): Promise<providers.TransactionResponse> {
     const { tx, chain, fee, keyset, timeout, gasLimit } = props;
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
@@ -74,8 +74,8 @@ export default class UnipassWalletProvider implements WalletProvider {
     return sendTransaction(transactions, chain, this.config, keyset, fee.token, timeout);
   }
 
-  public async signMessage(message: string) {
-    const result = await genSignMessage(message, this.config);
+  public async signMessage(message: string, keyset: Keyset) {
+    const result = await genSignMessage(message, this.config, keyset);
     return result;
   }
 

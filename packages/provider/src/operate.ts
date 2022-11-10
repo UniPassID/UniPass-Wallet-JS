@@ -183,13 +183,11 @@ export const innerEstimateTransferGas = async (
   let feeValue: BigNumber | undefined;
   let feeTx: Transaction;
   if (fee) {
-    const { token, value: tokenValue } = fee;
+    const { token, value: tokenValue, receiver: to } = fee;
     if (tokenValue.eq(0)) {
       feeValue = tokenValue;
       feeTx = await getFeeTxByGasLimit(token, constants.One, wallet.relayer);
     } else {
-      const feeOption = await getFeeOption(constants.One, token, wallet.relayer);
-      const { to } = feeOption as FeeOption;
       feeTx = getFeeTx(to, token, tokenValue);
     }
   }
@@ -271,13 +269,12 @@ export const sendTransaction = async (
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
 
-  const ret = await ((await wallet.sendTransaction(tx, [0], feeToken, tx.gasLimit)).wait as any)(1, timeout);
+  const ret = await wallet.sendTransaction(tx, [0], feeToken, tx.gasLimit)
   return ret;
 };
 
-const genSignMessage = async (message: string, config: UnipassWalletProps) => {
+const genSignMessage = async (message: string, config: UnipassWalletProps, keyset: Keyset) => {
   const user = await getUser();
-  const keyset = Keyset.fromJson(user.keyset.keysetJson);
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
   const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), [0]);
   return signedMessage;
