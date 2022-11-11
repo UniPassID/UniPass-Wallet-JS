@@ -28,7 +28,7 @@ export const chain_config = {
 };
 
 export const mainnet_api_config = {
-  backend: "https://wallet.unipass.id/wallet",
+  backend: "https://wallet.unipass.id/wallet-v2",
   relayer: {
     eth: "https://wallet.unipass.id/relayer-eth",
     polygon: "https://wallet.unipass.id/relayer-polygon",
@@ -38,7 +38,7 @@ export const mainnet_api_config = {
 };
 
 export const mainnet_preview_api_config = {
-  backend: "https://m.wallet.unipass.vip/wallet",
+  backend: "https://m.wallet.unipass.vip/wallet-v2",
   relayer: {
     eth: "https://m.wallet.unipass.vip/relayer-eth",
     polygon: "https://m.wallet.unipass.vip/relayer-polygon",
@@ -48,7 +48,7 @@ export const mainnet_preview_api_config = {
 };
 
 export const dev_api_config = {
-  backend: "https://d.wallet.unipass.vip/wallet",
+  backend: "https://d.wallet.unipass.vip/wallet-v2",
   relayer: {
     eth: "https://d.wallet.unipass.vip/relayer-eth",
     polygon: "https://d.wallet.unipass.vip/relayer-polygon",
@@ -58,7 +58,7 @@ export const dev_api_config = {
 };
 
 export const test_api_config = {
-  backend: "https://t.wallet.unipass.vip/wallet",
+  backend: "https://t.wallet.unipass.vip/wallet-v2",
   relayer: {
     eth: "https://t.wallet.unipass.vip/relayer-eth",
     polygon: "https://t.wallet.unipass.vip/relayer-polygon",
@@ -68,7 +68,7 @@ export const test_api_config = {
 };
 
 export const testnet_api_config = {
-  backend: "https://testnet.wallet.unipass.id/wallet",
+  backend: "https://testnet.wallet.unipass.id/wallet-v2",
   relayer: {
     eth: "https://testnet.wallet.unipass.id/relayer-eth",
     polygon: "https://testnet.wallet.unipass.id/relayer-polygon",
