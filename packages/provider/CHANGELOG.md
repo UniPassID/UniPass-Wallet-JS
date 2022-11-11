@@ -1,5 +1,11 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.51
+
+### Patch Changes
+
+- @unipasswallet/provider: update relayer url
+
 ## 0.0.1-alpha.50
 
 ### Patch Changes
