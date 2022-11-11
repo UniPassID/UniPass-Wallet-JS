@@ -8,7 +8,7 @@ describe("Test Rpc Relayer", () => {
     let provider: providers.Provider;
     beforeAll(async () => {
       provider = new providers.JsonRpcProvider("https://matic-mumbai.chainstacklabs.com");
-      relayer = new RpcRelayer("https://d.wallet.unipass.vip/relayer-polygon", unipassWalletContext, provider);
+      relayer = new RpcRelayer("https://d.wallet.unipass.vip/relayer-v2-polygon", unipassWalletContext, provider);
     });
     describe.only("Test Rpc Relayer", () => {
       it("Get Options Should Success", async () => {

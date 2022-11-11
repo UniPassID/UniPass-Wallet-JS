@@ -30,50 +30,50 @@ export const chain_config = {
 export const mainnet_api_config = {
   backend: "https://wallet.unipass.id/wallet-v2",
   relayer: {
-    eth: "https://wallet.unipass.id/relayer-eth",
-    polygon: "https://wallet.unipass.id/relayer-polygon",
-    bsc: "https://wallet.unipass.id/relayer-bsc",
-    rangers: "https://wallet.unipass.id/relayer-rangers",
+    eth: "https://wallet.unipass.id/relayer-v2-eth",
+    polygon: "https://wallet.unipass.id/relayer-v2-polygon",
+    bsc: "https://wallet.unipass.id/relayer-v2-bsc",
+    rangers: "https://wallet.unipass.id/relayer-v2-rangers",
   },
 };
 
 export const mainnet_preview_api_config = {
   backend: "https://m.wallet.unipass.vip/wallet-v2",
   relayer: {
-    eth: "https://m.wallet.unipass.vip/relayer-eth",
-    polygon: "https://m.wallet.unipass.vip/relayer-polygon",
-    bsc: "https://m.wallet.unipass.vip/relayer-bsc",
-    rangers: "https://m.wallet.unipass.vip/relayer-rangers",
+    eth: "https://m.wallet.unipass.vip/relayer-v2-eth",
+    polygon: "https://m.wallet.unipass.vip/relayer-v2-polygon",
+    bsc: "https://m.wallet.unipass.vip/relayer-v2-bsc",
+    rangers: "https://m.wallet.unipass.vip/relayer-v2-rangers",
   },
 };
 
 export const dev_api_config = {
   backend: "https://d.wallet.unipass.vip/wallet-v2",
   relayer: {
-    eth: "https://d.wallet.unipass.vip/relayer-eth",
-    polygon: "https://d.wallet.unipass.vip/relayer-polygon",
-    bsc: "https://d.wallet.unipass.vip/relayer-bsc",
-    rangers: "https://d.wallet.unipass.vip/relayer-rangers",
+    eth: "https://d.wallet.unipass.vip/relayer-v2-eth",
+    polygon: "https://d.wallet.unipass.vip/relayer-v2-polygon",
+    bsc: "https://d.wallet.unipass.vip/relayer-v2-bsc",
+    rangers: "https://d.wallet.unipass.vip/relayer-v2-rangers",
   },
 };
 
 export const test_api_config = {
   backend: "https://t.wallet.unipass.vip/wallet-v2",
   relayer: {
-    eth: "https://t.wallet.unipass.vip/relayer-eth",
-    polygon: "https://t.wallet.unipass.vip/relayer-polygon",
-    bsc: "https://t.wallet.unipass.vip/relayer-bsc",
-    rangers: "https://t.wallet.unipass.vip/relayer-rangers",
+    eth: "https://t.wallet.unipass.vip/relayer-v2-eth",
+    polygon: "https://t.wallet.unipass.vip/relayer-v2-polygon",
+    bsc: "https://t.wallet.unipass.vip/relayer-v2-bsc",
+    rangers: "https://t.wallet.unipass.vip/relayer-v2-rangers",
   },
 };
 
 export const testnet_api_config = {
   backend: "https://testnet.wallet.unipass.id/wallet-v2",
   relayer: {
-    eth: "https://testnet.wallet.unipass.id/relayer-eth",
-    polygon: "https://testnet.wallet.unipass.id/relayer-polygon",
-    bsc: "https://testnet.wallet.unipass.id/relayer-bsc",
-    rangers: "https://testnet.wallet.unipass.id/relayer-rangers",
+    eth: "https://testnet.wallet.unipass.id/relayer-v2-eth",
+    polygon: "https://testnet.wallet.unipass.id/relayer-v2-polygon",
+    bsc: "https://testnet.wallet.unipass.id/relayer-v2-bsc",
+    rangers: "https://testnet.wallet.unipass.id/relayer-v2-rangers",
   },
 };
 
