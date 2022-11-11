@@ -1,5 +1,11 @@
 # @unipasswallet/provider
 
+## 0.0.1-alpha.50
+
+### Patch Changes
+
+- @unipasswallet/provider: change backend url
+
 ## 0.0.1-alpha.49
 
 ### Patch Changes
