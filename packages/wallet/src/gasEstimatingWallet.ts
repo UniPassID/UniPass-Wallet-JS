@@ -12,7 +12,7 @@ import {
   SignType,
 } from "@unipasswallet/keys";
 import { Relayer } from "@unipasswallet/relayer";
-import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
+import { MAINNET_UNIPASS_WALLET_CONTEXT, UnipassWalletContext } from "@unipasswallet/network";
 import { EmailType } from "@unipasswallet/dkim-base";
 import { toTransaction, Transaction } from "@unipasswallet/transactions";
 import { CreationCode, SingletonFactoryAddress } from "@unipasswallet/utils";
@@ -44,7 +44,7 @@ export class GasEstimatingWallet extends Wallet {
   static override create(options: GasEstimatingWalletOptions): GasEstimatingWallet {
     const createOptions = options;
 
-    const { keyset, context = unipassWalletContext } = createOptions;
+    const { keyset, context = MAINNET_UNIPASS_WALLET_CONTEXT } = createOptions;
 
     if (!createOptions.address) {
       const address = getCreate2Address(
