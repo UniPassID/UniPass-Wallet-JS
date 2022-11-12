@@ -1,5 +1,150 @@
 # @unipasswallet/provider
 
+## 0.2.0
+
+### Minor Changes
+
+- update versions to 0.2.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @unipasswallet/keys@0.2.0
+  - @unipasswallet/network@0.2.0
+  - @unipasswallet/relayer@0.2.0
+  - @unipasswallet/sdk@0.2.0
+  - @unipasswallet/transaction-builders@0.2.0
+  - @unipasswallet/transactions@0.2.0
+  - @unipasswallet/utils@0.2.0
+  - @unipasswallet/wallet@0.2.0
+
+## 0.1.0
+
+### Minor Changes
+
+- update versions
+
+### Patch Changes
+
+- Updated dependencies
+  - @unipasswallet/keys@0.1.0
+  - @unipasswallet/network@0.1.0
+  - @unipasswallet/relayer@0.1.0
+  - @unipasswallet/sdk@0.1.0
+  - @unipasswallet/transaction-builders@0.1.0
+  - @unipasswallet/transactions@0.1.0
+  - @unipasswallet/utils@0.1.0
+  - @unipasswallet/wallet@0.1.0
+
+## 0.0.1
+
+### Patch Changes
+
+- 8df0a3f6: update versions
+- 4152c8fb: update provider version
+- 4a53e127: update versions
+- 95555025: @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- 5b60dd18: update versions
+- f6d6434a: update versions
+- 839f1285: #58: add openID validate
+- 9bdc291d: update provider
+- 910c567e: @unipasswallet/dkim: fix email subject error
+- ed181ee2: update provider version
+- ae01cd42: update versions
+- f536163a: update provider
+- be3c9496: update versions
+- 3a57ae2f: update provider
+- 2211f126: update versions
+- 2699364f: @unipasswallet/keys: add getting dkim verify data method
+  @unipasswallet/provider: add transaction gaslimit for estimating gas
+- 69956971: @unipasswallet/keys: add KeyOpenIDWithEmail
+  @unipasswallet/providers: add OpenID Login Support
+  @unipasswallet/transactions-builders: add preGenerateSignatureFunc For Transaction Builder
+- f8c9109d: @unipasswallet/keys: add dkim zk for KeyEmailDkim
+- 8c36cec6: update provider
+- 13946424: update versions
+- ffaea7fa: update versions
+- 21f5385d: update versions
+- 74d60cb1: update versions
+- d5337443: @unipasswallet/wallet: fix base64url for browser
+- 08c5d2f6: @unipasswallet/provider: update signMessage
+- 6b92eaa5: update versions
+- 1e06ba0d: @unipasswallet/provider: change backend url
+- 77fdf305: @unipasswallet/provider: update relayer url
+- 78d166e7: update versions
+- 9b374e01: update provider
+- af7bdd07: @unipasswallet/utils: update ciphertext encrypt
+- ba98619b: update versions
+- 4b61b076: update versions
+- 3944653f: update versions
+- 07b4c3e5: update versions
+- 8fe8c8ce: @unipasswallet/network: update context for new contract
+- d5a6f6e2: update versions
+- 68f71860: update provider version
+- be16365b: @unipasswallet/keys: update json parse
+  @unipasswallet/relayer: update receipt
+- 9fdc3a91: update versions
+- 7fb567f5: @unipasswallet/provider bump lindell-ecdsa-wasm
+  @unipasswallet/keys fix typo
+- 45effa63: update versions
+- 355e0a3b: @unipasswallet/keys: fix signType for Keyset create
+- 7d450495: update versions
+- 703933dc: update versions
+- 49cfcc15: unipasswallet/keys: fix typo
+- 26a8a3fd: @unipasswallet/keys:
+
+  - Update KeyOpenIDWithEmail and KeyEmailDkim For ZK Verify
+  - Update DkimParams EmailHeader For ZK Verify
+  - Update context
+
+- fefccaf0: update versions
+- Updated dependencies [8df0a3f6]
+- Updated dependencies [4a53e127]
+- Updated dependencies [95555025]
+- Updated dependencies [5b60dd18]
+- Updated dependencies [f6d6434a]
+- Updated dependencies [839f1285]
+- Updated dependencies [910c567e]
+- Updated dependencies [9309835c]
+- Updated dependencies [9d7a5907]
+- Updated dependencies [2211f126]
+- Updated dependencies [2699364f]
+- Updated dependencies [69956971]
+- Updated dependencies [f8c9109d]
+- Updated dependencies [13946424]
+- Updated dependencies [ffaea7fa]
+- Updated dependencies [21f5385d]
+- Updated dependencies [74d60cb1]
+- Updated dependencies [d5337443]
+- Updated dependencies [6b92eaa5]
+- Updated dependencies [78d166e7]
+- Updated dependencies [af7bdd07]
+- Updated dependencies [ba98619b]
+- Updated dependencies [4b61b076]
+- Updated dependencies [3944653f]
+- Updated dependencies [07b4c3e5]
+- Updated dependencies [8fe8c8ce]
+- Updated dependencies [d5a6f6e2]
+- Updated dependencies [be16365b]
+- Updated dependencies [9fdc3a91]
+- Updated dependencies [7fb567f5]
+- Updated dependencies [45effa63]
+- Updated dependencies [589b67ea]
+- Updated dependencies [355e0a3b]
+- Updated dependencies [7d450495]
+- Updated dependencies [703933dc]
+- Updated dependencies [49cfcc15]
+- Updated dependencies [26a8a3fd]
+- Updated dependencies [fefccaf0]
+  - @unipasswallet/keys@0.0.1
+  - @unipasswallet/network@0.0.1
+  - @unipasswallet/relayer@0.0.1
+  - @unipasswallet/sdk@0.0.1
+  - @unipasswallet/transaction-builders@0.0.1
+  - @unipasswallet/transactions@0.0.1
+  - @unipasswallet/utils@0.0.1
+  - @unipasswallet/wallet@0.0.1
+
 ## 0.0.1-alpha.51
 
 ### Patch Changes
