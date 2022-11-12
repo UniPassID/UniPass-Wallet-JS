@@ -1,5 +1,70 @@
 # @unipasswallet/network
 
+## 0.2.0
+
+### Minor Changes
+
+- update versions to 0.2.0
+
+## 0.1.0
+
+### Minor Changes
+
+- update versions
+
+## 0.0.1
+
+### Patch Changes
+
+- 8df0a3f6: update versions
+- 4a53e127: update versions
+- 95555025: @unipasswallet/keys: add updateSignType for KeyOpenIDWithEmail
+- 5b60dd18: update versions
+- f6d6434a: update versions
+- 839f1285: #58: add openID validate
+- 910c567e: @unipasswallet/dkim: fix email subject error
+- 9309835c: update versions
+- 9d7a5907: bump version
+- 2211f126: update versions
+- 2699364f: @unipasswallet/keys: add getting dkim verify data method
+  @unipasswallet/provider: add transaction gaslimit for estimating gas
+- 69956971: @unipasswallet/keys: add KeyOpenIDWithEmail
+  @unipasswallet/providers: add OpenID Login Support
+  @unipasswallet/transactions-builders: add preGenerateSignatureFunc For Transaction Builder
+- f8c9109d: @unipasswallet/keys: add dkim zk for KeyEmailDkim
+- 13946424: update versions
+- ffaea7fa: update versions
+- 21f5385d: update versions
+- 74d60cb1: update versions
+- d5337443: @unipasswallet/wallet: fix base64url for browser
+- 6b92eaa5: update versions
+- 78d166e7: update versions
+- af7bdd07: @unipasswallet/utils: update ciphertext encrypt
+- ba98619b: update versions
+- 4b61b076: update versions
+- 3944653f: update versions
+- 07b4c3e5: update versions
+- 8fe8c8ce: @unipasswallet/network: update context for new contract
+- d5a6f6e2: update versions
+- be16365b: @unipasswallet/keys: update json parse
+  @unipasswallet/relayer: update receipt
+- 9fdc3a91: update versions
+- 7fb567f5: @unipasswallet/provider bump lindell-ecdsa-wasm
+  @unipasswallet/keys fix typo
+- 45effa63: update versions
+- 589b67ea: bump version
+- 355e0a3b: @unipasswallet/keys: fix signType for Keyset create
+- 7d450495: update versions
+- 703933dc: update versions
+- 49cfcc15: unipasswallet/keys: fix typo
+- 26a8a3fd: @unipasswallet/keys:
+
+  - Update KeyOpenIDWithEmail and KeyEmailDkim For ZK Verify
+  - Update DkimParams EmailHeader For ZK Verify
+  - Update context
+
+- fefccaf0: update versions
+
 ## 0.0.1-alpha.40
 
 ### Patch Changes
