@@ -1,5 +1,21 @@
 # @unipasswallet/provider
 
+## 0.2.1-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/network: update unipass wallet contracts version
+  @unipasswallet/provider: add testnet contracts
+- Updated dependencies
+  - @unipasswallet/keys@0.2.1-alpha.0
+  - @unipasswallet/network@0.2.1-alpha.0
+  - @unipasswallet/relayer@0.2.1-alpha.0
+  - @unipasswallet/sdk@0.2.1-alpha.0
+  - @unipasswallet/transaction-builders@0.2.1-alpha.0
+  - @unipasswallet/transactions@0.2.1-alpha.0
+  - @unipasswallet/utils@0.2.1-alpha.0
+  - @unipasswallet/wallet@0.2.1-alpha.0
+
 ## 0.2.0
 
 ### Minor Changes
