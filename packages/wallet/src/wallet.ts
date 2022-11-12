@@ -12,8 +12,14 @@ import {
   defaultAbiCoder,
 } from "ethers/lib/utils";
 import { Keyset, RoleWeight } from "@unipasswallet/keys";
-import { Relayer, PendingExecuteCallArgs, ExecuteCall, toUnipassTransaction, TxnReceiptResult } from "@unipasswallet/relayer";
-import { unipassWalletContext, UnipassWalletContext } from "@unipasswallet/network";
+import {
+  Relayer,
+  PendingExecuteCallArgs,
+  ExecuteCall,
+  toUnipassTransaction,
+  TxnReceiptResult,
+} from "@unipasswallet/relayer";
+import { MAINNET_UNIPASS_WALLET_CONTEXT, UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain, gasEstimator } from "@unipasswallet/abi";
 import {
   Transaction,
@@ -87,7 +93,7 @@ export class Wallet extends Signer {
 
   public keyset: Keyset;
 
-  public readonly context: UnipassWalletContext = unipassWalletContext;
+  public readonly context: UnipassWalletContext = MAINNET_UNIPASS_WALLET_CONTEXT;
 
   public callWallet: WalletEOA;
 
@@ -126,7 +132,7 @@ export class Wallet extends Signer {
   static create(options: WalletOptions): Wallet {
     const createOptions = options;
 
-    const { keyset, context = unipassWalletContext } = createOptions;
+    const { keyset, context = MAINNET_UNIPASS_WALLET_CONTEXT } = createOptions;
 
     if (!createOptions.address) {
       const address = getCreate2Address(
