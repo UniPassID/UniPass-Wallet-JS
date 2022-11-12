@@ -3,9 +3,20 @@ import { GasEstimatingWallet, Wallet } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
 import { RpcRelayer } from "@unipasswallet/relayer";
 import { AuthChainNode, ChainType, Environment, UnipassWalletProps } from "../interface/unipassWalletProvider";
-import { unipassWalletContext } from "@unipasswallet/network";
+import { MAINNET_UNIPASS_WALLET_CONTEXT, TESTNET_UNIPASS_WALLET_CONTEXT } from "@unipasswallet/network";
 import { dkimParams } from "@unipasswallet/sdk";
-import { chain_config, dev_api_config, mainnet_api_config } from "../config/index";
+import { chain_config, dev_api_config, mainnet_api_config, testnet_api_config } from "../config/index";
+
+const genUnipassWalletContext = (env: Environment) => {
+  switch (env) {
+    case "testnet":
+      return TESTNET_UNIPASS_WALLET_CONTEXT;
+    case "mainnet":
+      return MAINNET_UNIPASS_WALLET_CONTEXT;
+    default:
+      return MAINNET_UNIPASS_WALLET_CONTEXT;
+  }
+};
 
 const genProviders = (config: UnipassWalletProps) => {
   let polygon_url = "";
@@ -46,13 +57,15 @@ const genRelayers = (
   rangersProvider: providers.JsonRpcProvider,
 ) => {
   let relayer_config: { eth: string; bsc: string; polygon: string; rangers: string };
+  const context = genUnipassWalletContext(config.env);
+
   switch (config.env) {
     case "testnet":
       relayer_config = {
-        eth: dev_api_config.relayer.eth,
-        bsc: dev_api_config.relayer.bsc,
-        rangers: dev_api_config.relayer.rangers,
-        polygon: dev_api_config.relayer.polygon,
+        eth: testnet_api_config.relayer.eth,
+        bsc: testnet_api_config.relayer.bsc,
+        rangers: testnet_api_config.relayer.rangers,
+        polygon: testnet_api_config.relayer.polygon,
       };
       break;
     case "mainnet":
@@ -73,10 +86,10 @@ const genRelayers = (
   }
   relayer_config = config?.url_config?.relayer || relayer_config;
 
-  const eth = new RpcRelayer(relayer_config.eth, unipassWalletContext, ethProvider);
-  const polygon = new RpcRelayer(relayer_config.polygon, unipassWalletContext, polygonProvider);
-  const bsc = new RpcRelayer(relayer_config.bsc, unipassWalletContext, bcdProvider);
-  const rangers = new RpcRelayer(relayer_config.rangers, unipassWalletContext, rangersProvider);
+  const eth = new RpcRelayer(relayer_config.eth, context, ethProvider);
+  const polygon = new RpcRelayer(relayer_config.polygon, context, polygonProvider);
+  const bsc = new RpcRelayer(relayer_config.bsc, context, bcdProvider);
+  const rangers = new RpcRelayer(relayer_config.rangers, context, rangersProvider);
 
   return { polygon, bsc, rangers, eth };
 };
@@ -118,6 +131,7 @@ export class WalletsCreator {
   }
 
   private constructor(keyset: Keyset, address: string, config: UnipassWalletProps) {
+    const context = genUnipassWalletContext(config.env);
     const {
       eth: ethProvider,
       polygon: polygonProvider,
@@ -131,19 +145,20 @@ export class WalletsCreator {
       rangers: rangersRelayer,
     } = genRelayers(config, ethProvider, polygonProvider, bscProvider, rangersProvider);
 
-    this.eth = Wallet.create({ address, keyset, provider: ethProvider, relayer: ethRelayer });
+    this.eth = Wallet.create({ address, keyset, provider: ethProvider, relayer: ethRelayer, context });
     this.polygon = Wallet.create({
       keyset,
       provider: polygonProvider,
       relayer: polygonRelayer,
       address,
     });
-    this.bsc = Wallet.create({ address, keyset, provider: bscProvider, relayer: bscRelayer });
+    this.bsc = Wallet.create({ address, keyset, provider: bscProvider, relayer: bscRelayer, context });
     this.rangers = Wallet.create({
       keyset,
       provider: rangersProvider,
       relayer: rangersRelayer,
       address,
+      context,
     });
 
     this.ethGasEstimator = GasEstimatingWallet.create({
@@ -152,6 +167,7 @@ export class WalletsCreator {
       emailType: dkimParams.EmailType.CallOtherContract,
       provider: ethProvider,
       relayer: ethRelayer,
+      context,
     });
     this.bscGasEstimator = GasEstimatingWallet.create({
       address,
@@ -159,6 +175,7 @@ export class WalletsCreator {
       emailType: dkimParams.EmailType.CallOtherContract,
       provider: bscProvider,
       relayer: bscRelayer,
+      context,
     });
     this.polygonGasEstimator = GasEstimatingWallet.create({
       address,
@@ -166,6 +183,7 @@ export class WalletsCreator {
       emailType: dkimParams.EmailType.CallOtherContract,
       provider: polygonProvider,
       relayer: polygonRelayer,
+      context,
     });
   }
 
