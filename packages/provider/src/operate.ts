@@ -1,5 +1,5 @@
 import { AccountInfo, AuditStatus, SignType } from "./interface/index";
-import { arrayify, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
+import { arrayify, Bytes, concat, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
 import { BigNumber, constants, ethers } from "ethers";
 import { ExecuteTransaction, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
@@ -269,14 +269,23 @@ export const sendTransaction = async (
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
 
-  const ret = await wallet.sendTransaction(tx, [0], feeToken, tx.gasLimit)
+  const ret = await wallet.sendTransaction(tx, [0], feeToken, tx.gasLimit);
   return ret;
 };
+
+export const unipassMessagePrefix = "\x18UniPass Signed Message:\n";
+
+export function unipassHashMessage(message: Bytes | string): string {
+  if (typeof message === "string") {
+    message = toUtf8Bytes(message);
+  }
+  return keccak256(concat([toUtf8Bytes(unipassMessagePrefix), toUtf8Bytes(String(message.length)), message]));
+}
 
 const genSignMessage = async (message: string, config: UnipassWalletProps, keyset: Keyset) => {
   const user = await getUser();
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
-  const signedMessage = await wallet.signMessage(arrayify(keccak256(toUtf8Bytes(message))), [0]);
+  const signedMessage = await wallet.signMessage(arrayify(unipassHashMessage(message)), [0]);
   return signedMessage;
 };
 
@@ -284,7 +293,7 @@ const verifySignature = async (message: string, sig: string, config: UnipassWall
   const user = await getUser();
   const keyset = Keyset.fromJson(user.keyset.keysetJson);
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
-  const signedMessage = await wallet.isValidSignature(arrayify(keccak256(toUtf8Bytes(message))), sig);
+  const signedMessage = await wallet.isValidSignature(arrayify(unipassHashMessage(message)), sig);
   return signedMessage;
 };
 
