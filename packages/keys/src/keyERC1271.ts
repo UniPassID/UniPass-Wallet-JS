@@ -11,7 +11,7 @@ export class KeyERC1271 extends KeyBase {
   constructor(
     _address: BytesLike,
     roleWeight: RoleWeight,
-    public signFunc?: (digestHash: BytesLike) => Promise<string>
+    public signFunc?: (digestHash: BytesLike) => Promise<string>,
   ) {
     super(roleWeight);
     this.address = utils.hexlify(_address);
@@ -19,11 +19,7 @@ export class KeyERC1271 extends KeyBase {
   }
 
   static isKeyERC1271(value: any): value is KeyERC1271 {
-    return !!(
-      value &&
-      value._isKeyERC1271 &&
-      RoleWeight.isRoleWeight(value.roleWeight)
-    );
+    return !!(value && value._isKeyERC1271 && RoleWeight.isRoleWeight(value.roleWeight));
   }
 
   public toJson() {
@@ -41,33 +37,22 @@ export class KeyERC1271 extends KeyBase {
     const sig = await this.signFunc(digestHash);
 
     return utils.solidityPack(
-      ["uint8", "uint8", "uint32", "bytes", "bytes"],
-      [
-        KeyType.ERC1271Wallet,
-        SignFlag.Sign,
-        sig.length / 2 - 1,
-        sig,
-        this.serializeRoleWeight(),
-      ]
+      ["uint8", "uint8", "address", "uint32", "bytes", "bytes"],
+      [KeyType.ERC1271Wallet, SignFlag.Sign, this.address, sig.length / 2 - 1, sig, this.serializeRoleWeight()],
     );
   }
 
   public generateKey(): string {
     return utils.solidityPack(
       ["uint8", "uint8", "address", "bytes"],
-      [
-        KeyType.ERC1271Wallet,
-        SignFlag.NotSign,
-        this.address,
-        this.serializeRoleWeight(),
-      ]
+      [KeyType.ERC1271Wallet, SignFlag.NotSign, this.address, this.serializeRoleWeight()],
     );
   }
 
   public serialize(): string {
     return utils.solidityPack(
       ["uint8", "address", "bytes"],
-      [KeyType.ERC1271Wallet, this.address, this.serializeRoleWeight()]
+      [KeyType.ERC1271Wallet, this.address, this.serializeRoleWeight()],
     );
   }
 }
