@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.2.1-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/keys: fix KeyERC1271 generate signature
+- Updated dependencies
+  - @unipasswallet/keys@0.2.1-alpha.1
+  - @unipasswallet/network@0.2.1-alpha.1
+  - @unipasswallet/relayer@0.2.1-alpha.1
+  - @unipasswallet/sdk@0.2.1-alpha.1
+  - @unipasswallet/transaction-builders@0.2.1-alpha.1
+  - @unipasswallet/transactions@0.2.1-alpha.1
+  - @unipasswallet/utils@0.2.1-alpha.1
+  - @unipasswallet/wallet@0.2.1-alpha.1
+
 ## 0.2.1-alpha.0
 
 ### Patch Changes

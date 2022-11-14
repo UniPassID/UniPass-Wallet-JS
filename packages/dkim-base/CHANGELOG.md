@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.2.1-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/keys: fix KeyERC1271 generate signature
+
 ## 0.2.1-alpha.0
 
 ### Patch Changes
