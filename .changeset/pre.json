@@ -17,6 +17,7 @@
     "@unipasswallet/wallet": "0.2.0"
   },
   "changesets": [
-    "cool-keys-judge"
+    "cool-keys-judge",
+    "sharp-knives-cross"
   ]
 }
