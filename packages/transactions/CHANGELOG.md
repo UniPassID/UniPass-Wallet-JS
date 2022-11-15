@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.2.1-alpha.2
+
+### Patch Changes
+
+- @unipasswallet/provider: add prefix for signing message
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.2
+  - @unipasswallet/utils@0.2.1-alpha.2
+
 ## 0.2.1-alpha.1
 
 ### Patch Changes
