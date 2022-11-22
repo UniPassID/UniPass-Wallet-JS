@@ -29,22 +29,7 @@ export const innerGenerateTransferTx = async (
 
   let deployTx: Transaction;
   let syncAccountTx: ExecuteTransaction;
-  const preSignFunc = async (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => {
-    const {
-      data: { approveStatus },
-    } = await api.tssAudit({
-      type: SignType.PersonalSign,
-      content: JSON.stringify({
-        chainId,
-        address,
-        txs,
-        nonce: nonce.toNumber(),
-      }),
-      msg: digestTxHash(chainId, address, nonce.toNumber(), txs),
-    });
-    clearUpSignToken();
-    return approveStatus === AuditStatus.Approved;
-  };
+
   if (chainType !== "polygon") {
     const {
       data: { transactions = [], isNeedDeploy },
@@ -66,7 +51,6 @@ export const innerGenerateTransferTx = async (
           transactions,
           sessionKeyOrSignerIndex: [],
           gasLimit: constants.Zero,
-          preSignFunc,
         };
       }
     } else if (transactions.length === 2) {
@@ -80,7 +64,6 @@ export const innerGenerateTransferTx = async (
         transactions: transactions[1],
         sessionKeyOrSignerIndex: [],
         gasLimit: constants.Zero,
-        preSignFunc,
       };
     }
   }
@@ -215,17 +198,36 @@ export const innerEstimateTransferGas = async (
     estimatedTxs.gasLimit = gasLimit;
   }
 
+  const preSignFunc = async (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => {
+    const {
+      data: { approveStatus },
+    } = await api.tssAudit({
+      type: SignType.PersonalSign,
+      content: JSON.stringify({
+        chainId,
+        address,
+        txs,
+        nonce: nonce.toNumber(),
+      }),
+      msg: digestTxHash(chainId, address, nonce.toNumber(), txs),
+    });
+    clearUpSignToken();
+    return approveStatus === AuditStatus.Approved;
+  };
+
   if (feeValue && feeValue.eq(0)) {
     feeTx = await getFeeTxByGasLimit(fee.token, gasLimit, wallet.relayer!);
     transferExecuteTx.transactions[(transferExecuteTx.transactions as Transactionish[]).length - 1] = feeTx;
-    if (isBundledTransaction(estimatedTxs)) {
-      (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[])[
-        (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[]).length - 1
-      ] = transferExecuteTx;
-    } else {
-      transferExecuteTx.gasLimit = gasLimit;
-      estimatedTxs = transferExecuteTx;
-    }
+  }
+
+  transferExecuteTx.preSignFunc = preSignFunc;
+  if (isBundledTransaction(estimatedTxs)) {
+    (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[])[
+      (estimatedTxs.transactions as (ExecuteTransaction | Transactionish)[]).length - 1
+    ] = transferExecuteTx;
+  } else {
+    transferExecuteTx.gasLimit = gasLimit;
+    estimatedTxs = transferExecuteTx;
   }
   return estimatedTxs;
 };
