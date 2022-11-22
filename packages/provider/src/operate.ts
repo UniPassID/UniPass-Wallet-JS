@@ -12,6 +12,7 @@ import { WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
 import { FeeOption, Relayer } from "@unipasswallet/relayer";
 import DB from "./utils/index_db";
+import { clearUpSignToken } from "./utils/storages";
 
 export type OperateTransaction = {
   deployTx?: Transaction;
@@ -41,6 +42,7 @@ export const innerGenerateTransferTx = async (
       }),
       msg: digestTxHash(chainId, address, nonce.toNumber(), txs),
     });
+    clearUpSignToken();
     return approveStatus === AuditStatus.Approved;
   };
   if (chainType !== "polygon") {
@@ -257,8 +259,20 @@ export function unipassHashMessage(message: Bytes | string): string {
 const genSignMessage = async (message: string, config: UnipassWalletProps, keyset: Keyset) => {
   const user = await getUser();
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
-  const signedMessage = await wallet.signMessage(arrayify(unipassHashMessage(message)), [0]);
-  return signedMessage;
+  const auditRes = await api.tssAudit({
+    type: SignType.PersonalSign,
+    content: unipassHashMessage(message),
+    msg: unipassHashMessage(message),
+  });
+  clearUpSignToken();
+  if (auditRes.data.approveStatus === AuditStatus.Approved) {
+    const signedMessage = await wallet.signMessage(arrayify(unipassHashMessage(message)), [0]);
+    return signedMessage;
+  } else if (auditRes.data.approveStatus === AuditStatus.Confirming) {
+    throw new Error("SignRequestConfirming");
+  } else if (auditRes.data.approveStatus === AuditStatus.Rejected) {
+    throw new Error("SignRequestRejected");
+  }
 };
 
 const verifySignature = async (message: string, sig: string, config: UnipassWalletProps) => {
@@ -285,7 +299,6 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
     if (isLogged) {
       return user.email;
     }
-    // await DB.delUser(user.email);
   } catch (err) {
     if (err instanceof WalletError && (err.code === 403002 || err.code === 402007)) return false;
 

@@ -11,5 +11,6 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "warn",
     "no-restricted-globals": "off",
     "no-param-reassign": "off",
+    "no-else-return": "off",
   },
 };

@@ -1,3 +1,5 @@
+import jwt_decode from "jwt-decode";
+
 export enum OAuthProvider {
   GOOGLE,
   AUTH0,
@@ -40,6 +42,18 @@ const getUpSignToken = () => {
 
   const { up_sign_token } = oauthUserInfo;
   return up_sign_token;
+};
+
+export const clearUpSignToken = () => {
+  const oauthUserInfo = getOAuthUserInfo();
+  if (!oauthUserInfo) {
+    return undefined;
+  }
+  const { up_sign_token = "" } = oauthUserInfo;
+  const decoded = jwt_decode(up_sign_token) as any;
+  if (decoded && decoded.isDisposable) {
+    localStorage.setItem("__oauth_info", JSON.stringify({ ...oauthUserInfo, up_sign_token: undefined }));
+  }
 };
 
 export { getOAuthUserInfo, getUpSignToken };
