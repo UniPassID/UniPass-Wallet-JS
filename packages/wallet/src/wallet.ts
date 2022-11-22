@@ -302,6 +302,7 @@ export class Wallet extends Signer {
         throw new Error(`pre Sign Transactions[${transactions}],nonce[${nonce.toNumber()}] Failed`);
       }
       signature = await this.signMessage(arrayify(digest), txs.sessionKeyOrSignerIndex);
+      data = moduleMainInterface.encodeFunctionData("execute", [transactions, nonce, signature]);
       address = this.address;
       gasLimit = txs.gasLimit;
     } else {
@@ -404,7 +405,13 @@ export class Wallet extends Signer {
       } else {
         transactions = [toTransaction(tx.transactions)];
       }
-      const sig = await this.signTransactions(transactions, tx.sessionKeyOrSignerIndex, nonce, tx.gasLimit);
+      const sig = await this.signTransactions(
+        transactions,
+        tx.sessionKeyOrSignerIndex,
+        nonce,
+        tx.gasLimit,
+        tx.preSignFunc,
+      );
       return [
         {
           _isUnipassWalletTransaction: true,
