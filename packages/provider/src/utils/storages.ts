@@ -32,4 +32,14 @@ const getOAuthUserInfo = () => {
   }
 };
 
-export { getOAuthUserInfo };
+const getUpSignToken = () => {
+  const oauthUserInfo = getOAuthUserInfo();
+  if (!oauthUserInfo) {
+    return "";
+  }
+
+  const { up_sign_token } = oauthUserInfo;
+  return up_sign_token;
+};
+
+export { getOAuthUserInfo, getUpSignToken };
