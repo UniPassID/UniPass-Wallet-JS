@@ -1,5 +1,14 @@
 # @unipasswallet/utils
 
+## 0.2.1-alpha.3
+
+### Patch Changes
+
+- @unipasswallet/network: bump uniPass-wallet-contracts dependency version
+  @unipasswallet/provider: Add Index DB and tss Audit before signing messages
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.3
+
 ## 0.2.1-alpha.2
 
 ### Patch Changes
