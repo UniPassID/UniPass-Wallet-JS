@@ -6,32 +6,12 @@ import { Keyset } from "@unipasswallet/keys";
 import { digestTxHash, Transaction, Transactionish } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
 import api from "./api/backend";
-import { checkEmailFormat } from "./utils/rules";
-import { SyncStatusEnum } from "./interface";
 import WalletError from "./constant/error_map";
-// import DB from "./utils/db";
-import {
-  ChainType,
-  Environment,
-  TransactionFee,
-  UnipassWalletProps,
-  UniTransaction,
-} from "./interface/unipassWalletProvider";
+import { ChainType, TransactionFee, UnipassWalletProps, UniTransaction } from "./interface/unipassWalletProvider";
 import { WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
 import { FeeOption, Relayer } from "@unipasswallet/relayer";
-import { getAccountInfo } from "./utils/storages";
-
-const checkAccountStatus = async (email: string, chainType: ChainType, env: Environment) => {
-  checkEmailFormat(email);
-  const {
-    data: { syncStatus },
-  } = await api.accountStatus({
-    email,
-    authChainNode: getAuthNodeChain(env, chainType),
-  });
-  return syncStatus;
-};
+import DB from "./utils/index_db";
 
 export type OperateTransaction = {
   deployTx?: Transaction;
@@ -64,50 +44,42 @@ export const innerGenerateTransferTx = async (
     return approveStatus === AuditStatus.Approved;
   };
   if (chainType !== "polygon") {
-    const syncStatus = await checkAccountStatus(user.email, chainType, config.env);
-    if (syncStatus === SyncStatusEnum.ServerSynced) {
-      const {
-        data: { transactions = [], isNeedDeploy },
-      } = await api.syncTransaction({
-        email: user.email,
-        authChainNode: getAuthNodeChain(config.env, chainType),
-      });
-      transactions.forEach((v, i) => {
-        transactions[i] = { ...v, gasLimit: BigNumber.from(v.gasLimit._hex), value: BigNumber.from(v.value._hex) };
-      });
-      if (transactions.length === 1) {
-        if (isNeedDeploy) {
-          transactions[0].gasLimit = constants.Zero;
-          transactions[0].revertOnError = true;
-          [deployTx] = transactions;
-        } else {
-          syncAccountTx = {
-            type: "Execute",
-            transactions,
-            sessionKeyOrSignerIndex: [],
-            gasLimit: constants.Zero,
-            preSignFunc,
-          };
-        }
-      } else if (transactions.length === 2) {
+    const {
+      data: { transactions = [], isNeedDeploy },
+    } = await api.syncTransaction({
+      email: user.email,
+      authChainNode: getAuthNodeChain(config.env, chainType),
+    });
+    transactions.forEach((v, i) => {
+      transactions[i] = { ...v, gasLimit: BigNumber.from(v.gasLimit._hex), value: BigNumber.from(v.value._hex) };
+    });
+    if (transactions.length === 1) {
+      if (isNeedDeploy) {
         transactions[0].gasLimit = constants.Zero;
-        transactions[1].gasLimit = constants.Zero;
         transactions[0].revertOnError = true;
-        transactions[1].revertOnError = true;
         [deployTx] = transactions;
+      } else {
         syncAccountTx = {
           type: "Execute",
-          transactions: transactions[1],
+          transactions,
           sessionKeyOrSignerIndex: [],
           gasLimit: constants.Zero,
           preSignFunc,
         };
       }
-    }
-    if (syncStatus === SyncStatusEnum.NotReceived) {
-      throw new WalletError(403001);
-    } else if (syncStatus === SyncStatusEnum.NotSynced) {
-      throw new WalletError(403001);
+    } else if (transactions.length === 2) {
+      transactions[0].gasLimit = constants.Zero;
+      transactions[1].gasLimit = constants.Zero;
+      transactions[0].revertOnError = true;
+      transactions[1].revertOnError = true;
+      [deployTx] = transactions;
+      syncAccountTx = {
+        type: "Execute",
+        transactions: transactions[1],
+        sessionKeyOrSignerIndex: [],
+        gasLimit: constants.Zero,
+        preSignFunc,
+      };
     }
   }
   const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
@@ -322,7 +294,8 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
 };
 
 const getUser = async (): Promise<AccountInfo | undefined> => {
-  const accountInfo = getAccountInfo();
+  const accountInfo = await DB.getAccountInfo();
+
   if (accountInfo) {
     return accountInfo;
   }

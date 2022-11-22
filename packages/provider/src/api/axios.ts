@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import WalletError from "../constant/error_map";
-import { LocalStorageService } from "../utils/storages";
+import { getOAuthUserInfo } from "../utils/storages";
 
 const API_VERSION_PREFIX = "/api/v1";
 const DEFAULT_TIMEOUT = 10 * 60 * 1000;
@@ -14,12 +14,11 @@ export default function requestFactory(backendUrl: string) {
   instance.interceptors.request.use(
     (config) => {
       try {
-        const _local_user_info = LocalStorageService.get("OAUTH_INFO");
-        const local_user_info = JSON.parse(_local_user_info);
-        if (local_user_info?.up_jwt_token?.authorization) {
+        const oauthUserInfo = getOAuthUserInfo();
+        if (oauthUserInfo?.authorization) {
           config.headers = {
-            ...config.headers,
-            Authorization: `Bearer ${local_user_info?.up_jwt_token?.authorization}`,
+            ...config?.headers,
+            Authorization: `Bearer ${oauthUserInfo?.authorization}`,
           };
         }
       } catch (e) {
