@@ -24,9 +24,9 @@ export interface AccountInfo {
   keystore: string;
 }
 
-const dbName = "UniPassWalletIndexDB";
+const dbName = "UniPassWalletIndexDB_v2";
 const db = new Dexie(dbName);
-db.version(1).stores({ users: "email_provider" }); // aaa@gmail.com_0
+db.version(1).stores({ users: "email_provider" });
 
 interface DBProps {
   getAccountInfo: (exit?: boolean) => Promise<AccountInfo | undefined>;
