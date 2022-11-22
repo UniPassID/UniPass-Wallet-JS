@@ -26,6 +26,7 @@ import {
   VerifyOtpCodeOutput,
 } from "../interface";
 import UnipassWalletProvider from "../index";
+import { getUpSignToken } from "../utils/storages";
 
 function getAxiosInstance() {
   return UnipassWalletProvider.request;
@@ -84,7 +85,11 @@ function accountStatus(data: AccountStatusInput) {
 }
 
 function tssAudit(data: TssAuditInput) {
-  return getAxiosInstance().post<any, TssAuditOutput>("/tss/audit", data);
+  const up_sign_token = getUpSignToken() || "";
+
+  return getAxiosInstance().post<any, TssAuditOutput>("/tss/audit", data, {
+    headers: { "up-sign-token": up_sign_token },
+  });
 }
 
 function syncEmail(data: SyncEmailInput) {
