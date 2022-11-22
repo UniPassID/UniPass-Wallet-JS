@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.2.1-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix pre sign function
+- Updated dependencies
+  - @unipasswallet/keys@0.2.1-alpha.4
+  - @unipasswallet/network@0.2.1-alpha.4
+  - @unipasswallet/relayer@0.2.1-alpha.4
+  - @unipasswallet/sdk@0.2.1-alpha.4
+  - @unipasswallet/transaction-builders@0.2.1-alpha.4
+  - @unipasswallet/transactions@0.2.1-alpha.4
+  - @unipasswallet/utils@0.2.1-alpha.4
+  - @unipasswallet/wallet@0.2.1-alpha.4
+
 ## 0.2.1-alpha.3
 
 ### Patch Changes

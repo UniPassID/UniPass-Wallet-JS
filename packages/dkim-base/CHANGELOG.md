@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.2.1-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix pre sign function
+
 ## 0.2.1-alpha.3
 
 ### Patch Changes
