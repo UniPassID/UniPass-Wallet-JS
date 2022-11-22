@@ -171,13 +171,7 @@
         {
           "indexed": false,
           "internalType": "bytes",
-          "name": "oldKey",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "newKey",
+          "name": "key",
           "type": "bytes"
         }
       ],
@@ -247,6 +241,24 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes[]",
+          "name": "_emailServers",
+          "type": "bytes[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "_keys",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "batchUpdateDKIMKeys",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -398,6 +410,19 @@
         }
       ],
       "name": "updateDKIMKey",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IDkimZK",
+          "name": "_dkimZK",
+          "type": "address"
+        }
+      ],
+      "name": "updateDkimZK",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

@@ -1,5 +1,23 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import "hardhat-dependency-compiler";
+import { task } from "hardhat/config";
+import * as fs from "fs";
+
+task("compile", "Pre Compile Script", async (taskArgs, hre, runSuper) => {
+  const networkName = hre.network.name;
+  fs.writeFileSync(
+    "./node_modules/unipass-wallet-contracts/contracts/modules/utils/LibTimeLock.sol",
+    `// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.0;
+
+library LibTimeLock {
+    //                       INIT_LOCK_DURING = 48 hours
+    uint32 internal constant INIT_LOCK_DURING = 172800;
+}
+`,
+  );
+  await runSuper();
+});
 
 module.exports = {
   solidity: {
