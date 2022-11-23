@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.2.1-alpha.5
+
+### Patch Changes
+
+- @unipasswallet/provider: fix fee undefined error
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.5
+
 ## 0.2.1-alpha.4
 
 ### Patch Changes

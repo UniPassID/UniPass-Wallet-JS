@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/keys",
-  "version": "0.2.1-alpha.4",
+  "version": "0.2.1-alpha.5",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -13,8 +13,8 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/dkim-base": "workspace:^0.2.1-alpha.4",
-    "@unipasswallet/utils": "workspace:^0.2.1-alpha.4",
+    "@unipasswallet/dkim-base": "workspace:^0.2.1-alpha.5",
+    "@unipasswallet/utils": "workspace:^0.2.1-alpha.5",
     "base64url": "^3.0.1",
     "ethers": "^5.7.1"
   },

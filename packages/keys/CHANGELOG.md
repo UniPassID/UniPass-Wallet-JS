@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.2.1-alpha.5
+
+### Patch Changes
+
+- @unipasswallet/provider: fix fee undefined error
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.2.1-alpha.5
+  - @unipasswallet/utils@0.2.1-alpha.5
+
 ## 0.2.1-alpha.4
 
 ### Patch Changes
