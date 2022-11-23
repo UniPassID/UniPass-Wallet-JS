@@ -71,7 +71,7 @@ export default class UnipassWalletProvider implements WalletProvider {
     // FIX ME: set gas limit for rangers to disable estimate gas in wallet
     if (_chain === "rangers") transactions.gasLimit = BigNumber.from("1000000");
 
-    return sendTransaction(transactions, chain, this.config, keyset, fee.token, timeout);
+    return sendTransaction(transactions, chain, this.config, keyset, fee?.token, timeout);
   }
 
   public async signMessage(message: string, keyset: Keyset) {
