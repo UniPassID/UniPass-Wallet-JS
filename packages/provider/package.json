@@ -28,7 +28,7 @@
     "ethers": "^5.7.1",
     "comlink": "^4.3.1",
     "jwt-decode": "^3.1.2",
-    "lindell-ecdsa-wasm": "^0.4.0",
+    "lindell-ecdsa-wasm": "^0.5.0",
     "scrypt-js": "3.0.1"
   },
   "devDependencies": {
