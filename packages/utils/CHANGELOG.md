@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.2.1-alpha.6
+
+### Patch Changes
+
+- @unipasswallet/provider: feat: bump lindell-ecdsa-wasm version
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.6
+
 ## 0.2.1-alpha.5
 
 ### Patch Changes
