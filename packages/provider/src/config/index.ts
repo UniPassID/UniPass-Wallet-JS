@@ -25,6 +25,9 @@ export const chain_config = {
   "rangers-robin": {
     rpc_url: "https://node.wallet.unipass.id/rangers-robin",
   },
+  "scroll-testnet": {
+    rpc_url: "https://node.wallet.unipass.id/scroll-testnet",
+  },
 };
 
 export const mainnet_api_config = {
@@ -54,6 +57,7 @@ export const dev_api_config = {
     polygon: "https://d.wallet.unipass.vip/relayer-v2-polygon",
     bsc: "https://d.wallet.unipass.vip/relayer-v2-bsc",
     rangers: "https://d.wallet.unipass.vip/relayer-v2-rangers",
+    scroll: "https://d.wallet.unipass.vip/relayer-v2-scroll",
   },
 };
 
@@ -64,6 +68,7 @@ export const test_api_config = {
     polygon: "https://t.wallet.unipass.vip/relayer-v2-polygon",
     bsc: "https://t.wallet.unipass.vip/relayer-v2-bsc",
     rangers: "https://t.wallet.unipass.vip/relayer-v2-rangers",
+    scroll: "https://t.wallet.unipass.vip/relayer-v2-scroll",
   },
 };
 
@@ -74,6 +79,7 @@ export const testnet_api_config = {
     polygon: "https://testnet.wallet.unipass.id/relayer-v2-polygon",
     bsc: "https://testnet.wallet.unipass.id/relayer-v2-bsc",
     rangers: "https://testnet.wallet.unipass.id/relayer-v2-rangers",
+    scroll: "https://testnet.wallet.unipass.id/relayer-v2-scroll",
   },
 };
 
