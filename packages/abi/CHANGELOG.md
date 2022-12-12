@@ -1,5 +1,23 @@
 # @unipasswallet/abi
 
+## 0.2.1-alpha.6
+
+### Patch Changes
+
+- @unipasswallet/provider: feat: bump lindell-ecdsa-wasm version
+
+## 0.2.1-alpha.5
+
+### Patch Changes
+
+- @unipasswallet/provider: fix fee undefined error
+
+## 0.2.1-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix pre sign function
+
 ## 0.2.1-alpha.3
 
 ### Patch Changes

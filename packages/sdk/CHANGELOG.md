@@ -1,5 +1,53 @@
 # @unipasswallet/sdk
 
+## 0.2.1-alpha.6
+
+### Patch Changes
+
+- @unipasswallet/provider: feat: bump lindell-ecdsa-wasm version
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.6
+  - @unipasswallet/dkim-base@0.2.1-alpha.6
+  - @unipasswallet/keys@0.2.1-alpha.6
+  - @unipasswallet/network@0.2.1-alpha.6
+  - @unipasswallet/relayer@0.2.1-alpha.6
+  - @unipasswallet/transaction-builders@0.2.1-alpha.6
+  - @unipasswallet/transactions@0.2.1-alpha.6
+  - @unipasswallet/utils@0.2.1-alpha.6
+  - @unipasswallet/wallet@0.2.1-alpha.6
+
+## 0.2.1-alpha.5
+
+### Patch Changes
+
+- @unipasswallet/provider: fix fee undefined error
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.5
+  - @unipasswallet/dkim-base@0.2.1-alpha.5
+  - @unipasswallet/keys@0.2.1-alpha.5
+  - @unipasswallet/network@0.2.1-alpha.5
+  - @unipasswallet/relayer@0.2.1-alpha.5
+  - @unipasswallet/transaction-builders@0.2.1-alpha.5
+  - @unipasswallet/transactions@0.2.1-alpha.5
+  - @unipasswallet/utils@0.2.1-alpha.5
+  - @unipasswallet/wallet@0.2.1-alpha.5
+
+## 0.2.1-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix pre sign function
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.4
+  - @unipasswallet/dkim-base@0.2.1-alpha.4
+  - @unipasswallet/keys@0.2.1-alpha.4
+  - @unipasswallet/network@0.2.1-alpha.4
+  - @unipasswallet/relayer@0.2.1-alpha.4
+  - @unipasswallet/transaction-builders@0.2.1-alpha.4
+  - @unipasswallet/transactions@0.2.1-alpha.4
+  - @unipasswallet/utils@0.2.1-alpha.4
+  - @unipasswallet/wallet@0.2.1-alpha.4
+
 ## 0.2.1-alpha.3
 
 ### Patch Changes

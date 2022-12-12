@@ -1,5 +1,29 @@
 # @unipasswallet/dkim
 
+## 0.2.1-alpha.6
+
+### Patch Changes
+
+- @unipasswallet/provider: feat: bump lindell-ecdsa-wasm version
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.2.1-alpha.6
+
+## 0.2.1-alpha.5
+
+### Patch Changes
+
+- @unipasswallet/provider: fix fee undefined error
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.2.1-alpha.5
+
+## 0.2.1-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix pre sign function
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.2.1-alpha.4
+
 ## 0.2.1-alpha.3
 
 ### Patch Changes

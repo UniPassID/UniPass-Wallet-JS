@@ -7,6 +7,7 @@ type AuthChainNode =
   | "eth-goerli"
   | "bsc-testnet"
   | "rangers-robin"
+  | "scroll-testnet"
   | "polygon-mainnet"
   | "eth-mainnet"
   | "bsc-mainnet"
@@ -14,7 +15,7 @@ type AuthChainNode =
 
 type Environment = "testnet" | "mainnet";
 
-type ChainType = "polygon" | "eth" | "bsc" | "rangers";
+type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll";
 
 export type UrlConfig = {
   backend: string;
