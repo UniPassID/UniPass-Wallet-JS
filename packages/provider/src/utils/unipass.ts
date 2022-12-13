@@ -152,7 +152,7 @@ export class WalletsCreator {
     WalletsCreator.instance.rangers.address = address;
     WalletsCreator.instance.rangers.keyset = keyset;
 
-    if (!WalletsCreator.instance.scroll) {
+    if (WalletsCreator.instance.scroll) {
       WalletsCreator.instance.scroll.address = address;
       WalletsCreator.instance.scroll.keyset = keyset;
     }
@@ -226,6 +226,14 @@ export class WalletsCreator {
       relayer: polygonRelayer,
       context,
     });
+    this.scrollGasEstimator = scrollProvider ? GasEstimatingWallet.create({
+      address,
+      keyset,
+      emailType: dkimParams.EmailType.CallOtherContract,
+      provider: scrollProvider,
+      relayer: scrollRelayer,
+      context,
+    }) : undefined;
   }
 
   static getPolygonProvider(keyset: Keyset, env: Environment): Wallet {
