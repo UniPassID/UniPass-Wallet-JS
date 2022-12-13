@@ -1,5 +1,5 @@
 import { AccountInfo, AuditStatus, SignType } from "./interface/index";
-import { arrayify, Bytes, concat, keccak256, parseEther, toUtf8Bytes } from "ethers/lib/utils";
+import { arrayify, Bytes, concat, keccak256, parseEther, toUtf8Bytes, hexlify } from "ethers/lib/utils";
 import { BigNumber, constants, ethers } from "ethers";
 import { ExecuteTransaction, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
@@ -261,14 +261,34 @@ export function unipassHashMessage(message: Bytes | string): string {
 const genSignMessage = async (message: string, config: UnipassWalletProps, keyset: Keyset) => {
   const user = await getUser();
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
+  const _message = unipassHashMessage(message);
   const auditRes = await api.tssAudit({
     type: SignType.PersonalSign,
-    content: unipassHashMessage(message),
-    msg: unipassHashMessage(message),
+    content: message,
+    msg: _message,
   });
   clearUpSignToken();
   if (auditRes.data.approveStatus === AuditStatus.Approved) {
-    const signedMessage = await wallet.signMessage(arrayify(unipassHashMessage(message)), [0]);
+    const signedMessage = await wallet.signMessage(arrayify(_message), [0]);
+    return signedMessage;
+  } else if (auditRes.data.approveStatus === AuditStatus.Confirming) {
+    throw new Error("SignRequestConfirming");
+  } else if (auditRes.data.approveStatus === AuditStatus.Rejected) {
+    throw new Error("SignRequestRejected");
+  }
+};
+
+const genSignTypedDataMessage = async (data: any, message: Uint8Array, config: UnipassWalletProps, keyset: Keyset) => {
+  const user = await getUser();
+  const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
+  const auditRes = await api.tssAudit({
+    type: SignType.EIP712Sign,
+    content: JSON.stringify(data),
+    msg: hexlify(message),
+  });
+  clearUpSignToken();
+  if (auditRes.data.approveStatus === AuditStatus.Approved) {
+    const signedMessage = await wallet.signMessage(message, [0]);
     return signedMessage;
   } else if (auditRes.data.approveStatus === AuditStatus.Confirming) {
     throw new Error("SignRequestConfirming");
@@ -317,4 +337,4 @@ const getUser = async (): Promise<AccountInfo | undefined> => {
   throw new WalletError(402007);
 };
 
-export { genSignMessage, checkLocalStatus, verifySignature, getWallet };
+export { genSignMessage, genSignTypedDataMessage, checkLocalStatus, verifySignature, getWallet };
