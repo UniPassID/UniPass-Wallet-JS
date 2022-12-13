@@ -1,5 +1,15 @@
 # @unipasswallet/utils
 
+## 0.2.1-alpha.7
+
+### Patch Changes
+
+- - @unipasswallet/provider:
+    - add eip712 sign
+    - add scroll support
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.7
+
 ## 0.2.1-alpha.6
 
 ### Patch Changes
