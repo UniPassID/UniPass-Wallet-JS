@@ -9,10 +9,12 @@ import {
   innerGenerateTransferTx,
   innerEstimateTransferGas,
   sendTransaction,
+  genSignTypedDataMessage,
 } from "./operate";
 import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
 import { wallets } from "@unipasswallet/sdk";
+import { MessageTypes, TypedMessage } from "./interface";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
@@ -76,6 +78,15 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   public async signMessage(message: string, keyset: Keyset) {
     const result = await genSignMessage(message, this.config, keyset);
+    return result;
+  }
+
+  public async signTypedDataMessage<T extends MessageTypes>(
+    data: TypedMessage<T>,
+    message: Uint8Array,
+    keyset: Keyset,
+  ) {
+    const result = await genSignTypedDataMessage(data, message, this.config, keyset);
     return result;
   }
 
