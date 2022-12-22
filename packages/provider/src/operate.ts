@@ -1,5 +1,5 @@
 import { AccountInfo, AuditStatus, SignType } from "./interface/index";
-import { arrayify, Bytes, concat, keccak256, parseEther, toUtf8Bytes, hexlify } from "ethers/lib/utils";
+import { arrayify, Bytes, concat, keccak256, parseEther, toUtf8Bytes, hexlify, hashMessage } from "ethers/lib/utils";
 import { BigNumber, constants, ethers } from "ethers";
 import { ExecuteTransaction, BundledTransaction, isBundledTransaction } from "@unipasswallet/wallet";
 import { Keyset } from "@unipasswallet/keys";
@@ -258,10 +258,11 @@ export function unipassHashMessage(message: Bytes | string): string {
   return keccak256(concat([toUtf8Bytes(unipassMessagePrefix), toUtf8Bytes(String(message.length)), message]));
 }
 
-const genSignMessage = async (message: string, config: UnipassWalletProps, keyset: Keyset) => {
+const genSignMessage = async (message: string, config: UnipassWalletProps, keyset: Keyset, isEIP191Prefix = false) => {
   const user = await getUser();
   const wallet = WalletsCreator.getInstance(keyset, user.address, config).polygon;
-  const _message = unipassHashMessage(message);
+  const _message = isEIP191Prefix ? hashMessage(message) : unipassHashMessage(message);
+
   const auditRes = await api.tssAudit({
     type: SignType.PersonalSign,
     content: message,
