@@ -76,8 +76,8 @@ export default class UnipassWalletProvider implements WalletProvider {
     return sendTransaction(transactions, chain, this.config, keyset, fee?.token, timeout);
   }
 
-  public async signMessage(message: string, keyset: Keyset) {
-    const result = await genSignMessage(message, this.config, keyset);
+  public async signMessage(message: string, keyset: Keyset, isEIP191Prefix = false) {
+    const result = await genSignMessage(message, this.config, keyset, isEIP191Prefix);
     return result;
   }
 
