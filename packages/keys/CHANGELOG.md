@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.2.1-alpha.8
+
+### Patch Changes
+
+- add isEIP191Prefix param for personal sign
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.2.1-alpha.8
+  - @unipasswallet/utils@0.2.1-alpha.8
+
 ## 0.2.1-alpha.7
 
 ### Patch Changes

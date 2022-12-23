@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.2.1-alpha.8
+
+### Patch Changes
+
+- add isEIP191Prefix param for personal sign
+- Updated dependencies
+  - @unipasswallet/keys@0.2.1-alpha.8
+  - @unipasswallet/network@0.2.1-alpha.8
+  - @unipasswallet/relayer@0.2.1-alpha.8
+  - @unipasswallet/sdk@0.2.1-alpha.8
+  - @unipasswallet/transaction-builders@0.2.1-alpha.8
+  - @unipasswallet/transactions@0.2.1-alpha.8
+  - @unipasswallet/utils@0.2.1-alpha.8
+  - @unipasswallet/wallet@0.2.1-alpha.8
+
 ## 0.2.1-alpha.7
 
 ### Patch Changes
