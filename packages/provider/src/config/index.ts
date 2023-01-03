@@ -13,6 +13,9 @@ export const chain_config = {
   "rangers-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/rangers-mainnet",
   },
+  "arbitrum-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/arbitrum-mainnet",
+  },
   "eth-goerli": {
     rpc_url: "https://node.wallet.unipass.id/eth-goerli",
   },
@@ -28,6 +31,9 @@ export const chain_config = {
   "scroll-testnet": {
     rpc_url: "https://node.wallet.unipass.id/scroll-testnet",
   },
+  "arbitrum-testnet": {
+    rpc_url: "https://node.wallet.unipass.id/arbitrum-testnet",
+  },
 };
 
 export const mainnet_api_config = {
@@ -37,6 +43,7 @@ export const mainnet_api_config = {
     polygon: "https://wallet.unipass.id/relayer-v2-polygon",
     bsc: "https://wallet.unipass.id/relayer-v2-bsc",
     rangers: "https://wallet.unipass.id/relayer-v2-rangers",
+    arbitrum: "https://wallet.unipass.id/relayer-v2-arbitrum",
   },
 };
 
@@ -47,6 +54,7 @@ export const mainnet_preview_api_config = {
     polygon: "https://m.wallet.unipass.vip/relayer-v2-polygon",
     bsc: "https://m.wallet.unipass.vip/relayer-v2-bsc",
     rangers: "https://m.wallet.unipass.vip/relayer-v2-rangers",
+    arbitrum: "https://m.wallet.unipass.vip/relayer-v2-arbitrum",
   },
 };
 
@@ -58,6 +66,7 @@ export const dev_api_config = {
     bsc: "https://d.wallet.unipass.vip/relayer-v2-bsc",
     rangers: "https://d.wallet.unipass.vip/relayer-v2-rangers",
     scroll: "https://d.wallet.unipass.vip/relayer-v2-scroll",
+    arbitrum: "https://d.wallet.unipass.vip/relayer-v2-arbitrum",
   },
 };
 
@@ -69,6 +78,7 @@ export const test_api_config = {
     bsc: "https://t.wallet.unipass.vip/relayer-v2-bsc",
     rangers: "https://t.wallet.unipass.vip/relayer-v2-rangers",
     scroll: "https://t.wallet.unipass.vip/relayer-v2-scroll",
+    arbitrum: "https://t.wallet.unipass.vip/relayer-v2-arbitrum",
   },
 };
 
@@ -80,6 +90,7 @@ export const testnet_api_config = {
     bsc: "https://testnet.wallet.unipass.id/relayer-v2-bsc",
     rangers: "https://testnet.wallet.unipass.id/relayer-v2-rangers",
     scroll: "https://testnet.wallet.unipass.id/relayer-v2-scroll",
+    arbitrum: "https://testnet.wallet.unipass.id/relayer-v2-arbitrum",
   },
 };
 

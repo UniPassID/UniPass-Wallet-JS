@@ -8,14 +8,16 @@ type AuthChainNode =
   | "bsc-testnet"
   | "rangers-robin"
   | "scroll-testnet"
+  | "arbitrum-testnet"
   | "polygon-mainnet"
   | "eth-mainnet"
   | "bsc-mainnet"
-  | "rangers-mainnet";
+  | "rangers-mainnet"
+  | "arbitrum-mainnet";
 
 type Environment = "testnet" | "mainnet";
 
-type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll";
+type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll" | "arbitrum";
 
 export type UrlConfig = {
   backend: string;
@@ -24,6 +26,7 @@ export type UrlConfig = {
     polygon: string;
     bsc: string;
     rangers: string;
+    arbitrum: string;
   };
 };
 

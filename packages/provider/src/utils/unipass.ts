@@ -26,12 +26,14 @@ const genProviders = (
   rangers: providers.JsonRpcProvider;
   eth: providers.JsonRpcProvider;
   scroll?: providers.JsonRpcProvider;
+  arbitrum: providers.JsonRpcProvider;
 } => {
   let polygon_url = "";
   let bsc_url = "";
   let rangers_url = "";
   let eth_url = "";
   let scroll_url = "";
+  let arbitrum_url = "";
   switch (config.env) {
     case "testnet":
       eth_url = chain_config["eth-goerli"].rpc_url;
@@ -39,26 +41,30 @@ const genProviders = (
       bsc_url = chain_config["bsc-testnet"].rpc_url;
       rangers_url = chain_config["rangers-robin"].rpc_url;
       scroll_url = chain_config["scroll-testnet"].rpc_url;
+      arbitrum_url = chain_config["arbitrum-testnet"].rpc_url;
       break;
     case "mainnet":
       eth_url = chain_config["eth-mainnet"].rpc_url;
       polygon_url = chain_config["polygon-mainnet"].rpc_url;
       bsc_url = chain_config["bsc-mainnet"].rpc_url;
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
+      arbitrum_url = chain_config["arbitrum-mainnet"].rpc_url;
       break;
     default:
       eth_url = chain_config["eth-mainnet"].rpc_url;
       polygon_url = chain_config["polygon-mainnet"].rpc_url;
       bsc_url = chain_config["bsc-mainnet"].rpc_url;
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
+      arbitrum_url = chain_config["arbitrum-mainnet"].rpc_url;
   }
   const eth = new providers.JsonRpcProvider(eth_url);
   const polygon = new providers.JsonRpcProvider(polygon_url);
   const bsc = new providers.JsonRpcProvider(bsc_url);
   const rangers = new providers.JsonRpcProvider(rangers_url);
+  const arbitrum = new providers.JsonRpcProvider(arbitrum_url);
   return scroll_url === ""
-    ? { polygon, bsc, rangers, eth, scroll: undefined }
-    : { polygon, bsc, rangers, eth, scroll: new providers.JsonRpcProvider(scroll_url) };
+    ? { polygon, bsc, rangers, eth, scroll: undefined, arbitrum }
+    : { polygon, bsc, rangers, eth, scroll: new providers.JsonRpcProvider(scroll_url), arbitrum };
 };
 
 const genRelayers = (
@@ -67,6 +73,7 @@ const genRelayers = (
   polygonProvider: providers.JsonRpcProvider,
   bcdProvider: providers.JsonRpcProvider,
   rangersProvider: providers.JsonRpcProvider,
+  arbitrumProvider: providers.JsonRpcProvider,
   scrollProvider?: providers.JsonRpcProvider,
 ): {
   polygon: RpcRelayer;
@@ -74,8 +81,9 @@ const genRelayers = (
   rangers: RpcRelayer;
   eth: RpcRelayer;
   scroll?: RpcRelayer;
+  arbitrum: RpcRelayer;
 } => {
-  let relayer_config: { eth: string; bsc: string; polygon: string; rangers: string; scroll?: string };
+  let relayer_config: { eth: string; bsc: string; polygon: string; rangers: string; scroll?: string; arbitrum: string };
   const context = genUnipassWalletContext(config.env);
 
   switch (config.env) {
@@ -86,6 +94,7 @@ const genRelayers = (
         rangers: testnet_api_config.relayer.rangers,
         polygon: testnet_api_config.relayer.polygon,
         scroll: testnet_api_config.relayer.scroll,
+        arbitrum: testnet_api_config.relayer.arbitrum,
       };
       break;
     case "mainnet":
@@ -94,6 +103,7 @@ const genRelayers = (
         bsc: mainnet_api_config.relayer.bsc,
         rangers: mainnet_api_config.relayer.rangers,
         polygon: mainnet_api_config.relayer.polygon,
+        arbitrum: mainnet_api_config.relayer.arbitrum,
       };
       break;
     default:
@@ -102,6 +112,7 @@ const genRelayers = (
         bsc: mainnet_api_config.relayer.bsc,
         rangers: mainnet_api_config.relayer.rangers,
         polygon: mainnet_api_config.relayer.polygon,
+        arbitrum: mainnet_api_config.relayer.arbitrum,
       };
   }
   relayer_config = config?.url_config?.relayer || relayer_config;
@@ -111,8 +122,9 @@ const genRelayers = (
   const bsc = new RpcRelayer(relayer_config.bsc, context, bcdProvider);
   const rangers = new RpcRelayer(relayer_config.rangers, context, rangersProvider);
   const scroll = relayer_config.scroll ? new RpcRelayer(relayer_config.scroll, context, scrollProvider) : undefined;
+  const arbitrum = new RpcRelayer(relayer_config.arbitrum, context, arbitrumProvider);
 
-  return { polygon, bsc, rangers, eth, scroll };
+  return { polygon, bsc, rangers, eth, scroll, arbitrum };
 };
 export class WalletsCreator {
   public static instance: WalletsCreator;
@@ -127,6 +139,8 @@ export class WalletsCreator {
 
   public scroll?: Wallet;
 
+  public arbitrum: Wallet;
+
   public ethGasEstimator: GasEstimatingWallet;
 
   public polygonGasEstimator: GasEstimatingWallet;
@@ -134,6 +148,8 @@ export class WalletsCreator {
   public bscGasEstimator: GasEstimatingWallet;
 
   public scrollGasEstimator: GasEstimatingWallet;
+
+  public arbitrumGasEstimator: GasEstimatingWallet;
 
   static getInstance(keyset: Keyset, address: string, config: UnipassWalletProps) {
     if (!WalletsCreator.instance) {
@@ -152,6 +168,9 @@ export class WalletsCreator {
     WalletsCreator.instance.rangers.address = address;
     WalletsCreator.instance.rangers.keyset = keyset;
 
+    WalletsCreator.instance.arbitrum.address = address;
+    WalletsCreator.instance.arbitrum.keyset = keyset;
+
     if (WalletsCreator.instance.scroll) {
       WalletsCreator.instance.scroll.address = address;
       WalletsCreator.instance.scroll.keyset = keyset;
@@ -168,6 +187,7 @@ export class WalletsCreator {
       bsc: bscProvider,
       rangers: rangersProvider,
       scroll: scrollProvider = undefined,
+      arbitrum: arbitrumProvider,
     } = genProviders(config);
     const {
       eth: ethRelayer,
@@ -175,9 +195,16 @@ export class WalletsCreator {
       bsc: bscRelayer,
       rangers: rangersRelayer,
       scroll: scrollRelayer = undefined,
-    } = genRelayers(config, ethProvider, polygonProvider, bscProvider, rangersProvider);
+      arbitrum: arbitrumRelayer,
+    } = genRelayers(config, ethProvider, polygonProvider, bscProvider, rangersProvider, arbitrumProvider);
 
-    this.eth = Wallet.create({ address, keyset, provider: ethProvider, relayer: ethRelayer, context });
+    this.eth = Wallet.create({
+      address,
+      keyset,
+      provider: ethProvider,
+      relayer: ethRelayer,
+      context,
+    });
     this.polygon = Wallet.create({
       keyset,
       provider: polygonProvider,
@@ -201,6 +228,13 @@ export class WalletsCreator {
           context,
         })
       : undefined;
+    this.arbitrum = Wallet.create({
+      keyset,
+      provider: arbitrumProvider,
+      relayer: arbitrumRelayer,
+      address,
+      context,
+    });
 
     this.ethGasEstimator = GasEstimatingWallet.create({
       address,
@@ -226,14 +260,24 @@ export class WalletsCreator {
       relayer: polygonRelayer,
       context,
     });
-    this.scrollGasEstimator = scrollProvider ? GasEstimatingWallet.create({
+    this.arbitrumGasEstimator = GasEstimatingWallet.create({
       address,
       keyset,
       emailType: dkimParams.EmailType.CallOtherContract,
-      provider: scrollProvider,
-      relayer: scrollRelayer,
+      provider: arbitrumProvider,
+      relayer: arbitrumRelayer,
       context,
-    }) : undefined;
+    });
+    this.scrollGasEstimator = scrollProvider
+      ? GasEstimatingWallet.create({
+          address,
+          keyset,
+          emailType: dkimParams.EmailType.CallOtherContract,
+          provider: scrollProvider,
+          relayer: scrollRelayer,
+          context,
+        })
+      : undefined;
   }
 
   static getPolygonProvider(keyset: Keyset, env: Environment): Wallet {
@@ -268,6 +312,8 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
         return "rangers-robin";
       case "scroll":
         return "scroll-testnet";
+      case "arbitrum":
+        return "arbitrum-testnet";
       default:
         return "polygon-mumbai";
     }
@@ -281,6 +327,8 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
         return "bsc-mainnet";
       case "rangers":
         return "rangers-mainnet";
+      case "arbitrum":
+        return "arbitrum-mainnet";
       case "scroll":
         throw new Error("Unsupported For Mainnet Scroll");
       default:
