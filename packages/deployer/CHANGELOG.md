@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.2.1-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/provider: add arbitrum support
+- Updated dependencies
+  - @unipasswallet/utils@0.2.1-alpha.9
+
 ## 0.2.1-alpha.8
 
 ### Patch Changes

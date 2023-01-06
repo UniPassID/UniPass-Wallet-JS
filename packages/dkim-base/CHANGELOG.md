@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.2.1-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/provider: add arbitrum support
+
 ## 0.2.1-alpha.8
 
 ### Patch Changes
