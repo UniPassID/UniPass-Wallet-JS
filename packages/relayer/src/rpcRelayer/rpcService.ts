@@ -1,5 +1,6 @@
 import { FeeToken, FeeOption } from "..";
 import { CallType, Transaction } from "@unipasswallet/transactions";
+import { KeyType } from "@unipasswallet/keys";
 import { BigNumber } from "ethers";
 import { hexlify } from "ethers/lib/utils";
 
@@ -66,13 +67,41 @@ export interface TxnReceiptResult {
   receipts: TxnReceiptResult[];
 }
 
-export interface EstimateGasResult {
-  executed: boolean;
-  successed: boolean;
-  result?: string;
-  reason?: string;
+export interface SimulateArgs {
+  target: string;
+  execute: SimulateExecute;
+  keyset: SimulateKey[];
+}
+
+export interface SimulateKey {
+  keyType: KeyType;
+  ownerRoleWeight: number;
+  assetsopRoleWeight: number;
+  guardianRoleWeight: number;
+}
+
+export interface SimulateExecute {
+  txs: (SimulateTransaction | UnipassTransaction)[];
+  nonce: string;
+  signature: string | number[];
+}
+
+export interface SimulateTransaction {
+  execute: SimulateExecute;
+  target: string;
+  revertOnError: boolean;
+}
+
+export interface SimulateResult {
+  feeTokens: TokenInfo[];
+  discount: number;
+}
+
+export interface TokenInfo {
+  token: string;
   gasUsed: string;
-  gasLimit: string;
+  tokenPrice: number;
+  natimveTokenPrice: number;
 }
 
 export interface RpcService {
@@ -80,7 +109,7 @@ export interface RpcService {
   feeOptions(feeOptionArgs: FeeOptionArgs, headers?: object): Promise<FeeOptionsReturn>;
   sendTransaction(args: PendingExecuteCallArgs, headers?: object): Promise<string>;
   txRecipt(txHash: string, headers?: object): Promise<TxnReceiptResult>;
-  estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult>;
+  simulate(args: SimulateArgs, headers?: object): Promise<SimulateResult>;
   nonce(walletAddr: string, headers?: object): Promise<BigNumber>;
   metaNonce(walletAddr: string, headers?: object): Promise<BigNumber>;
 }
@@ -129,8 +158,8 @@ export class RpcService implements RpcService {
     return <TxnReceiptResult>_data;
   }
 
-  async estimateGas(pendingExecuteCallArgs: PendingExecuteCallArgs, headers?: object): Promise<EstimateGasResult> {
-    const res = await this.fetch(this.url(`/estimate_gas`), createPostHTTPRequest(pendingExecuteCallArgs, headers));
+  async simulate(args: SimulateArgs, headers?: object): Promise<SimulateResult> {
+    const res = await this.fetch(this.url(`/simulate`), createPostHTTPRequest(args, headers));
     const _data = await buildResponse(res);
     return _data;
   }
@@ -172,16 +201,21 @@ const buildResponse = (res: Response): Promise<any> =>
     try {
       data = JSON.parse(text);
     } catch (err) {
-      // eslint-disable-next-line no-throw-literal
-      throw {
+      const error = {
         code: "unknown",
         msg: `expecting JSON, got: ${text}`,
         status: res.status,
       } as WebRPCError;
+      throw error;
     }
 
     if (!res.ok || data.statusCode !== 200) {
-      throw data; // webrpc error response
+      const error = {
+        code: data.statusCode,
+        msg: data.message || data,
+        status: res.status,
+      } as WebRPCError;
+      throw error;
     }
 
     return data.data;

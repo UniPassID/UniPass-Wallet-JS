@@ -5,7 +5,7 @@ import MailComposer from "nodemailer/lib/mail-composer";
 import DKIM from "nodemailer/lib/dkim";
 import { BigNumber, Contract, ethers, Signer, Wallet as WalletEOA } from "ethers";
 import { DkimParamsBase, EmailType } from "@unipasswallet/dkim-base";
-import { Wallet, generateEmailSubject } from "@unipasswallet/wallet";
+import { Wallet } from "@unipasswallet/wallet";
 import { WebRPCError } from "@unipasswallet/relayer";
 import {
   Keyset,
@@ -488,4 +488,40 @@ export async function initDkimZK(dkimZK: Contract) {
     ])
   ).wait();
   expect(ret.status).toEqual(1);
+}
+
+export function generateEmailSubject(emailType: EmailType, digestHash: string): string {
+  switch (emailType) {
+    case EmailType.UpdateKeysetHash: {
+      return `UniPass-Update-Account-${digestHash}`;
+    }
+
+    case EmailType.LockKeysetHash: {
+      return `UniPass-Start-Recovery-${digestHash}`;
+    }
+
+    case EmailType.CancelLockKeysetHash: {
+      return `UniPass-Cancel-Recovery-${digestHash}`;
+    }
+
+    case EmailType.UpdateTimeLockDuring: {
+      return `UniPass-Update-Timelock-${digestHash}`;
+    }
+
+    case EmailType.UpdateImplementation: {
+      return `UniPass-Update-Implementation-${digestHash}`;
+    }
+
+    case EmailType.SyncAccount: {
+      return `UniPass-Sync-Account-${digestHash}`;
+    }
+
+    case EmailType.CallOtherContract: {
+      return `UniPass-Call-Contract-${digestHash}`;
+    }
+
+    default: {
+      throw new Error(`Invalid EmailType: ${emailType}`);
+    }
+  }
 }
