@@ -10,15 +10,9 @@ import {
   UpdateImplementationTxBuilder,
   SyncAccountTxBuilder,
 } from "@unipasswallet/transaction-builders";
-import { generateDkimParams, getZKParams, randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
+import { generateDkimParams, generateEmailSubject, getZKParams, randomKeyset, Role, selectKeys, transferEth } from "./utils/common";
 import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
-import {
-  SessionKey,
-  getWalletDeployTransaction,
-  Wallet,
-  ExecuteTransaction,
-  generateEmailSubject,
-} from "@unipasswallet/wallet";
+import { SessionKey, getWalletDeployTransaction, Wallet, ExecuteTransaction } from "@unipasswallet/wallet";
 import {
   getDkimVerifyMessage,
   KeyEmailDkimSignType,

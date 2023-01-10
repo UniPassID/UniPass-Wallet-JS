@@ -1,7 +1,15 @@
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { FeeOption, Relayer } from "..";
 import fetchPonyfill from "fetch-ponyfill";
-import { EstimateGasResult, PendingExecuteCallArgs, RpcService, TxnReceiptResult } from "./rpcService";
+import {
+  PendingExecuteCallArgs,
+  RpcService,
+  SimulateArgs,
+  SimulateExecute,
+  SimulateKey,
+  SimulateResult,
+  TxnReceiptResult,
+} from "./rpcService";
 import { BigNumber, providers } from "ethers";
 
 export * from "./rpcService";
@@ -57,8 +65,13 @@ export class RpcRelayer implements Relayer {
     return this.rpcService.sendTransaction(transactions);
   }
 
-  estimateGas(transactions: PendingExecuteCallArgs): Promise<EstimateGasResult> {
-    return this.rpcService.estimateGas(transactions);
+  async simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute): Promise<SimulateResult> {
+    const args: SimulateArgs = {
+      target,
+      keyset,
+      execute,
+    };
+    return this.rpcService.simulate(args);
   }
 
   async wait(txHash: string): Promise<TxnReceiptResult | undefined> {

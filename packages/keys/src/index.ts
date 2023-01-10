@@ -21,9 +21,9 @@ import { KeyEmailDkimSignType, ZKParams } from "./keyOpenIDWithEmail";
 import { solidityPack } from "ethers/lib/utils";
 
 export enum KeyType {
-  Secp256k1,
-  ERC1271Wallet,
-  OpenIDWithEmail,
+  Secp256k1 = 0,
+  ERC1271Wallet = 1,
+  OpenIDWithEmail = 2,
 }
 
 export enum SignType {

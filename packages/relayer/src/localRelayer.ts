@@ -1,4 +1,12 @@
-import { ExecuteCall, FeeOption, PendingExecuteCallArgs, Relayer, TxnReceiptResult } from ".";
+import {
+  ExecuteCall,
+  PendingExecuteCallArgs,
+  Relayer,
+  SimulateExecute,
+  SimulateKey,
+  SimulateResult,
+  TxnReceiptResult,
+} from ".";
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain } from "@unipasswallet/abi";
 import { BigNumber, constants, Contract, Signer } from "ethers";
@@ -13,11 +21,6 @@ export class LocalRelayer implements Relayer {
     }
 
     return (await this.signer.provider.getCode(walletAddress)) !== "0x";
-  }
-
-  async getFeeOptions(): Promise<{ options: Array<Pick<FeeOption, "to">> }> {
-    const address = await this.signer.getAddress();
-    return { options: [{ to: address }] };
   }
 
   async getNonce(walletAddr: string): Promise<BigNumber> {
@@ -58,6 +61,14 @@ export class LocalRelayer implements Relayer {
     );
 
     return ret.hash;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute): Promise<SimulateResult> {
+    return {
+      feeTokens: [],
+      discount: 100,
+    };
   }
 
   async wait(txHash: string): Promise<TxnReceiptResult | undefined> {

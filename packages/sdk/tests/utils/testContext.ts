@@ -18,9 +18,8 @@ import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts
 import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
 import { initDkimZK, OPENID_AUDIENCE, OPENID_ISSUER, OPENID_KID, randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { GasEstimatingWallet, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
+import { Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
 import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
-import { EmailType } from "@unipasswallet/dkim-base";
 
 export interface TestContext {
   provider: providers.JsonRpcProvider;
@@ -236,7 +235,6 @@ export interface WalletContext {
   testERC20Token: Contract;
   greeter: Contract;
   wallet: UnipassWallet;
-  fakeWallet: GasEstimatingWallet;
   metaNonce: number;
   nonce: number;
 }
@@ -285,13 +283,6 @@ export async function initWalletContext(
   const nonce = 1;
   const metaNonce = 1;
 
-  const options = wallet.options();
-  const fakeWallet = new GasEstimatingWallet({
-    ...options,
-    provider: options.provider as providers.JsonRpcProvider,
-    emailType: EmailType.None,
-  });
-
   if (!(await context.whiteList.connect(context.whiteListAdmin).isImplementationWhiteList(greeter.address))) {
     ret = await (
       await context.whiteList.connect(context.whiteListAdmin).updateImplementationWhiteList(greeter.address, true)
@@ -299,5 +290,5 @@ export async function initWalletContext(
     expect(ret.status).toEqual(1);
   }
 
-  return { testERC20Token, wallet, nonce, metaNonce, greeter, fakeWallet };
+  return { testERC20Token, wallet, nonce, metaNonce, greeter };
 }
