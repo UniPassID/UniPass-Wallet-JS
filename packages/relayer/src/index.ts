@@ -1,18 +1,9 @@
 import { BigNumber } from "ethers";
-import { PendingExecuteCallArgs, TxnReceiptResult } from "./rpcRelayer";
+import { PendingExecuteCallArgs, SimulateExecute, SimulateKey, SimulateResult, TxnReceiptResult } from "./rpcRelayer";
 
 export * from "./rpcRelayer";
 
 export * from "./localRelayer";
-
-export interface SimulateResult {
-  executed: boolean;
-  succeeded: boolean;
-  result?: string;
-  reason?: string;
-  gasUsed: number;
-  gasLimit: number;
-}
 
 export enum TransferType {
   SEND = "SEND",
@@ -55,13 +46,7 @@ export interface TxnLogTransfer {
 }
 
 export interface Relayer {
-  // simulate(...transactions: Transaction[]): Promise<SimulateResult[]>;
-
-  // estimateGasLimits(...transactions: Transaction[]): Promise<Transaction[]>;
-
-  getFeeOptions(gasLimit?: string): Promise<{ options: FeeOption[] | Array<Pick<FeeOption, "to">> }>;
-
-  // gasRefundOptions(...transactions: Transaction[]): Promise<FeeOption[]>;
+  simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute): Promise<SimulateResult>;
 
   getNonce(walletAddr: string): Promise<BigNumber>;
 
