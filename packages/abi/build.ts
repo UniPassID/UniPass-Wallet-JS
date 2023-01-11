@@ -73,3 +73,13 @@ fs.writeFileSync(
     2,
   ),
 );
+
+const moduleGuest = JSON.parse(
+  fs
+    .readFileSync(
+      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/modules/ModuleGuest.sol/ModuleGuest.json`,
+    )
+    .toString("utf-8"),
+);
+
+fs.writeFileSync("./src/abis/moduleGuest.json", JSON.stringify({ abi: moduleGuest.abi }, null, 2));

@@ -504,4 +504,8 @@ export class KeyOpenIDWithEmail extends KeyBase {
       [KeyType.OpenIDWithEmail, this.keyHash, this.serializeRoleWeight()],
     );
   }
+
+  public keyType(): KeyType {
+    return KeyType.OpenIDWithEmail;
+  }
 }

@@ -16,28 +16,22 @@ import {
   Relayer,
   PendingExecuteCallArgs,
   ExecuteCall,
-  toUnipassTransaction,
   TxnReceiptResult,
+  SimulateResult,
+  SimulateKey,
+  SimulateExecute,
 } from "@unipasswallet/relayer";
 import { MAINNET_UNIPASS_WALLET_CONTEXT, UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain, gasEstimator } from "@unipasswallet/abi";
-import {
-  Transaction,
-  digestTxHash,
-  digestGuestTxHash,
-  CallType,
-  Transactionish,
-  isUnipassWalletTransaction,
-  toTransaction,
-} from "@unipasswallet/transactions";
-import {
-  resolveArrayProperties,
-  SingletonFactoryAddress,
-  SingletonFactoryInterface,
-  CreationCode,
-  getWalletCode,
-} from "@unipasswallet/utils";
+import { Transaction, digestTxHash, CallType } from "@unipasswallet/transactions";
+import { SingletonFactoryAddress, SingletonFactoryInterface, CreationCode, getWalletCode } from "@unipasswallet/utils";
 import { SessionKey } from "./sessionKey";
+import { MainExecuteTransaction } from "./mainExecuteTransaction";
+import { RawMainExecuteTransaction } from "./rawMainExecuteTransaction";
+import { RawMainExecuteCall } from "./rawMainExecuteCall";
+import { RawBundledExecuteCall } from "./rawBundledExecuteCall";
+import { BundledExecuteCall } from "./bundledExecuteCall";
+import { MainExecuteCall } from "./mainExecuteCall";
 
 export interface WalletOptions {
   address?: string;
@@ -52,30 +46,6 @@ export const OverwriterEstimatorDefaults = {
   dataOneCost: 16,
   baseCost: 21000,
 };
-
-export type ExecuteTransaction = {
-  type: "Execute";
-  transactions: Transactionish[] | Transactionish;
-  sessionKeyOrSignerIndex: SessionKey | number[];
-  preSignFunc?: (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => Promise<boolean>;
-  gasLimit: BigNumber;
-};
-
-export function isExecuteTransaction(tx: any): tx is ExecuteTransaction {
-  return tx.type === "Execute";
-}
-
-export type BundledTransaction = {
-  type: "Bundled";
-  transactions: (ExecuteTransaction | Transactionish)[] | ExecuteTransaction | Transactionish;
-  gasLimit: BigNumber;
-};
-
-export function isBundledTransaction(tx: any): tx is BundledTransaction {
-  return tx.type === "Bundled";
-}
-
-export type InputTransaction = BundledTransaction | ExecuteTransaction | Transactionish[] | Transactionish;
 
 export type SignedTransactions = {
   digest: string;
@@ -236,104 +206,73 @@ export class Wallet extends Signer {
     throw new Error("Not Support `signTransaction`, Please use `signTransactions` instead");
   }
 
-  async signTransactions(
-    transaction: Deferrable<InputTransaction>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
-    innerNonce?: BigNumber,
-    innerGasLimit: BigNumber = constants.Zero,
-    preSignFunc: (
-      chainId: number,
-      address: string,
-      transactions: Transaction[],
-      nonce: BigNumber,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ) => Promise<boolean> = (_chainId, _address, _transactions, _nonce) => {
-      return new Promise((resolve) => {
-        resolve(true);
-      });
-    },
-  ): Promise<SignedTransactions> {
-    const txs = await resolveArrayProperties<InputTransaction>(transaction);
+  async getNonce(): Promise<BigNumber> {
+    return this.relayer.getNonce(this.address);
+  }
 
-    let nonce: BigNumber;
-    const moduleMainInterface = new Interface(moduleMain.abi);
-    const { chainId } = await this.provider!.getNetwork();
-    let digest: string;
-    let transactions: Transaction[] = [];
-    let signature: string;
-    let data: string;
-    let address: string;
-    let gasLimit: BigNumber;
-    if (isBundledTransaction(txs)) {
-      let bundledNonce = innerNonce;
-      if (bundledNonce === undefined) {
-        bundledNonce = BigNumber.from(await this.relayer.getNonce(this.address));
-      }
-      let transaction: Transaction;
-      if (Array.isArray(txs.transactions)) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const tx of txs.transactions) {
-          // eslint-disable-next-line no-await-in-loop
-          [transaction, bundledNonce] = await this.toTransaction(tx, bundledNonce);
-          transactions.push(transaction);
-        }
-      } else {
-        [transaction, bundledNonce] = await this.toTransaction(txs.transactions, bundledNonce);
-        transactions = [transaction];
-      }
-      nonce = constants.Zero;
-      signature = "0x";
-      data = moduleMainInterface.encodeFunctionData("execute", [transactions, 0, "0x"]);
-      digest = digestGuestTxHash(chainId, this.context.moduleGuest!, transactions);
-      address = this.context.moduleGuest!;
-      gasLimit = txs.gasLimit;
-    } else if (isExecuteTransaction(txs)) {
-      if (Array.isArray(txs.transactions)) {
-        transactions = await Promise.all(txs.transactions.map((v) => this.toTransaction(v).then((v) => v[0])));
-      } else {
-        transactions = [await this.toTransaction(txs.transactions).then((v) => v[0])];
-      }
-      nonce = innerNonce;
-      if (nonce === undefined) {
-        nonce = await this.relayer.getNonce(this.address);
-      }
-      digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
-      if (txs.preSignFunc && !(await txs.preSignFunc(chainId, this.address, transactions, nonce))) {
-        throw new Error(`pre Sign Transactions[${transactions}],nonce[${nonce.toNumber()}] Failed`);
-      }
-      signature = await this.signMessage(arrayify(digest), txs.sessionKeyOrSignerIndex);
-      data = moduleMainInterface.encodeFunctionData("execute", [transactions, nonce, signature]);
-      address = this.address;
-      gasLimit = txs.gasLimit;
-    } else {
-      if (Array.isArray(txs)) {
-        transactions = await Promise.all(txs.map((v) => this.toTransaction(v).then((v) => v[0])));
-      } else {
-        transactions = [await this.toTransaction(txs).then((v) => v[0])];
-      }
-      nonce = innerNonce;
-      if (nonce === undefined) {
-        nonce = await this.relayer.getNonce(this.address);
-      }
-      if (!(await preSignFunc(chainId, this.address, transactions, nonce))) {
-        throw new Error(`pre Sign Transactions[${transactions}],nonce[${nonce.toNumber()}] Failed`);
-      }
-      digest = digestTxHash(chainId, this.address, nonce.toNumber(), transactions);
-      signature = await this.signMessage(arrayify(digest), sessionKeyOrSignerIndexes);
-      address = this.address;
-      gasLimit = innerGasLimit;
+  async signRawMainExecuteCall(
+    rawExecute: RawMainExecuteCall,
+    chainId: number,
+    nonce: BigNumber,
+  ): Promise<{ execute: MainExecuteCall; nonce }> {
+    if (!(await rawExecute.preSignFunc(chainId, this.address, rawExecute.txs, nonce))) {
+      throw new Error(
+        `Pre signing Failed For ChainID[${chainId}], address[${this.address}], nonce[${nonce}], txs[${rawExecute.txs}]`,
+      );
     }
+    const txHash = digestTxHash(chainId, this.address, nonce.toNumber(), rawExecute.txs);
+    const signature = await this.signMessage(arrayify(txHash), rawExecute.sessionKeyOrSignerIndexes);
+    return { execute: new MainExecuteCall(rawExecute.txs, nonce, signature), nonce };
+  }
 
-    return {
-      digest,
-      chainId,
-      signature,
-      nonce,
-      data,
-      transactions,
-      address,
-      gasLimit,
-    };
+  async signRawBundledExecuteCall(
+    rawExecute: RawBundledExecuteCall,
+    chainId: number,
+    nonce: BigNumber,
+  ): Promise<{ execute: BundledExecuteCall; nonce }> {
+    const { txs, nonce: newNonce } = await rawExecute.txs.reduce(async (prePromise, tx) => {
+      const { txs, nonce } = await prePromise;
+      if (RawMainExecuteTransaction.isRawMainExecuteTransaction(tx)) {
+        const newNonce = nonce.add(1);
+        const execute = tx.rawExecuteCall;
+        if (!(await execute.preSignFunc(chainId, this.address, execute.txs, newNonce))) {
+          throw new Error(
+            `Pre signing Failed For ChainID[${chainId}], address[${this.address}], nonce[${newNonce}], txs[${rawExecute.txs}]`,
+          );
+        }
+        const txHash = digestTxHash(chainId, this.address, newNonce.toNumber(), execute.txs);
+        const signature = await this.signMessage(arrayify(txHash), execute.sessionKeyOrSignerIndexes);
+        txs.push(
+          new MainExecuteTransaction({
+            executeCall: new MainExecuteCall(execute.txs, newNonce, signature),
+            ...tx.opts(),
+          }).toTransaction(),
+        );
+        return { txs, nonce: newNonce };
+      }
+      txs.push(tx);
+      return { txs, nonce };
+    }, Promise.resolve({ nonce, txs: <Transaction[]>[] }));
+    nonce = newNonce;
+    return { execute: new BundledExecuteCall(txs), nonce };
+  }
+
+  async signTransactions(
+    rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
+  ): Promise<{ execute: BundledExecuteCall | MainExecuteCall; chainId: number; nonce: BigNumber }> {
+    const { chainId } = await this.provider.getNetwork();
+    let nonce = await this.getNonce();
+    if (nonce === constants.Zero) {
+      throw new Error(`Wallet [${this.address}] Has Not Deployed`);
+    }
+    nonce = nonce.add(1);
+
+    if (RawMainExecuteCall.isRawMainExecuteCall(rawExecute)) {
+      const signedExecute = await this.signRawMainExecuteCall(rawExecute, chainId, nonce);
+      return { ...signedExecute, chainId };
+    }
+    const signedExecute = await this.signRawBundledExecuteCall(rawExecute, chainId, nonce);
+    return { ...signedExecute, chainId };
   }
 
   txBaseCost(data: BytesLike): BigNumber {
@@ -387,91 +326,32 @@ export class Wallet extends Signer {
     return gas.add(this.txBaseCost(executeData));
   }
 
-  async toTransaction(
-    tx: Transactionish | ExecuteTransaction,
-    nonce?: BigNumber,
-  ): Promise<[Transaction, BigNumber | undefined]> {
-    if (isUnipassWalletTransaction(tx)) {
-      return [tx, nonce];
+  public target(execute: MainExecuteCall | BundledExecuteCall | RawBundledExecuteCall | RawMainExecuteCall): string {
+    if (MainExecuteCall.isMainExecuteCall(execute) || RawMainExecuteCall.isRawMainExecuteCall(execute)) {
+      return this.address;
     }
-
-    if (isExecuteTransaction(tx)) {
-      if (!nonce) {
-        throw new Error("Expect Nonce");
-      }
-      let transactions: Transaction[];
-      if (Array.isArray(tx.transactions)) {
-        transactions = tx.transactions.map((v) => toTransaction(v));
-      } else {
-        transactions = [toTransaction(tx.transactions)];
-      }
-      const sig = await this.signTransactions(
-        transactions,
-        tx.sessionKeyOrSignerIndex,
-        nonce,
-        tx.gasLimit,
-        tx.preSignFunc,
-      );
-      return [
-        {
-          _isUnipassWalletTransaction: true,
-          callType: CallType.Call,
-          gasLimit: tx.gasLimit,
-          revertOnError: false,
-          target: this.address,
-          value: constants.Zero,
-          data: new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions, nonce, sig.signature]),
-        },
-        nonce.add(1),
-      ];
-    }
-
-    return [
-      {
-        _isUnipassWalletTransaction: true,
-        callType: CallType.Call,
-        revertOnError: false,
-        gasLimit: BigNumber.from(tx.gasLimit),
-        target: tx.to,
-        value: BigNumber.from(tx.value),
-        data: tx.data,
-      },
-      nonce,
-    ];
+    return this.context.moduleGuest;
   }
 
-  async sendTransaction(
-    transactions: Deferrable<InputTransaction>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
-    feeToken?: string,
-    gasLmit: BigNumber = constants.Zero,
+  async sendTransactions(
+    rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
   ): Promise<providers.TransactionResponse> {
-    const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes, undefined, gasLmit);
-    const estimateGas = signedTransactions.gasLimit.eq(0)
-      ? await this.unipassEstimateGas(signedTransactions)
-      : signedTransactions.gasLimit;
-    const call: ExecuteCall = {
-      txs: signedTransactions.transactions.map((v) => toUnipassTransaction(v)),
-      nonce: signedTransactions.nonce.toHexString(),
-      signature: signedTransactions.signature,
-    };
+    const { execute, chainId, nonce } = await this.signTransactions(rawExecute);
+
+    const call: ExecuteCall = execute.toExecuteCall();
     const args: PendingExecuteCallArgs = {
-      chainId: hexlify(signedTransactions.chainId),
-      txHash: signedTransactions.digest,
-      walletAddress: signedTransactions.address,
-      estimateGas: estimateGas.toHexString(),
-      feeToken,
       call: JSON.stringify(call),
+      walletAddress: this.target(execute),
     };
     const hash = await this.relayer.relay(args);
     return {
       hash,
       confirmations: 1,
       from: this.address,
-      chainId: signedTransactions.chainId,
-      nonce: signedTransactions.nonce.toNumber(),
-      gasLimit: estimateGas,
-      data: signedTransactions.data,
+      chainId,
+      nonce: nonce.toNumber() - 1,
+      gasLimit: constants.Zero,
+      data: execute.ethAbiEncode(),
       value: constants.Zero,
       wait: async (confirmations?: number, timeout: number = 30) => {
         return this.waitForTransaction(hash, confirmations, timeout);
@@ -481,15 +361,20 @@ export class Wallet extends Signer {
 
   async waitForTransaction(
     txHash: string,
-    confirmations: number = 1,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _confirmations: number = 1,
     timeout: number,
   ): Promise<providers.TransactionReceipt> {
     let ret: TxnReceiptResult;
     let i = 0;
-    while (ret === undefined || ret === null) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
       if (i < timeout) {
         // eslint-disable-next-line no-await-in-loop
         ret = await this.relayer.wait(txHash);
+        if (ret && ret.receipt) {
+          break;
+        }
         // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } else {
@@ -497,33 +382,9 @@ export class Wallet extends Signer {
       }
       i++;
     }
-    if (ret.txHash === constants.HashZero) {
-      return Promise.reject(new Error(`transactions revert: ${ret.revertReason}`));
-    }
-    if (confirmations === 0) {
-      const receipt: providers.TransactionReceipt = {
-        transactionHash: ret.txHash,
-        confirmations,
-        status: ret.status,
-        from: constants.AddressZero,
-        to: this.address,
-        contractAddress: constants.AddressZero,
-        transactionIndex: 0,
-        gasUsed: constants.Zero,
-        logsBloom: "",
-        blockHash: "",
-        logs: [],
-        blockNumber: 0,
-        cumulativeGasUsed: constants.Zero,
-        effectiveGasPrice: constants.Zero,
-        byzantium: false,
-        type: 0,
-      };
-      return receipt;
-    }
-    const recipt = await this.provider.waitForTransaction(ret.txHash);
-    recipt.status = ret.status;
-    return recipt;
+    const { receipt } = ret;
+
+    return receipt;
   }
 
   async isSyncKeysetHash(): Promise<boolean> {
@@ -535,6 +396,22 @@ export class Wallet extends Signer {
     const contract = new Contract(this.address, moduleMain.abi, this.callWallet);
 
     return contract;
+  }
+
+  async simulateExecute(execute: RawBundledExecuteCall | RawMainExecuteCall, token?: string): Promise<SimulateResult> {
+    const target = this.target(execute);
+    const simulateExecute: SimulateExecute = execute.toSimulateExecute();
+    const keyset: SimulateKey[] = this.keyset.keys.map((key) => {
+      const keyType = key.keyType();
+      return {
+        keyType,
+        ownerRoleWeight: key.roleWeight.ownerWeight,
+        assetsopRoleWeight: key.roleWeight.assetsOpWeight,
+        guardianRoleWeight: key.roleWeight.guardianWeight,
+      };
+    });
+
+    return this.relayer.simulate(target, keyset, simulateExecute, token);
   }
 }
 

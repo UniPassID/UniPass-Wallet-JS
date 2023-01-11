@@ -6,21 +6,13 @@ import { defineReadOnly } from "ethers/lib/utils";
 export class KeySecp256k1Wallet extends KeyBase {
   public readonly _isKeySecp256k1Wallet: boolean;
 
-  constructor(
-    public wallet: Wallet,
-    roleWeight: RoleWeight,
-    private signType: SignType
-  ) {
+  constructor(public wallet: Wallet, roleWeight: RoleWeight, private signType: SignType) {
     super(roleWeight);
     defineReadOnly(this, "_isKeySecp256k1Wallet", true);
   }
 
   static isKeySecp256k1Wallet(value: any): value is KeySecp256k1Wallet {
-    return !!(
-      value &&
-      value._isKeySecp256k1Wallet &&
-      RoleWeight.isRoleWeight(value.roleWeight)
-    );
+    return !!(value && value._isKeySecp256k1Wallet && RoleWeight.isRoleWeight(value.roleWeight));
   }
 
   public toJson() {
@@ -32,11 +24,7 @@ export class KeySecp256k1Wallet extends KeyBase {
   }
 
   static fromJsonObj(obj: any): KeySecp256k1Wallet {
-    return new KeySecp256k1Wallet(
-      new Wallet(obj.wallet),
-      RoleWeight.fromJsonObj(obj.roleWeight),
-      obj.signType
-    );
+    return new KeySecp256k1Wallet(new Wallet(obj.wallet), RoleWeight.fromJsonObj(obj.roleWeight), obj.signType);
   }
 
   public getSignType(): SignType {
@@ -55,26 +43,25 @@ export class KeySecp256k1Wallet extends KeyBase {
         SignFlag.Sign,
         await sign(digestHash, this.wallet, this.signType),
         this.serializeRoleWeight(),
-      ]
+      ],
     );
   }
 
   public generateKey(): string {
     return utils.solidityPack(
       ["uint8", "uint8", "address", "bytes"],
-      [
-        KeyType.Secp256k1,
-        SignFlag.NotSign,
-        this.wallet.address,
-        this.serializeRoleWeight(),
-      ]
+      [KeyType.Secp256k1, SignFlag.NotSign, this.wallet.address, this.serializeRoleWeight()],
     );
   }
 
   public serialize(): string {
     return utils.solidityPack(
       ["uint8", "address", "bytes"],
-      [KeyType.Secp256k1, this.wallet.address, this.serializeRoleWeight()]
+      [KeyType.Secp256k1, this.wallet.address, this.serializeRoleWeight()],
     );
+  }
+
+  public keyType(): KeyType {
+    return KeyType.Secp256k1;
   }
 }

@@ -46,7 +46,7 @@ export interface TxnLogTransfer {
 }
 
 export interface Relayer {
-  simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute): Promise<SimulateResult>;
+  simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute, token?: string): Promise<SimulateResult>;
 
   getNonce(walletAddr: string): Promise<BigNumber>;
 
@@ -54,5 +54,5 @@ export interface Relayer {
 
   relay(args: PendingExecuteCallArgs): Promise<string>;
 
-  wait(txHash: string): Promise<TxnReceiptResult | undefined>;
+  wait(txHash: string): Promise<TxnReceiptResult>;
 }

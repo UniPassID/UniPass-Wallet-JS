@@ -1,4 +1,4 @@
-import { RoleWeight } from ".";
+import { KeyType, RoleWeight } from ".";
 import { BytesLike } from "ethers";
 
 export abstract class KeyBase {
@@ -13,4 +13,6 @@ export abstract class KeyBase {
   public serializeRoleWeight(): string {
     return this.roleWeight.serialize();
   }
+
+  public abstract keyType(): KeyType;
 }

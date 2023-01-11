@@ -1,5 +1,6 @@
 import { BytesLike, utils, Wallet as WalletEOA } from "ethers";
 import { KeySecp256k1, sign, SignType } from "@unipasswallet/keys";
+import { defineReadOnly } from "ethers/lib/utils";
 import { IPermit } from "./permit";
 import { subDigest } from "@unipasswallet/utils";
 import { Wallet } from "./wallet";
@@ -18,6 +19,8 @@ export interface SessionKeyStore {
 export class SessionKey {
   public readonly userAddr: string;
 
+  public readonly _isSessionKey: boolean;
+
   constructor(
     public readonly wallet: WalletEOA,
     public readonly signType: SignType,
@@ -25,6 +28,7 @@ export class SessionKey {
     public permit?: IPermit,
   ) {
     this.userAddr = utils.hexlify(_userAddr);
+    defineReadOnly(this, "_isSessionKey", true);
   }
 
   public digestPermitMessage(timestamp: number, weight: number): string {
@@ -93,5 +97,9 @@ export class SessionKey {
     sessionKey = await sessionKey.generatePermit(store.expires, store.weight, wallet, [0]);
 
     return sessionKey;
+  }
+
+  public static isSessionKey(v: any): v is SessionKey {
+    return v._isSessionKey;
   }
 }
