@@ -55,4 +55,8 @@ export class KeyERC1271 extends KeyBase {
       [KeyType.ERC1271Wallet, this.address, this.serializeRoleWeight()],
     );
   }
+
+  public keyType(): KeyType {
+    return KeyType.ERC1271Wallet;
+  }
 }

@@ -1,4 +1,4 @@
-import { BigNumber, providers } from "ethers";
+import { providers } from "ethers";
 import { ChainType, TransactionProps, UnipassWalletProps, WalletProvider } from "./interface/unipassWalletProvider";
 import { AxiosInstance } from "axios";
 import requestFactory from "./api/axios";
@@ -7,9 +7,10 @@ import {
   getWallet,
   verifySignature,
   innerGenerateTransferTx,
-  innerEstimateTransferGas,
   sendTransaction,
   genSignTypedDataMessage,
+  innerSimulateExecute,
+  operateToRawExecuteCall,
 } from "./operate";
 import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
@@ -46,34 +47,36 @@ export default class UnipassWalletProvider implements WalletProvider {
     UnipassWalletProvider.request = requestFactory(backend);
   }
 
-  public async estimateTransferTransactionsGasLimits(props: TransactionProps) {
-    const { tx, chain, fee, gasLimit } = props;
+  public async simulateTransactions(props: TransactionProps) {
+    const { tx, chain, fee, keyset } = props;
     const _chain = chain ?? "polygon";
-    const transactions = await innerGenerateTransferTx(tx, _chain, this.config);
-    return innerEstimateTransferGas(transactions, chain, this.config, fee, gasLimit);
+    const transactions = await innerGenerateTransferTx(tx, _chain, this.config, keyset, fee);
+    return innerSimulateExecute(transactions, chain, this.config);
   }
 
   public async sendTransaction(
-    transactions: wallets.BundledTransaction | wallets.ExecuteTransaction,
+    transactions: wallets.RawMainExecuteCall | wallets.RawBundledExecuteCall,
     keyset: Keyset,
     chainType?: ChainType,
-    feeToken?: string,
-    timeout?: number,
   ) {
     const chain = chainType ?? "polygon";
-    return sendTransaction(transactions, chain, this.config, keyset, feeToken, timeout);
+    return sendTransaction(transactions, chain, this.config, keyset);
   }
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionResponse> {
-    const { tx, chain, fee, keyset, timeout, gasLimit } = props;
+    const { tx, chain, fee, keyset } = props;
+    if (!fee) {
+      throw new Error("Please specify token for sending Transactions");
+    }
     const _chain = chain ?? "polygon";
-    const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config);
-    const transactions = await innerEstimateTransferGas(generatedTx, _chain, this.config, fee, gasLimit);
+    const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config, keyset, fee);
+
+    const execute = operateToRawExecuteCall(generatedTx);
 
     // FIX ME: set gas limit for rangers to disable estimate gas in wallet
-    if (_chain === "rangers") transactions.gasLimit = BigNumber.from("1000000");
+    // if (_chain === "rangers") simulateResult.feeTokens = simulateResult.feeTokens.map( BigNumber.from("1000000"));
 
-    return sendTransaction(transactions, chain, this.config, keyset, fee?.token, timeout);
+    return sendTransaction(execute, chain, this.config, keyset);
   }
 
   public async signMessage(message: string, keyset: Keyset, isEIP191Prefix = false) {

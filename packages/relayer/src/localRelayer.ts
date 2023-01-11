@@ -8,9 +8,8 @@ import {
   TxnReceiptResult,
 } from ".";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { moduleMain } from "@unipasswallet/abi";
-import { BigNumber, constants, Contract, Signer } from "ethers";
-import { Interface } from "ethers/lib/utils";
+import { ModuleMainInterface } from "@unipasswallet/utils";
+import { BigNumber, Contract, Signer, constants } from "ethers";
 
 export class LocalRelayer implements Relayer {
   constructor(public readonly context: UnipassWalletContext, public readonly signer: Signer) {}
@@ -25,39 +24,30 @@ export class LocalRelayer implements Relayer {
 
   async getNonce(walletAddr: string): Promise<BigNumber> {
     if (await this.isWalletDeployed(walletAddr)) {
-      const nonce = await new Contract(walletAddr, new Interface(moduleMain.abi), this.signer.provider).getNonce();
+      const nonce = await new Contract(walletAddr, ModuleMainInterface, this.signer.provider).getNonce();
 
-      return nonce.add(1);
+      return nonce;
     }
 
-    return BigNumber.from(1);
+    return constants.Zero;
   }
 
   async getMetaNonce(walletAddr: string): Promise<BigNumber> {
     if (await this.isWalletDeployed(walletAddr)) {
-      const metaNonce = await new Contract(
-        walletAddr,
-        new Interface(moduleMain.abi),
-        this.signer.provider,
-      ).getMetaNonce();
+      const metaNonce = await new Contract(walletAddr, ModuleMainInterface, this.signer.provider).getMetaNonce();
 
-      return metaNonce.add(1);
+      return metaNonce;
     }
 
-    return BigNumber.from(1);
+    return constants.Zero;
   }
 
   async relay(transactions: PendingExecuteCallArgs): Promise<string> {
     const call: ExecuteCall = JSON.parse(transactions.call);
-    let gasLimit = BigNumber.from(transactions.estimateGas);
-    gasLimit = gasLimit.eq(constants.Zero) ? BigNumber.from(10_000_000) : gasLimit.add(80000);
-    const ret = await new Contract(transactions.walletAddress, new Interface(moduleMain.abi), this.signer).execute(
+    const ret = await new Contract(transactions.walletAddress, ModuleMainInterface, this.signer).execute(
       call.txs,
       call.nonce,
       call.signature,
-      {
-        gasLimit,
-      },
     );
 
     return ret.hash;
@@ -67,17 +57,14 @@ export class LocalRelayer implements Relayer {
   async simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute): Promise<SimulateResult> {
     return {
       feeTokens: [],
-      discount: 100,
+      discount: 0,
+      feeReceiver: constants.AddressZero,
+      isFeeRequired: false,
+      gasPrice: constants.Zero.toHexString(),
     };
   }
 
-  async wait(txHash: string): Promise<TxnReceiptResult | undefined> {
-    return {
-      txHash,
-      index: 0,
-      status: 1,
-      logs: [],
-      receipts: [],
-    };
+  async wait(txHash: string): Promise<TxnReceiptResult> {
+    return { receipt: await this.signer.provider!.getTransactionReceipt(txHash) };
   }
 }

@@ -39,6 +39,14 @@ export function toTransaction(transaction: Transactionish): Transaction {
   };
 }
 
+export function toTransactions(transactions: Transactionish | Transactionish[]): Transaction[] {
+  if (Array.isArray(transactions)) {
+    return transactions.map((v) => toTransaction(v));
+  } else {
+    return [toTransaction(transactions)];
+  }
+}
+
 export function digestTxHash(
   chainId: number,
   walletAddr: BytesLike,

@@ -1,9 +1,11 @@
 import { FeeToken, FeeOption } from "..";
-import { CallType, Transaction } from "@unipasswallet/transactions";
+import { CallType, Transactionish, toTransaction, toTransactions } from "@unipasswallet/transactions";
 import { KeyType } from "@unipasswallet/keys";
-import { BigNumber } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
+import {} from "ethers";
 
+const CONTRACT_NOT_DEPLOYED_CODE = 1002;
 export interface FeeTokensReturn {
   isFeeRequired: boolean;
   tokens: FeeToken[];
@@ -27,14 +29,21 @@ export interface UnipassTransaction {
   data: string;
 }
 
-export function toUnipassTransaction(tx: Transaction): UnipassTransaction {
+export function toUnipassTransaction(tx: Transactionish): UnipassTransaction {
+  const transaction = toTransaction(tx);
   return {
-    ...tx,
-    target: hexlify(tx.target),
-    gasLimit: tx.gasLimit.toHexString(),
-    value: tx.value.toHexString(),
-    data: hexlify(tx.data),
+    ...transaction,
+    target: hexlify(transaction.target),
+    gasLimit: transaction.gasLimit.toHexString(),
+    value: transaction.value.toHexString(),
+    data: hexlify(transaction.data),
   };
+}
+
+export function toUnipassTransactions(tx: Transactionish | Transactionish[]): UnipassTransaction[] {
+  const transactions = toTransactions(tx).map((v) => toUnipassTransaction(v));
+
+  return transactions;
 }
 
 export interface ExecuteCall {
@@ -44,11 +53,7 @@ export interface ExecuteCall {
 }
 
 export interface PendingExecuteCallArgs {
-  chainId: string;
-  txHash: string;
   walletAddress: string;
-  estimateGas: string;
-  feeToken?: string;
   call: string;
 }
 
@@ -59,18 +64,14 @@ export interface TxnReciptLog {
 }
 
 export interface TxnReceiptResult {
-  txHash: string;
-  index: number;
-  status: number;
-  revertReason?: string;
-  logs?: TxnReciptLog[];
-  receipts: TxnReceiptResult[];
+  receipt?: providers.TransactionReceipt;
 }
 
 export interface SimulateArgs {
   target: string;
   execute: SimulateExecute;
   keyset: SimulateKey[];
+  token?: string;
 }
 
 export interface SimulateKey {
@@ -95,13 +96,16 @@ export interface SimulateTransaction {
 export interface SimulateResult {
   feeTokens: TokenInfo[];
   discount: number;
+  feeReceiver: string;
+  isFeeRequired: boolean;
+  gasPrice: string;
 }
 
 export interface TokenInfo {
   token: string;
   gasUsed: string;
   tokenPrice: number;
-  natimveTokenPrice: number;
+  nativeTokenPrice: number;
 }
 
 export interface RpcService {
@@ -166,19 +170,31 @@ export class RpcService implements RpcService {
 
   async nonce(walletAddr: string, headers?: object): Promise<BigNumber> {
     const res = await this.fetch(this.url(`/nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
-    const _data = await buildResponse(res);
-    return BigNumber.from(_data);
+    try {
+      const data = await buildResponse(res);
+      return BigNumber.from(data);
+    } catch (error) {
+      if (error.code === CONTRACT_NOT_DEPLOYED_CODE) {
+        return BigNumber.from(0);
+      }
+    }
   }
 
   async metaNonce(walletAddr: string, headers?: object): Promise<BigNumber> {
     const res = await this.fetch(this.url(`/meta_nonce/${walletAddr}`), createGetPostHTTPRequest(headers));
-    const _data = await buildResponse(res);
-    return BigNumber.from(_data);
+    try {
+      const data = await buildResponse(res);
+      return BigNumber.from(data);
+    } catch (error) {
+      if (error.code === CONTRACT_NOT_DEPLOYED_CODE) {
+        return BigNumber.from(0);
+      }
+    }
   }
 }
 
 export interface WebRPCError extends Error {
-  code: string;
+  code: number;
   msg: string;
   status: number;
 }
@@ -196,29 +212,29 @@ const createGetPostHTTPRequest = (headers: object = {}): object => ({
 
 const buildResponse = (res: Response): Promise<any> =>
   res.text().then((text) => {
-    let data;
+    let body;
 
     try {
-      data = JSON.parse(text);
+      body = JSON.parse(text);
     } catch (err) {
       const error = {
-        code: "unknown",
+        code: -1,
         msg: `expecting JSON, got: ${text}`,
         status: res.status,
       } as WebRPCError;
       throw error;
     }
 
-    if (!res.ok || data.statusCode !== 200) {
+    if (!res.ok || body.statusCode !== 200) {
       const error = {
-        code: data.statusCode,
-        msg: data.message || data,
+        code: body.statusCode,
+        msg: body.message || body,
         status: res.status,
       } as WebRPCError;
       throw error;
     }
 
-    return data.data;
+    return body.data;
   });
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;

@@ -7,10 +7,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run prebuild && pnpm run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "prebuild": "ts-node ./build.ts",
     "clean": "rimraf -rf ./dist",
-    "compile": "tsc -p tsconfig.build.json",
+    "compile": "pnpm run prebuild && tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
