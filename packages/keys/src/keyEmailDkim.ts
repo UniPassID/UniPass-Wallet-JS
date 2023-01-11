@@ -209,6 +209,10 @@ export class KeyEmailDkim extends KeyBase {
     }
   }
 
+  public keyType(): KeyType {
+    return KeyType.OpenIDWithEmail;
+  }
+
   public updateZKParams(zkParams: ZKParams): KeyEmailDkim {
     return new KeyEmailDkim(
       this.type,

@@ -18,7 +18,7 @@ import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts
 import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
 import { initDkimZK, OPENID_AUDIENCE, OPENID_ISSUER, OPENID_KID, randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
+import { RawBundledExecuteCall, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
 import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
 
 export interface TestContext {
@@ -275,9 +275,7 @@ export async function initWalletContext(
   if (toDeploy) {
     const deployTx = getWalletDeployTransaction(context.unipassWalletContext, wallet.keyset.hash(), constants.Zero);
     deployTx.revertOnError = true;
-    ret = await (
-      await wallet.sendTransaction({ type: "Bundled", transactions: deployTx, gasLimit: constants.Zero })
-    ).wait();
+    ret = await (await wallet.sendTransactions(new RawBundledExecuteCall(deployTx))).wait();
     expect(ret.status).toEqual(1);
   }
   const nonce = 1;

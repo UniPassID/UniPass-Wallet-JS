@@ -9,3 +9,7 @@ export * as gasEstimator from "./gasEstimator";
 export * as dkimKeys from "./dkimKeys";
 
 export * as erc20 from "./erc20";
+
+export * as singletonFactory from "./singletonFactory";
+
+export * as moduleGuest from "./moduleGuest";

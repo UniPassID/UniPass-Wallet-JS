@@ -45,19 +45,19 @@ export class RpcRelayer implements Relayer {
 
   async getNonce(walletAddr: string): Promise<BigNumber> {
     try {
-      const nonce = BigNumber.from(await this.rpcService.nonce(walletAddr)).add(1);
+      const nonce = BigNumber.from(await this.rpcService.nonce(walletAddr));
       return nonce;
     } catch (e) {
-      return BigNumber.from(1);
+      return BigNumber.from(0);
     }
   }
 
   async getMetaNonce(walletAddr: string): Promise<BigNumber> {
     try {
-      const metaNonce = (await this.rpcService.metaNonce(walletAddr)).add(1);
+      const metaNonce = await this.rpcService.metaNonce(walletAddr);
       return metaNonce;
     } catch (e) {
-      return BigNumber.from(1);
+      return BigNumber.from(0);
     }
   }
 
@@ -65,20 +65,22 @@ export class RpcRelayer implements Relayer {
     return this.rpcService.sendTransaction(transactions);
   }
 
-  async simulate(target: string, keyset: SimulateKey[], execute: SimulateExecute): Promise<SimulateResult> {
+  async simulate(
+    target: string,
+    keyset: SimulateKey[],
+    execute: SimulateExecute,
+    token?: string,
+  ): Promise<SimulateResult> {
     const args: SimulateArgs = {
       target,
       keyset,
       execute,
+      token,
     };
     return this.rpcService.simulate(args);
   }
 
-  async wait(txHash: string): Promise<TxnReceiptResult | undefined> {
-    const ret = await this.rpcService.txRecipt(txHash);
-    if (ret !== undefined && ret !== null && ret.receipts.find((v) => v.status === 0) !== undefined) {
-      ret.status = 3;
-    }
-    return ret;
+  async wait(txHash: string): Promise<TxnReceiptResult> {
+    return this.rpcService.txRecipt(txHash);
   }
 }

@@ -12,10 +12,7 @@ export class KeySecp256k1 extends KeyBase {
     _address: BytesLike,
     roleWeight: RoleWeight,
     private signType: SignType,
-    public signFunc?: (
-      digestHash: BytesLike,
-      signType: SignType
-    ) => Promise<string>
+    public signFunc?: (digestHash: BytesLike, signType: SignType) => Promise<string>,
   ) {
     super(roleWeight);
     this.address = utils.hexlify(_address);
@@ -23,11 +20,7 @@ export class KeySecp256k1 extends KeyBase {
   }
 
   static isKeySecp256k1(value: any): value is KeySecp256k1 {
-    return !!(
-      value &&
-      value._isKeySecp256k1 &&
-      RoleWeight.isRoleWeight(value.roleWeight)
-    );
+    return !!(value && value._isKeySecp256k1 && RoleWeight.isRoleWeight(value.roleWeight));
   }
 
   public toJson() {
@@ -39,11 +32,7 @@ export class KeySecp256k1 extends KeyBase {
   }
 
   static fromJsonObj(obj: any): KeySecp256k1 {
-    return new KeySecp256k1(
-      obj.address,
-      RoleWeight.fromJsonObj(obj.roleWeight),
-      obj.signType
-    );
+    return new KeySecp256k1(obj.address, RoleWeight.fromJsonObj(obj.roleWeight), obj.signType);
   }
 
   public getSignType(): SignType {
@@ -57,31 +46,25 @@ export class KeySecp256k1 extends KeyBase {
   public async generateSignature(digestHash: string): Promise<string> {
     return utils.solidityPack(
       ["uint8", "uint8", "bytes", "bytes"],
-      [
-        KeyType.Secp256k1,
-        SignFlag.Sign,
-        await this.signFunc!(digestHash, this.signType),
-        this.serializeRoleWeight(),
-      ]
+      [KeyType.Secp256k1, SignFlag.Sign, await this.signFunc!(digestHash, this.signType), this.serializeRoleWeight()],
     );
   }
 
   public generateKey(): string {
     return utils.solidityPack(
       ["uint8", "uint8", "address", "bytes"],
-      [
-        KeyType.Secp256k1,
-        SignFlag.NotSign,
-        this.address,
-        this.serializeRoleWeight(),
-      ]
+      [KeyType.Secp256k1, SignFlag.NotSign, this.address, this.serializeRoleWeight()],
     );
   }
 
   public serialize(): string {
     return utils.solidityPack(
       ["uint8", "address", "bytes"],
-      [KeyType.Secp256k1, this.address, this.serializeRoleWeight()]
+      [KeyType.Secp256k1, this.address, this.serializeRoleWeight()],
     );
+  }
+
+  public keyType(): KeyType {
+    return KeyType.Secp256k1;
   }
 }
