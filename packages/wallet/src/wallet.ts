@@ -359,7 +359,7 @@ export class Wallet extends Signer {
 
   async unipassEstimateGas(
     signedTransactions: Pick<SignedTransactions, "transactions" | "nonce" | "signature" | "address">,
-    overwrite?: any,
+    overwrite: any = {},
   ): Promise<BigNumber> {
     const executeData = new Interface(moduleMain.abi).encodeFunctionData("execute", [
       signedTransactions.transactions,
