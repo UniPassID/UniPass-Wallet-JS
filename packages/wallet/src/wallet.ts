@@ -417,7 +417,7 @@ export class Wallet extends Signer {
           _isUnipassWalletTransaction: true,
           callType: CallType.Call,
           gasLimit: tx.gasLimit,
-          revertOnError: false,
+          revertOnError: true,
           target: this.address,
           value: constants.Zero,
           data: new Interface(moduleMain.abi).encodeFunctionData("execute", [transactions, nonce, sig.signature]),
@@ -430,7 +430,7 @@ export class Wallet extends Signer {
       {
         _isUnipassWalletTransaction: true,
         callType: CallType.Call,
-        revertOnError: false,
+        revertOnError: true,
         gasLimit: BigNumber.from(tx.gasLimit),
         target: tx.to,
         value: BigNumber.from(tx.value),

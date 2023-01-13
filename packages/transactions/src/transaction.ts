@@ -31,7 +31,7 @@ export function toTransaction(transaction: Transactionish): Transaction {
   return {
     _isUnipassWalletTransaction: true,
     callType: CallType.Call,
-    revertOnError: false,
+    revertOnError: true,
     gasLimit: BigNumber.from(transaction.gasLimit),
     target: transaction.to,
     value: BigNumber.from(transaction.value),
