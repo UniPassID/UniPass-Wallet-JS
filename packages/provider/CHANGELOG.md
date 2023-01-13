@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.2.1-alpha.10
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix default overwrite to object
+- Updated dependencies
+  - @unipasswallet/keys@0.2.1-alpha.10
+  - @unipasswallet/network@0.2.1-alpha.10
+  - @unipasswallet/relayer@0.2.1-alpha.10
+  - @unipasswallet/sdk@0.2.1-alpha.10
+  - @unipasswallet/transaction-builders@0.2.1-alpha.10
+  - @unipasswallet/transactions@0.2.1-alpha.10
+  - @unipasswallet/utils@0.2.1-alpha.10
+  - @unipasswallet/wallet@0.2.1-alpha.10
+
 ## 0.2.1-alpha.9
 
 ### Patch Changes

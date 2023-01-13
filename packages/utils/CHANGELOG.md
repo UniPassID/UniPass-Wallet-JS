@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.2.1-alpha.10
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix default overwrite to object
+- Updated dependencies
+  - @unipasswallet/abi@0.2.1-alpha.10
+
 ## 0.2.1-alpha.9
 
 ### Patch Changes

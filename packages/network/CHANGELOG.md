@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.2.1-alpha.10
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix default overwrite to object
+
 ## 0.2.1-alpha.9
 
 ### Patch Changes
