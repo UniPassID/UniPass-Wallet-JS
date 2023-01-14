@@ -4,7 +4,6 @@ import { task } from "hardhat/config";
 import * as fs from "fs";
 
 task("compile", "Pre Compile Script", async (taskArgs, hre, runSuper) => {
-  const networkName = hre.network.name;
   fs.writeFileSync(
     "./node_modules/unipass-wallet-contracts/contracts/modules/utils/LibTimeLock.sol",
     `// SPDX-License-Identifier: Apache-2.0

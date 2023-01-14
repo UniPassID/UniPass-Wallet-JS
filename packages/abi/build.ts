@@ -73,3 +73,21 @@ fs.writeFileSync(
     2,
   ),
 );
+
+const moduleWhiteList = JSON.parse(
+  fs
+    .readFileSync(
+      `${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/modules/commons/ModuleWhiteList.sol/ModuleWhiteList.json`,
+    )
+    .toString("utf-8"),
+);
+
+fs.writeFileSync("./src/abis/moduleWhiteList.json", JSON.stringify({ abi: moduleWhiteList.abi }, null, 2));
+
+const openID = JSON.parse(
+  fs
+    .readFileSync(`${__dirname}/../../artifacts/unipass-wallet-contracts/contracts/OpenID.sol/OpenID.json`)
+    .toString("utf-8"),
+);
+
+fs.writeFileSync("./src/abis/openID.json", JSON.stringify({ abi: openID.abi }, null, 2));

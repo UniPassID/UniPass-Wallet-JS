@@ -36,6 +36,7 @@ import {
   SingletonFactoryInterface,
   CreationCode,
   getWalletCode,
+  decodeContractError,
 } from "@unipasswallet/utils";
 import { SessionKey } from "./sessionKey";
 
@@ -382,7 +383,8 @@ export class Wallet extends Signer {
     const retBytes = await (this.provider as providers.JsonRpcProvider).send("eth_call", params);
     const [succ, reason, gas] = defaultAbiCoder.decode(["bool", "bytes", "uint256"], retBytes);
     if (!succ) {
-      throw new Error(`estimate gas Limit failed: ${reason}`);
+      const decodedReason = decodeContractError(reason);
+      throw new Error(`estimate gas Limit failed: ${decodedReason}`);
     }
     return gas.add(this.txBaseCost(executeData));
   }
