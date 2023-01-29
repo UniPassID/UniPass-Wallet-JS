@@ -14,7 +14,7 @@ export interface RawMainExecuteTransactionOpts {
 }
 
 export class RawMainExecuteTransaction {
-  public readonly _isRawMainExecuteTransaction: true;
+  public readonly _isRawMainExecuteTransaction: boolean;
 
   public readonly target: string;
 

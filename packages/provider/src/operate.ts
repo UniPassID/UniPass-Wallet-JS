@@ -4,7 +4,7 @@ import { BigNumber, constants, ethers } from "ethers";
 import { Keyset } from "@unipasswallet/keys";
 import { digestTxHash, Transaction } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
-import { RawBundledExecuteCall, RawMainExecuteCall } from "@unipasswallet/wallet";
+import { RawBundledExecuteCall, RawMainExecuteCall, RawMainExecuteTransaction } from "@unipasswallet/wallet";
 import { SimulateResult } from "@unipasswallet/relayer";
 import api from "./api/backend";
 import WalletError from "./constant/error_map";
@@ -21,20 +21,23 @@ export type OperateTransaction = {
   feeTx?: Transaction;
 };
 
-export const operateToRawExecuteCall = (
+export const operateToRawExecuteCall = async (
   operateTransaction: OperateTransaction,
-): RawBundledExecuteCall | RawMainExecuteCall => {
+): Promise<RawBundledExecuteCall | RawMainExecuteCall> => {
   const { deployTx, syncAccountExecute, callExecute: callExecuteCall, feeTx } = operateTransaction;
+
+  const user = await getUser();
 
   let rawExecute: RawBundledExecuteCall | RawMainExecuteCall;
   if (deployTx) {
     rawExecute = new RawBundledExecuteCall(deployTx);
   }
   if (syncAccountExecute) {
+    const transaction = new RawMainExecuteTransaction({ rawExecuteCall: syncAccountExecute, target: user.address });
     if (rawExecute) {
-      rawExecute = rawExecute.pushTransaction(syncAccountExecute);
+      rawExecute = rawExecute.pushTransaction(transaction);
     } else {
-      rawExecute = new RawBundledExecuteCall(syncAccountExecute);
+      rawExecute = new RawBundledExecuteCall(transaction);
     }
   }
 
@@ -44,7 +47,8 @@ export const operateToRawExecuteCall = (
   }
 
   if (rawExecute) {
-    return rawExecute.pushTransaction(callExecute);
+    const transaction = new RawMainExecuteTransaction({ rawExecuteCall: callExecute, target: user.address });
+    return rawExecute.pushTransaction(transaction);
   }
   return callExecute;
 };
@@ -88,9 +92,10 @@ export const innerGenerateTransferTx = async (
       transactions[1].gasLimit = constants.Zero;
       transactions[0].revertOnError = true;
       transactions[1].revertOnError = true;
-      [deployTx] = transactions;
+      let syncAccountTx: Transaction;
+      [deployTx, syncAccountTx] = transactions;
       nonce = nonce.add(1);
-      syncAccountExecute = new RawMainExecuteCall(transactions, nonce, []);
+      syncAccountExecute = new RawMainExecuteCall(syncAccountTx, nonce, []);
     }
   }
   const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
@@ -144,7 +149,7 @@ export const innerSimulateExecute = async (
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
 
-  const rawExecute = operateToRawExecuteCall(tx);
+  const rawExecute = await operateToRawExecuteCall(tx);
 
   return wallet.simulateExecute(rawExecute);
 };
