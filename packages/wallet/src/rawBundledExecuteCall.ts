@@ -28,12 +28,20 @@ export class RawBundledExecuteCall {
   ): (Transaction | RawMainExecuteTransaction)[] {
     if (Array.isArray(txs)) {
       return txs.map((v) => RawBundledExecuteCall.toTransaction(v));
+    } else {
+      return [RawBundledExecuteCall.toTransaction(txs)];
     }
   }
 
   public toSimulateExecute(): SimulateExecute {
     return {
-      txs: this.txs.map((tx) => toUnipassTransaction(tx)),
+      txs: this.txs.map((tx) => {
+        if (RawMainExecuteTransaction.isRawMainExecuteTransaction(tx)) {
+          return tx.toSimulateTransaction();
+        } else {
+          return toUnipassTransaction(tx);
+        }
+      }),
       nonce: hexlify(0),
       signature: "0x",
     };

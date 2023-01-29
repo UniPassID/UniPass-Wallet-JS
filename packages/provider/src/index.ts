@@ -71,7 +71,7 @@ export default class UnipassWalletProvider implements WalletProvider {
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config, keyset, fee);
 
-    const execute = operateToRawExecuteCall(generatedTx);
+    const execute = await operateToRawExecuteCall(generatedTx);
 
     // FIX ME: set gas limit for rangers to disable estimate gas in wallet
     // if (_chain === "rangers") simulateResult.feeTokens = simulateResult.feeTokens.map( BigNumber.from("1000000"));

@@ -215,6 +215,7 @@ export class Wallet extends Signer {
     chainId: number,
     nonce: BigNumber,
   ): Promise<{ execute: MainExecuteCall; nonce }> {
+    nonce = nonce.add(1);
     if (!(await rawExecute.preSignFunc(chainId, this.address, rawExecute.txs, nonce))) {
       throw new Error(
         `Pre signing Failed For ChainID[${chainId}], address[${this.address}], nonce[${nonce}], txs[${rawExecute.txs}]`,
@@ -261,11 +262,10 @@ export class Wallet extends Signer {
     rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
   ): Promise<{ execute: BundledExecuteCall | MainExecuteCall; chainId: number; nonce: BigNumber }> {
     const { chainId } = await this.provider.getNetwork();
-    let nonce = await this.getNonce();
+    const nonce = await this.getNonce();
     if (nonce === constants.Zero) {
       throw new Error(`Wallet [${this.address}] Has Not Deployed`);
     }
-    nonce = nonce.add(1);
 
     if (RawMainExecuteCall.isRawMainExecuteCall(rawExecute)) {
       const signedExecute = await this.signRawMainExecuteCall(rawExecute, chainId, nonce);
@@ -349,7 +349,7 @@ export class Wallet extends Signer {
       confirmations: 1,
       from: this.address,
       chainId,
-      nonce: nonce.toNumber() - 1,
+      nonce: nonce.toNumber(),
       gasLimit: constants.Zero,
       data: execute.ethAbiEncode(),
       value: constants.Zero,
