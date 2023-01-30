@@ -73,14 +73,12 @@ export const dev_api_config = {
 export const test_api_config = {
   backend: "https://t.wallet.unipass.vip/wallet-v2",
   relayer: {
-    eth: "https://t.wallet.unipass.vip/relayer-v2-eth",
-    // FIXME
-    polygon: "http://localhost:3050",
-    // FIXME
-    bsc: "http://localhost:3051",
-    rangers: "https://t.wallet.unipass.vip/relayer-v2-rangers",
-    scroll: "https://t.wallet.unipass.vip/relayer-v2-scroll",
-    arbitrum: "https://t.wallet.unipass.vip/relayer-v2-arbitrum",
+    eth: "https://t.wallet.unipass.vip/relayer-eth",
+    polygon: "https://t.wallet.unipass.vip/relayer-polygon",
+    bsc: "https://t.wallet.unipass.vip/relayer-bsc",
+    rangers: "https://t.wallet.unipass.vip/relayer-rangers",
+    scroll: "https://t.wallet.unipass.vip/relayer-scroll",
+    arbitrum: "https://t.wallet.unipass.vip/relayer-arbitrum",
   },
 };
 
