@@ -1,5 +1,39 @@
 # @unipasswallet/deployer
 
+## 0.2.1
+
+### Patch Changes
+
+- 9fbe748d: @unipasswallet/network: update unipass wallet contracts version
+  @unipasswallet/provider: add testnet contracts
+- 78693a87: @unipasswallet/provider: feat: bump lindell-ecdsa-wasm version
+- 65638eed: @unipasswallet/wallet: fix default overwrite to object
+- 5c5d89f2: @unipasswallet/wallet: fix pre sign function
+- 6ad242ec: add isEIP191Prefix param for personal sign
+- a6f8705a: @unipasswallet/keys: fix KeyERC1271 generate signature
+- bf4d7a3e: @unipasswallet/network: bump uniPass-wallet-contracts dependency version
+  @unipasswallet/provider: Add Index DB and tss Audit before signing messages
+- 7c109440: @unipasswallet/provider: add arbitrum support
+- 68950e03: @unipasswallet/provider: fix fee undefined error
+- c5c22b6e: @unipasswallet/provider: add prefix for signing message
+- 4183fcfe: - @unipasswallet/provider:
+  - add eip712 sign
+  - add scroll support
+- bump version to 0.2.1
+- Updated dependencies [9fbe748d]
+- Updated dependencies [78693a87]
+- Updated dependencies [65638eed]
+- Updated dependencies [5c5d89f2]
+- Updated dependencies [6ad242ec]
+- Updated dependencies [a6f8705a]
+- Updated dependencies [bf4d7a3e]
+- Updated dependencies [7c109440]
+- Updated dependencies [68950e03]
+- Updated dependencies [c5c22b6e]
+- Updated dependencies [4183fcfe]
+- Updated dependencies
+  - @unipasswallet/utils@0.2.1
+
 ## 0.2.1-alpha.10
 
 ### Patch Changes
