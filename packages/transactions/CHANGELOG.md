@@ -9,6 +9,17 @@
 - Updated dependencies
   - @unipasswallet/abi@0.2.2
   - @unipasswallet/utils@0.2.2
+## 0.3.0-alpha.0
+
+### Minor Changes
+
+- @unipasswallet/wallet: bump relayer version
+
+### Patch Changes
+
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.0
+  - @unipasswallet/utils@0.3.0-alpha.0
 
 ## 0.2.1
 
