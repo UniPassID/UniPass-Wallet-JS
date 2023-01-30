@@ -1,5 +1,20 @@
 # @unipasswallet/transaction-builders
 
+## 0.3.0-alpha.0
+
+### Minor Changes
+
+- @unipasswallet/wallet: bump relayer version
+
+### Patch Changes
+
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.0
+  - @unipasswallet/keys@0.3.0-alpha.0
+  - @unipasswallet/transactions@0.3.0-alpha.0
+  - @unipasswallet/utils@0.3.0-alpha.0
+  - @unipasswallet/wallet@0.3.0-alpha.0
+
 ## 0.2.1
 
 ### Patch Changes

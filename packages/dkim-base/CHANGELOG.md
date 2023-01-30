@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.3.0-alpha.0
+
+### Minor Changes
+
+- @unipasswallet/wallet: bump relayer version
+
 ## 0.2.1
 
 ### Patch Changes
