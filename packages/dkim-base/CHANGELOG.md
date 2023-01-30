@@ -6,6 +6,12 @@
 
 - @unipasswallet/provider: break down sending transaction
   @unipasswallet/wallet: break down sending transaction
+## 0.3.0-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/provider: update test api config
+
 ## 0.3.0-alpha.0
 
 ### Minor Changes
