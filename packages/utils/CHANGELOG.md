@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.3.0-alpha.2
+
+### Patch Changes
+
+- @unipasswallet/provider: fix test api config
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.2
+
 ## 0.3.0-alpha.1
 
 ### Patch Changes

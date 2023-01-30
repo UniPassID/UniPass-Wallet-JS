@@ -1,5 +1,17 @@
 # @unipasswallet/transaction-builders
 
+## 0.3.0-alpha.2
+
+### Patch Changes
+
+- @unipasswallet/provider: fix test api config
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.2
+  - @unipasswallet/keys@0.3.0-alpha.2
+  - @unipasswallet/transactions@0.3.0-alpha.2
+  - @unipasswallet/utils@0.3.0-alpha.2
+  - @unipasswallet/wallet@0.3.0-alpha.2
+
 ## 0.3.0-alpha.1
 
 ### Patch Changes
