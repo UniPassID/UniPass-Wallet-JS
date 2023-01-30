@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.3.0-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/provider: update test api config
+
 ## 0.3.0-alpha.0
 
 ### Minor Changes

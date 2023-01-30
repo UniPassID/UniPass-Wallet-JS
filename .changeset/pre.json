@@ -17,6 +17,7 @@
     "@unipasswallet/wallet": "0.2.1"
   },
   "changesets": [
+    "shy-bats-clean",
     "tasty-fans-arrive"
   ]
 }

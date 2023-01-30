@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.3.0-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/provider: update test api config
+- Updated dependencies
+  - @unipasswallet/keys@0.3.0-alpha.1
+  - @unipasswallet/network@0.3.0-alpha.1
+  - @unipasswallet/relayer@0.3.0-alpha.1
+  - @unipasswallet/sdk@0.3.0-alpha.1
+  - @unipasswallet/transaction-builders@0.3.0-alpha.1
+  - @unipasswallet/transactions@0.3.0-alpha.1
+  - @unipasswallet/utils@0.3.0-alpha.1
+  - @unipasswallet/wallet@0.3.0-alpha.1
+
 ## 0.3.0-alpha.0
 
 ### Minor Changes
