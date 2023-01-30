@@ -6,6 +6,11 @@
 
 - @unipasswallet/provider: break down sending transaction
   @unipasswallet/wallet: break down sending transaction
+## 0.3.0-alpha.0
+
+### Minor Changes
+
+- @unipasswallet/wallet: bump relayer version
 
 ## 0.2.1
 
