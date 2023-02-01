@@ -1,5 +1,15 @@
 # @unipasswallet/transactions
 
+## 0.2.2
+
+### Patch Changes
+
+- @unipasswallet/provider: break down sending transaction
+  @unipasswallet/wallet: break down sending transaction
+- Updated dependencies
+  - @unipasswallet/abi@0.2.2
+  - @unipasswallet/utils@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @unipasswallet/dkim-base
 
+## 0.2.2
+
+### Patch Changes
+
+- @unipasswallet/provider: break down sending transaction
+  @unipasswallet/wallet: break down sending transaction
+
 ## 0.2.1
 
 ### Patch Changes

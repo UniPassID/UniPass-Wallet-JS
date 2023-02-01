@@ -1,5 +1,21 @@
 # @unipasswallet/provider
 
+## 0.2.2
+
+### Patch Changes
+
+- @unipasswallet/provider: break down sending transaction
+  @unipasswallet/wallet: break down sending transaction
+- Updated dependencies
+  - @unipasswallet/keys@0.2.2
+  - @unipasswallet/network@0.2.2
+  - @unipasswallet/relayer@0.2.2
+  - @unipasswallet/sdk@0.2.2
+  - @unipasswallet/transaction-builders@0.2.2
+  - @unipasswallet/transactions@0.2.2
+  - @unipasswallet/utils@0.2.2
+  - @unipasswallet/wallet@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
