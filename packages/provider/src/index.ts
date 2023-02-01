@@ -19,6 +19,7 @@ import { MessageTypes, TypedMessage } from "./interface";
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
 export * from "./utils/tss-worker";
+export * from "./utils/unipass";
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
