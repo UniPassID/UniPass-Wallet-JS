@@ -13,8 +13,9 @@ export class RpcRelayer implements Relayer {
     relayerUrl: string,
     public readonly context: UnipassWalletContext,
     public readonly provider: providers.Provider,
+    originFetch?: typeof fetch,
   ) {
-    this.rpcService = new RpcService(relayerUrl, fetchPonyfill().fetch);
+    this.rpcService = new RpcService(relayerUrl, originFetch || fetchPonyfill().fetch);
   }
 
   async isWalletDeployed(walletAddress: string): Promise<boolean> {
