@@ -1,5 +1,12 @@
 # @unipasswallet/network
 
+## 0.2.2-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/provider: storaging account info in provider instance
+  @unipasswallet/relayer: add origin fetch for relayer
+
 ## 0.2.1
 
 ### Patch Changes

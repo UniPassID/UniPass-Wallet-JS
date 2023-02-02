@@ -1,5 +1,14 @@
 # @unipasswallet/dkim
 
+## 0.2.2-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/provider: storaging account info in provider instance
+  @unipasswallet/relayer: add origin fetch for relayer
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.2.2-alpha.0
+
 ## 0.2.1
 
 ### Patch Changes
