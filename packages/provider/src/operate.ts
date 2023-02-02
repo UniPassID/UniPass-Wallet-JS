@@ -13,6 +13,7 @@ import { ADDRESS_ZERO } from "./constant";
 import { FeeOption, Relayer } from "@unipasswallet/relayer";
 import DB from "./utils/index_db";
 import { clearUpSignToken } from "./utils/storages";
+import UnipassWalletProvider from "./index";
 
 export type OperateTransaction = {
   deployTx?: Transaction;
@@ -330,6 +331,10 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
 };
 
 const getUser = async (): Promise<AccountInfo | undefined> => {
+  const { config } = UnipassWalletProvider.getInstance();
+  if (config.accountInfo) {
+    return config.accountInfo;
+  }
   const accountInfo = await DB.getAccountInfo();
 
   if (accountInfo) {

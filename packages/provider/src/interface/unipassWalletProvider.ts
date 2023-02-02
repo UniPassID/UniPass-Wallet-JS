@@ -1,6 +1,7 @@
 import { Keyset } from "@unipasswallet/keys";
 import { Wallet } from "@unipasswallet/wallet";
 import { BigNumber, BytesLike, providers } from "ethers";
+import { AccountInfo } from "./index";
 
 type AuthChainNode =
   | "polygon-mumbai"
@@ -33,6 +34,7 @@ export type UrlConfig = {
 interface UnipassWalletProps {
   env: Environment;
   url_config?: UrlConfig;
+  accountInfo?: AccountInfo;
 }
 
 interface UniTransaction {
