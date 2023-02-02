@@ -14,7 +14,7 @@ import {
 import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
 import { wallets } from "@unipasswallet/sdk";
-import { MessageTypes, TypedMessage } from "./interface";
+import { AccountInfo, MessageTypes, TypedMessage } from "./interface";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
@@ -26,9 +26,9 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   public static request: AxiosInstance;
 
-  private config: UnipassWalletProps | undefined;
+  public config: UnipassWalletProps | undefined;
 
-  static getInstance(props: UnipassWalletProps) {
+  static getInstance(props?: UnipassWalletProps) {
     if (!UnipassWalletProvider.instance) {
       const ins = new UnipassWalletProvider(props);
       UnipassWalletProvider.instance = ins;
@@ -41,6 +41,10 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.config = props;
     const { backend } = getApiConfig(props);
     this.init(backend);
+  }
+
+  private setAccountInfo(accountInfo: AccountInfo) {
+    this.config.accountInfo = accountInfo;
   }
 
   private async init(backend: string) {
