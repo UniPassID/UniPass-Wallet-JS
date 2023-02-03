@@ -43,7 +43,7 @@ export default class UnipassWalletProvider implements WalletProvider {
     this.init(backend);
   }
 
-  private setAccountInfo(accountInfo: AccountInfo) {
+  public setAccountInfo(accountInfo: AccountInfo) {
     this.config.accountInfo = accountInfo;
   }
 
