@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.3.0-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/provider: fix: removing fee tx checks
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.4
+  - @unipasswallet/utils@0.3.0-alpha.4
+
 ## 0.3.0-alpha.3
 
 ### Patch Changes
