@@ -13,6 +13,7 @@ import { WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
 import DB from "./utils/index_db";
 import { clearUpSignToken } from "./utils/storages";
+import UnipassWalletProvider from "./index";
 
 export type OperateTransaction = {
   deployTx?: Transaction;
@@ -250,6 +251,10 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
 };
 
 const getUser = async (): Promise<AccountInfo | undefined> => {
+  const cachedAccountInfo = UnipassWalletProvider.getInstance().getAccountInfo()
+  if (cachedAccountInfo) {
+    return cachedAccountInfo
+  }
   const accountInfo = await DB.getAccountInfo();
 
   if (accountInfo) {
