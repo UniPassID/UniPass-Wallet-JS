@@ -45,6 +45,28 @@ export class MainExecuteTransaction {
     defineReadOnly(this, "_isMainExecuteTransaction", true);
   }
 
+  public toJson(): string {
+    return `{"_isMainExecuteTransaction":true,"target":"${
+      this.target
+    }","executeCall": ${this.executeCall.toJson()},"gasLimit":"${hexlify(this.gasLimit)}","revertOnError":${
+      this.revertOnError
+    },"value":"${hexlify(this.value)}","callType":${this.callType}}`;
+  }
+
+  public static fromJsonObj(obj: any): MainExecuteTransaction {
+    if (obj._isMainExecuteTransaction !== true) {
+      throw new Error("Expected _isMainExecuteTransaction to be true");
+    }
+    return new MainExecuteTransaction({
+      executeCall: MainExecuteCall.fromJsonObj(obj.executeCall),
+      gasLimit: obj.gasLimit ? BigNumber.from(obj.gasLimit) : undefined,
+      revertOnError: obj.revertOnError,
+      target: obj.target ? hexlify(obj.target) : undefined,
+      value: obj.value ? BigNumber.from(obj.value) : undefined,
+      callType: obj.callType,
+    });
+  }
+
   public toTransaction(): Transaction {
     const data = this.executeCall.ethAbiEncode();
 
@@ -63,28 +85,3 @@ export class MainExecuteTransaction {
     return v._isMainExecuteTransaction;
   }
 }
-
-// export type ExecuteTransaction = {
-//   type: "Execute";
-//   transactions: Transactionish[] | Transactionish;
-//   sessionKeyOrSignerIndex: SessionKey | number[];
-//   preSignFunc?: (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => Promise<boolean>;
-//   gasLimit: BigNumber;
-//   nonce: BigNumber;
-// };
-
-// export function toSimulateExecute(execute: ExecuteTransaction): SimulateExecute {
-//   const { transactions, sessionKeyOrSignerIndex, nonce } = execute;
-//   const txs = toUnipassTransactions(transactions);
-//   let signature;
-//   if (Array.isArray(sessionKeyOrSignerIndex)) {
-//     signature = sessionKeyOrSignerIndex;
-//   } else {
-//     throw new Error("Cannot Convert Session to Simulate Transaction Signature");
-//   }
-//   return { txs, nonce: hexlify(nonce), signature };
-// }
-
-// export function isExecuteTransaction(tx: any): tx is ExecuteTransaction {
-//   return tx.type === "Execute";
-// }

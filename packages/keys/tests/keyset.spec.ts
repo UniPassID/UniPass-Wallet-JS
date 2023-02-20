@@ -9,7 +9,7 @@ import {
   KeyOpenIDWithEmail,
   KeyOpenIDSignType,
   KeyEmailDkimSignType,
-} from "@unipasswallet/keys";
+} from "@unipass-wallet.js/keys";
 import { BytesLike, Wallet, utils } from "ethers";
 import { hexlify } from "ethers/lib/utils";
 
