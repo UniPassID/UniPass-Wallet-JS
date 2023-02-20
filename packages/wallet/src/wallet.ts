@@ -333,11 +333,7 @@ export class Wallet extends Signer {
     return this.context.moduleGuest;
   }
 
-  async sendTransactions(
-    rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
-  ): Promise<providers.TransactionResponse> {
-    const { execute, chainId, nonce } = await this.signTransactions(rawExecute);
-
+  async sendSignedTransactions(execute: BundledExecuteCall | MainExecuteCall, chainId: number, nonce: BigNumber) {
     const call: ExecuteCall = execute.toExecuteCall();
     const args: PendingExecuteCallArgs = {
       call: JSON.stringify(call),
@@ -357,6 +353,13 @@ export class Wallet extends Signer {
         return this.waitForTransaction(hash, confirmations, timeout);
       },
     };
+  }
+
+  async sendTransactions(
+    rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
+  ): Promise<providers.TransactionResponse> {
+    const { execute, chainId, nonce } = await this.signTransactions(rawExecute);
+    return this.sendSignedTransactions(execute, chainId, nonce)
   }
 
   async waitForTransaction(
