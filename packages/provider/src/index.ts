@@ -20,7 +20,7 @@ import { MessageTypes, TypedMessage, AccountInfo } from "./interface";
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
 export * from "./utils/tss-worker";
-export * from './utils/unipass';
+export * from "./utils/unipass";
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
@@ -53,7 +53,7 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public getAccountInfo() {
-    return this.config.accountInfo
+    return this.config.accountInfo;
   }
 
   public async simulateTransactions(props: TransactionProps) {
@@ -74,9 +74,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionResponse> {
     const { tx, chain, fee, keyset } = props;
-    if (!fee) {
-      throw new Error("Please specify token for sending Transactions");
-    }
+
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config, keyset, fee);
 
