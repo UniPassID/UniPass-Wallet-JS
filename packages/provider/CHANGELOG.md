@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.3.0-alpha.5
+
+### Patch Changes
+
+- feat: add json serialize and deserialize
+- Updated dependencies
+  - @unipasswallet/keys@0.3.0-alpha.5
+  - @unipasswallet/network@0.3.0-alpha.5
+  - @unipasswallet/relayer@0.3.0-alpha.5
+  - @unipasswallet/sdk@0.3.0-alpha.5
+  - @unipasswallet/transaction-builders@0.3.0-alpha.5
+  - @unipasswallet/transactions@0.3.0-alpha.5
+  - @unipasswallet/utils@0.3.0-alpha.5
+  - @unipasswallet/wallet@0.3.0-alpha.5
+
 ## 0.3.0-alpha.4
 
 ### Patch Changes

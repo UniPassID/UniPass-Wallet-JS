@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.3.0-alpha.5
+
+### Patch Changes
+
+- feat: add json serialize and deserialize
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.5
+
 ## 0.3.0-alpha.4
 
 ### Patch Changes
