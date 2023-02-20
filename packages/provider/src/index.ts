@@ -15,11 +15,12 @@ import {
 import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
 import { wallets } from "@unipasswallet/sdk";
-import { MessageTypes, TypedMessage } from "./interface";
+import { MessageTypes, TypedMessage, AccountInfo } from "./interface";
 
 export * from "./interface/unipassWalletProvider";
 export * from "./config/index";
 export * from "./utils/tss-worker";
+export * from './utils/unipass';
 
 export default class UnipassWalletProvider implements WalletProvider {
   public static instance: UnipassWalletProvider;
@@ -28,7 +29,7 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private config: UnipassWalletProps | undefined;
 
-  static getInstance(props: UnipassWalletProps) {
+  static getInstance(props?: UnipassWalletProps) {
     if (!UnipassWalletProvider.instance) {
       const ins = new UnipassWalletProvider(props);
       UnipassWalletProvider.instance = ins;
@@ -45,6 +46,14 @@ export default class UnipassWalletProvider implements WalletProvider {
 
   private async init(backend: string) {
     UnipassWalletProvider.request = requestFactory(backend);
+  }
+
+  public setAccountInfo(accountInfo: AccountInfo) {
+    this.config.accountInfo = accountInfo;
+  }
+
+  public getAccountInfo() {
+    return this.config.accountInfo
   }
 
   public async simulateTransactions(props: TransactionProps) {
