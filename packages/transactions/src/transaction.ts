@@ -1,6 +1,6 @@
 import { BigNumber, BytesLike, providers } from "ethers";
 import { subDigest } from "@unipasswallet/utils";
-import { defaultAbiCoder, keccak256 } from "ethers/lib/utils";
+import { defaultAbiCoder, hexlify, keccak256 } from "ethers/lib/utils";
 
 export enum CallType {
   Call,
@@ -15,6 +15,30 @@ export interface Transaction {
   target: BytesLike;
   value: BigNumber;
   data: BytesLike;
+}
+
+export function transactionToJson(tx: Transaction): string {
+  return `{"_isUnipassWalletTransaction":true,"callType":${tx.callType},"revertOnError":${
+    tx.revertOnError
+  },"gasLimit":"${hexlify(tx.gasLimit)}","target":"${hexlify(tx.target)}","value":"${hexlify(
+    tx.value,
+  )}","data":"${hexlify(tx.data)}"}`;
+}
+
+export function transactionFromJsonObj(obj: any): Transaction {
+  if (obj._isUnipassWalletTransaction !== true) {
+    throw new Error("Expected _isUnipassWalletTransaction to be true");
+  }
+
+  return {
+    _isUnipassWalletTransaction: true,
+    callType: obj.callType as CallType,
+    revertOnError: obj.revertOnError,
+    gasLimit: BigNumber.from(obj.gasLimit),
+    target: hexlify(obj.target),
+    value: BigNumber.from(obj.value),
+    data: hexlify(obj.data),
+  };
 }
 
 export function isUnipassWalletTransaction(v: any): v is Transaction {
