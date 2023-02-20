@@ -6,6 +6,12 @@
 
 - @unipasswallet/provider: break down sending transaction
   @unipasswallet/wallet: break down sending transaction
+## 0.3.0-alpha.3
+
+### Patch Changes
+
+- feat: snap adapt
+
 ## 0.3.0-alpha.2
 
 ### Patch Changes

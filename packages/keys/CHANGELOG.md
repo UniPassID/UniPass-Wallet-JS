@@ -9,6 +9,15 @@
 - Updated dependencies
   - @unipasswallet/dkim-base@0.2.2
   - @unipasswallet/utils@0.2.2
+## 0.3.0-alpha.3
+
+### Patch Changes
+
+- feat: snap adapt
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.0-alpha.3
+  - @unipasswallet/utils@0.3.0-alpha.3
+
 ## 0.3.0-alpha.2
 
 ### Patch Changes
