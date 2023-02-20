@@ -1,4 +1,10 @@
-import { Transaction, Transactionish, toTransaction } from "@unipasswallet/transactions";
+import {
+  Transaction,
+  Transactionish,
+  toTransaction,
+  transactionFromJsonObj,
+  transactionToJson,
+} from "@unipasswallet/transactions";
 import { ExecuteCall, toUnipassTransaction } from "@unipasswallet/relayer";
 import { ModuleGuestInterface } from "@unipasswallet/utils";
 import { MainExecuteTransaction } from "./mainExecuteTransaction";
@@ -10,6 +16,14 @@ export class BundledExecuteCall {
 
   constructor(txs: Transactionish | MainExecuteTransaction | (Transactionish | MainExecuteTransaction)[]) {
     this.txs = BundledExecuteCall.toTransactions(txs);
+  }
+
+  public toJson(): string {
+    return `{"txs":[${this.txs.map((tx) => `${transactionToJson(tx)}`).join(",")}]}`;
+  }
+
+  public static fromJsonObj(obj: any): BundledExecuteCall {
+    return new BundledExecuteCall(obj.txs.map((obj) => transactionFromJsonObj(obj)));
   }
 
   public toExecuteCall(): ExecuteCall {
