@@ -8,6 +8,14 @@
   @unipasswallet/wallet: break down sending transaction
 - Updated dependencies
   - @unipasswallet/abi@0.2.2
+## 0.3.0-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/provider: fix: removing fee tx checks
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.4
+
 ## 0.3.0-alpha.3
 
 ### Patch Changes

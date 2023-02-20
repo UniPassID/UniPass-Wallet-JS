@@ -6,6 +6,12 @@
 
 - @unipasswallet/provider: break down sending transaction
   @unipasswallet/wallet: break down sending transaction
+## 0.3.0-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/provider: fix: removing fee tx checks
+
 ## 0.3.0-alpha.3
 
 ### Patch Changes
