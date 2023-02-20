@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.3.0-alpha.3
+
+### Patch Changes
+
+- feat: snap adapt
+
 ## 0.3.0-alpha.2
 
 ### Patch Changes

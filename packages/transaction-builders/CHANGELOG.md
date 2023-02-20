@@ -1,5 +1,17 @@
 # @unipasswallet/transaction-builders
 
+## 0.3.0-alpha.3
+
+### Patch Changes
+
+- feat: snap adapt
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.3
+  - @unipasswallet/keys@0.3.0-alpha.3
+  - @unipasswallet/transactions@0.3.0-alpha.3
+  - @unipasswallet/utils@0.3.0-alpha.3
+  - @unipasswallet/wallet@0.3.0-alpha.3
+
 ## 0.3.0-alpha.2
 
 ### Patch Changes
