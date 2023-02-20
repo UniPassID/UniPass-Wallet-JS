@@ -59,7 +59,7 @@ export const innerGenerateTransferTx = async (
   chainType: ChainType,
   config: UnipassWalletProps,
   keyset: Keyset,
-  fee: TransactionFee,
+  fee?: TransactionFee,
 ): Promise<OperateTransaction> => {
   const user = await getUser();
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
@@ -251,9 +251,9 @@ const checkLocalStatus = async (config: UnipassWalletProps) => {
 };
 
 const getUser = async (): Promise<AccountInfo | undefined> => {
-  const cachedAccountInfo = UnipassWalletProvider.getInstance().getAccountInfo()
+  const cachedAccountInfo = UnipassWalletProvider.getInstance().getAccountInfo();
   if (cachedAccountInfo) {
-    return cachedAccountInfo
+    return cachedAccountInfo;
   }
   const accountInfo = await DB.getAccountInfo();
 
