@@ -14,6 +14,20 @@
   - @unipasswallet/relayer@0.2.2
   - @unipasswallet/transactions@0.2.2
   - @unipasswallet/utils@0.2.2
+## 0.3.0-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/provider: fix: removing fee tx checks
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.4
+  - @unipasswallet/dkim-base@0.3.0-alpha.4
+  - @unipasswallet/keys@0.3.0-alpha.4
+  - @unipasswallet/network@0.3.0-alpha.4
+  - @unipasswallet/relayer@0.3.0-alpha.4
+  - @unipasswallet/transactions@0.3.0-alpha.4
+  - @unipasswallet/utils@0.3.0-alpha.4
+
 ## 0.3.0-alpha.3
 
 ### Patch Changes
