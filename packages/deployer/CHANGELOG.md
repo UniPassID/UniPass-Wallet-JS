@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.3.0-alpha.6
+
+### Patch Changes
+
+- feat: back to test environment
+- Updated dependencies
+  - @unipasswallet/utils@0.3.0-alpha.6
+
 ## 0.3.0-alpha.5
 
 ### Patch Changes
