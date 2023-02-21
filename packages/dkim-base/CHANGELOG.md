@@ -6,6 +6,12 @@
 
 - @unipasswallet/provider: break down sending transaction
   @unipasswallet/wallet: break down sending transaction
+## 0.3.0-alpha.6
+
+### Patch Changes
+
+- feat: back to test environment
+
 ## 0.3.0-alpha.5
 
 ### Patch Changes
