@@ -17,6 +17,7 @@
     "@unipasswallet/wallet": "0.2.1"
   },
   "changesets": [
+    "chilly-maps-shave",
     "fluffy-drinks-shake",
     "little-spiders-obey",
     "many-seals-play",

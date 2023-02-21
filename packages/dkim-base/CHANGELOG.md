@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.3.0-alpha.8
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix rpc error define
+
 ## 0.3.0-alpha.7
 
 ### Patch Changes
