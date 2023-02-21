@@ -8,6 +8,14 @@
   @unipasswallet/wallet: break down sending transaction
 - Updated dependencies
   - @unipasswallet/dkim-base@0.2.2
+## 0.3.0-alpha.8
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix rpc error define
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.0-alpha.8
+
 ## 0.3.0-alpha.7
 
 ### Patch Changes

@@ -16,6 +16,22 @@
   - @unipasswallet/transactions@0.2.2
   - @unipasswallet/utils@0.2.2
   - @unipasswallet/wallet@0.2.2
+## 0.3.0-alpha.8
+
+### Patch Changes
+
+- @unipasswallet/wallet: fix rpc error define
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.8
+  - @unipasswallet/dkim-base@0.3.0-alpha.8
+  - @unipasswallet/keys@0.3.0-alpha.8
+  - @unipasswallet/network@0.3.0-alpha.8
+  - @unipasswallet/relayer@0.3.0-alpha.8
+  - @unipasswallet/transaction-builders@0.3.0-alpha.8
+  - @unipasswallet/transactions@0.3.0-alpha.8
+  - @unipasswallet/utils@0.3.0-alpha.8
+  - @unipasswallet/wallet@0.3.0-alpha.8
+
 ## 0.3.0-alpha.7
 
 ### Patch Changes
