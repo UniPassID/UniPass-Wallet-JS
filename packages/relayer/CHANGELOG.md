@@ -1,5 +1,17 @@
 # @unipasswallet/relayer
 
+## 0.3.0-alpha.7
+
+### Patch Changes
+
+- feat: back to test environment
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.7
+  - @unipasswallet/keys@0.3.0-alpha.7
+  - @unipasswallet/network@0.3.0-alpha.7
+  - @unipasswallet/transactions@0.3.0-alpha.7
+  - @unipasswallet/utils@0.3.0-alpha.7
+
 ## 0.3.0-alpha.6
 
 ### Patch Changes

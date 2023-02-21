@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.3.0-alpha.7
+
+### Patch Changes
+
+- feat: back to test environment
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.0-alpha.7
+
 ## 0.3.0-alpha.6
 
 ### Patch Changes

@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.3.0-alpha.7
+
+### Patch Changes
+
+- feat: back to test environment
+- Updated dependencies
+  - @unipasswallet/keys@0.3.0-alpha.7
+  - @unipasswallet/network@0.3.0-alpha.7
+  - @unipasswallet/relayer@0.3.0-alpha.7
+  - @unipasswallet/sdk@0.3.0-alpha.7
+  - @unipasswallet/transaction-builders@0.3.0-alpha.7
+  - @unipasswallet/transactions@0.3.0-alpha.7
+  - @unipasswallet/utils@0.3.0-alpha.7
+  - @unipasswallet/wallet@0.3.0-alpha.7
+
 ## 0.3.0-alpha.6
 
 ### Patch Changes

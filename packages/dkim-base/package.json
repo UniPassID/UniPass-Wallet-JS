@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/dkim-base",
-  "version": "0.3.0-alpha.6",
+  "version": "0.3.0-alpha.7",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
