@@ -71,14 +71,14 @@ export const dev_api_config = {
 };
 
 export const test_api_config = {
-  backend: "https://p.wallet.unipass.vip/wallet-v2",
+  backend: "https://t.wallet.unipass.vip/wallet-v2",
   relayer: {
-    eth: "https://p.wallet.unipass.vip/relayer-eth",
-    polygon: "https://p.wallet.unipass.vip/relayer-polygon",
-    bsc: "https://p.wallet.unipass.vip/relayer-bsc",
-    rangers: "https://p.wallet.unipass.vip/relayer-rangers",
-    scroll: "https://p.wallet.unipass.vip/relayer-scroll",
-    arbitrum: "https://p.wallet.unipass.vip/relayer-arbitrum",
+    eth: "https://t.wallet.unipass.vip/relayer-eth",
+    polygon: "https://t.wallet.unipass.vip/relayer-polygon",
+    bsc: "https://t.wallet.unipass.vip/relayer-bsc",
+    rangers: "https://t.wallet.unipass.vip/relayer-rangers",
+    scroll: "https://t.wallet.unipass.vip/relayer-scroll",
+    arbitrum: "https://t.wallet.unipass.vip/relayer-arbitrum",
   },
 };
 
