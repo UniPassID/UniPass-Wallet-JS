@@ -195,7 +195,7 @@ export class RpcService implements RpcService {
 
 export interface WebRPCError extends Error {
   code: number;
-  msg: string;
+  message: string;
   status: number;
 }
 
@@ -219,7 +219,7 @@ const buildResponse = (res: Response): Promise<any> =>
     } catch (err) {
       const error = {
         code: -1,
-        msg: `expecting JSON, got: ${text}`,
+        message: `expecting JSON, got: ${text}`,
         status: res.status,
       } as WebRPCError;
       throw error;
@@ -228,7 +228,7 @@ const buildResponse = (res: Response): Promise<any> =>
     if (!res.ok || body.statusCode !== 200) {
       const error = {
         code: body.statusCode,
-        msg: body.message || body,
+        message: body.message || body,
         status: res.status,
       } as WebRPCError;
       throw error;
