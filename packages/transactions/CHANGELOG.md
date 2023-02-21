@@ -9,6 +9,15 @@
 - Updated dependencies
   - @unipasswallet/abi@0.2.2
   - @unipasswallet/utils@0.2.2
+## 0.3.0-alpha.6
+
+### Patch Changes
+
+- feat: back to test environment
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.6
+  - @unipasswallet/utils@0.3.0-alpha.6
+
 ## 0.3.0-alpha.5
 
 ### Patch Changes
