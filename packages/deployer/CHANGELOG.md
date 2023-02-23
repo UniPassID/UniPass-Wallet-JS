@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.3.0-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/wallet: add off chain validating signature
+- Updated dependencies
+  - @unipasswallet/utils@0.3.0-alpha.9
+
 ## 0.3.0-alpha.8
 
 ### Patch Changes

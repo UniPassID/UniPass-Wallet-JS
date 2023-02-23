@@ -1,5 +1,17 @@
 # @unipasswallet/transaction-builders
 
+## 0.3.0-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/wallet: add off chain validating signature
+- Updated dependencies
+  - @unipasswallet/abi@0.3.0-alpha.9
+  - @unipasswallet/keys@0.3.0-alpha.9
+  - @unipasswallet/transactions@0.3.0-alpha.9
+  - @unipasswallet/utils@0.3.0-alpha.9
+  - @unipasswallet/wallet@0.3.0-alpha.9
+
 ## 0.3.0-alpha.8
 
 ### Patch Changes

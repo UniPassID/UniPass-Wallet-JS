@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/utils",
-  "version": "0.3.0-alpha.8",
+  "version": "0.3.0-alpha.9",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@ethersproject/pbkdf2": "^5.7.0",
-    "@unipasswallet/abi": "workspace:^0.3.0-alpha.8",
+    "@unipasswallet/abi": "workspace:^0.3.0-alpha.9",
     "aes-js": "3.1.2",
     "ethers": "^5.7.1",
     "scrypt-js": "3.0.1"

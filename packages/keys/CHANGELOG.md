@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.3.0-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/wallet: add off chain validating signature
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.0-alpha.9
+  - @unipasswallet/utils@0.3.0-alpha.9
+
 ## 0.3.0-alpha.8
 
 ### Patch Changes
