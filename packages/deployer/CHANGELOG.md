@@ -8,6 +8,14 @@
   @unipasswallet/wallet: break down sending transaction
 - Updated dependencies
   - @unipasswallet/utils@0.2.2
+## 0.3.0-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/wallet: add off chain validating signature
+- Updated dependencies
+  - @unipasswallet/utils@0.3.0-alpha.9
+
 ## 0.3.0-alpha.8
 
 ### Patch Changes
