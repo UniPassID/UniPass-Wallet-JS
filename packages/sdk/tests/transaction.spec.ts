@@ -20,7 +20,13 @@ import {
   transferEth,
 } from "./utils/common";
 import { EmailType, pureEmailHash } from "@unipasswallet/dkim-base";
-import { SessionKey, getWalletDeployTransaction, Wallet } from "@unipasswallet/wallet";
+import {
+  SessionKey,
+  getWalletDeployTransaction,
+  Wallet,
+  RawMainExecuteCall,
+  RawBundledExecuteCall,
+} from "@unipasswallet/wallet";
 import {
   getDkimVerifyMessage,
   KeyEmailDkimSignType,
@@ -103,21 +109,12 @@ describe("Test Transactions", () => {
       Role.AssetsOp,
       100,
     );
+    const syncAccountExecute = new RawMainExecuteCall([syncAccountTx], BigNumber.from(1), []);
+    const transferExecute = new RawMainExecuteCall([transferTx], BigNumber.from(2), signerIndexes);
     const ret = await (
-      await walletContext.wallet.sendTransaction({
-        type: "Bundled",
-        transactions: [
-          deployTx,
-          { type: "Execute", transactions: syncAccountTx, sessionKeyOrSignerIndex: [], gasLimit: constants.Zero },
-          {
-            type: "Execute",
-            transactions: transferTx,
-            sessionKeyOrSignerIndex: signerIndexes,
-            gasLimit: constants.Zero,
-          },
-        ],
-        gasLimit: constants.Zero,
-      })
+      await walletContext.wallet.sendTransactions(
+        new RawBundledExecuteCall([deployTx, syncAccountExecute, transferExecute]),
+      )
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getMetaNonce()).toEqual(BigNumber.from(10));
@@ -181,26 +178,15 @@ describe("Test Transactions", () => {
       context.txParams,
     );
     deployTx.revertOnError = true;
-    const tx: ExecuteTransaction = {
-      type: "Execute",
-      transactions: [
-        deployTx,
-        await walletContext.wallet
-          .toTransaction(
-            {
-              type: "Execute",
-              transactions: [updateKeysetHashTx],
-              sessionKeyOrSignerIndex: [],
-              gasLimit: constants.Zero,
-            },
-            await context.relayer.getNonce(walletContext.wallet.address),
-          )
-          .then((v) => v[0]),
-      ],
-      sessionKeyOrSignerIndex: [0],
-      gasLimit: constants.Zero,
-    };
-    const ret = await (await wallet.sendTransaction(tx)).wait();
+    const updateKeysetHashExecute = new RawMainExecuteCall(
+      updateKeysetHashTx,
+      await context.relayer.getNonce(walletContext.wallet.address),
+      [],
+    );
+
+    const ret = await (
+      await wallet.sendTransactions(new RawBundledExecuteCall([deployTx, updateKeysetHashExecute]))
+    ).wait();
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
   });
@@ -226,7 +212,9 @@ describe("Test Transactions", () => {
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
     expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(true);
-    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait(1);
+    const ret = await (
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait(1);
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(hexlify(newKeysetHash));
     expect(await walletContext.wallet.isSyncKeysetHash()).toEqual(false);
@@ -256,7 +244,9 @@ describe("Test Transactions", () => {
     );
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    const ret = await (
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     const lockInfo = await walletContext.wallet.getContract().getLockInfo();
     expect(lockInfo.lockedKeysetHashRet).toEqual(`0x${newKeysetHash.toString("hex")}`);
@@ -291,7 +281,11 @@ describe("Test Transactions", () => {
 
     sessionKey = await sessionKey.generatePermit(timestamp, weight, walletContext.wallet, signerIndexes);
 
-    const ret = await (await walletContext.wallet.sendTransaction([tx], sessionKey)).wait();
+    const ret = await (
+      await walletContext.wallet.sendTransaction(
+        new RawMainExecuteCall([tx], BigNumber.from(walletContext.nonce), sessionKey),
+      )
+    ).wait();
     expect(ret.status).toEqual(1);
 
     expect(await walletContext.testERC20Token.balanceOf(to.address)).toEqual(BigNumber.from(10));
@@ -320,7 +314,11 @@ describe("Test Transactions", () => {
 
     sessionKey = await sessionKey.generatePermit(timestamp, weight, walletContext.wallet, signerIndexes);
 
-    const ret = await (await walletContext.wallet.sendTransaction([tx], sessionKey)).wait();
+    const ret = await (
+      await walletContext.wallet.sendTransactions(
+        new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), sessionKey),
+      )
+    ).wait();
     expect(ret.status).toEqual(1);
     expect(Number.parseInt(formatEther(await context.provider.getBalance(to.address)), 10)).toEqual(10);
   });
@@ -386,7 +384,9 @@ describe("Test Transactions", () => {
     );
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    const ret = await (
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
 
     expect(ret.status).toBe(1);
@@ -416,7 +416,9 @@ describe("Test Transactions", () => {
       100,
     );
     let tx = (await txBuilder1.generateSignature(walletContext.wallet, signerIndexes)).build();
-    let ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    let ret = await (
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
 
     let lockInfo = await walletContext.wallet.getContract().getLockInfo();
@@ -445,7 +447,9 @@ describe("Test Transactions", () => {
     );
     tx = (await txBuilder2.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-    ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    ret = await (
+      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await walletContext.wallet.getContract().getLockInfo();
     expect(lockInfo.lockedKeysetHashRet).toEqual(`0x${newKeysetHash.toString("hex")}`);
@@ -455,14 +459,18 @@ describe("Test Transactions", () => {
     // Step3 Unlock TimeLock
     tx = new UnlockKeysetHashTxBuilder(walletContext.wallet.address, walletContext.metaNonce, true).build();
 
-    await expect(walletContext.wallet.sendTransaction([tx])).rejects.toThrow();
+    await expect(
+      walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), [])),
+    ).rejects.toThrow();
 
     await new Promise((resolve) =>
       // eslint-disable-next-line no-promise-executor-return
       setTimeout(resolve, newTimelockDuring * 1000 + 2000),
     );
 
-    ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    ret = await (
+      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await walletContext.wallet.getContract().getLockInfo();
     expect(lockInfo.isLockedRet).toBe(false);
@@ -492,7 +500,9 @@ describe("Test Transactions", () => {
     );
     let tx = (await txBuilder1.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-    let ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    let ret = await (
+      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     let lockInfo = await walletContext.wallet.getContract().getLockInfo();
     expect(lockInfo.lockedKeysetHashRet).toEqual(`0x${newKeysetHash.toString("hex")}`);
@@ -518,7 +528,9 @@ describe("Test Transactions", () => {
     );
     tx = (await txBuilder2.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-    ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    ret = await (
+      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await walletContext.wallet.getContract().getLockInfo();
     expect(lockInfo.isLockedRet).toBe(false);
@@ -546,7 +558,9 @@ describe("Test Transactions", () => {
     );
 
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
-    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    const ret = await (
+      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     const greeter = walletContext.greeter.attach(walletContext.wallet.address);
     expect(await greeter.ret1()).toEqual(BigNumber.from(1));
@@ -579,7 +593,9 @@ describe("Test Transactions", () => {
     );
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
-    const ret = await (await walletContext.wallet.sendTransaction([tx])).wait();
+    const ret = await (
+      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+    ).wait();
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(`0x${newKeysetHash.toString("hex")}`);
     expect(await walletContext.wallet.getContract().getMetaNonce()).toEqual(BigNumber.from(metaNonce));

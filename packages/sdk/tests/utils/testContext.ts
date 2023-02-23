@@ -1,4 +1,4 @@
-import { BigNumber, constants, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
+import { BigNumber, Contract, ContractFactory, Overrides, providers, Wallet } from "ethers";
 import { formatBytes32String, Interface, keccak256, parseEther, solidityPack, toUtf8Bytes } from "ethers/lib/utils";
 import { Deployer } from "../../../deployer/src/deployer";
 import * as dotenv from "dotenv";
@@ -18,7 +18,7 @@ import GasEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts
 import FeeEstimatorArtiface from "../../../../artifacts/unipass-wallet-contracts/contracts/modules/utils/FeeEstimator.sol/FeeEstimator.json";
 import { initDkimZK, OPENID_AUDIENCE, OPENID_ISSUER, OPENID_KID, randomKeyset, transferEth } from "./common";
 import { UnipassWalletContext } from "@unipasswallet/network";
-import { RawBundledExecuteCall, Wallet as UnipassWallet, getWalletDeployTransaction } from "@unipasswallet/wallet";
+import { Wallet as UnipassWallet } from "@unipasswallet/wallet";
 import { LocalRelayer, Relayer } from "@unipasswallet/relayer";
 
 export interface TestContext {
@@ -88,7 +88,7 @@ export async function initTestContext(): Promise<TestContext> {
   ret = await (
     await openID
       .connect(openIDAdmin)
-      .updateOpenIDPublidKey(
+      .updateOpenIDPublicKey(
         keccak256(solidityPack(["bytes", "bytes"], [toUtf8Bytes(OPENID_ISSUER), toUtf8Bytes(OPENID_KID)])),
         unipassPrivateKey.exportKey("components-public").n.subarray(1),
       )
@@ -273,10 +273,12 @@ export async function initWalletContext(
   await transferEth(context.provider.getSigner(), wallet.address, parseEther("100"));
 
   if (toDeploy) {
-    const deployTx = getWalletDeployTransaction(context.unipassWalletContext, wallet.keyset.hash(), constants.Zero);
-    deployTx.revertOnError = true;
-    ret = await (await wallet.sendTransactions(new RawBundledExecuteCall(deployTx))).wait();
-    expect(ret.status).toEqual(1);
+    await context.deployer.deployProxyContract(
+      new Interface(ModuleMainArtifact.abi),
+      context.moduleMain.address,
+      wallet.keyset.hash(),
+      context.txParams,
+    );
   }
   const nonce = 1;
   const metaNonce = 1;

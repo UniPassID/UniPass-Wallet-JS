@@ -43,8 +43,8 @@ const buildResponse = (res: Response): Promise<any> =>
     } catch (err) {
       // eslint-disable-next-line no-throw-literal
       throw {
-        code: "unknown",
-        msg: `expecting JSON, got: ${text}`,
+        code: -1,
+        message: `expecting JSON, got: ${text}`,
         status: res.status,
       } as WebRPCError;
     }

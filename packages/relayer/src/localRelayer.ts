@@ -26,7 +26,7 @@ export class LocalRelayer implements Relayer {
     if (await this.isWalletDeployed(walletAddr)) {
       const nonce = await new Contract(walletAddr, ModuleMainInterface, this.signer.provider).getNonce();
 
-      return nonce;
+      return nonce + 1;
     }
 
     return constants.Zero;
