@@ -6,6 +6,12 @@
 
 - @unipasswallet/provider: break down sending transaction
   @unipasswallet/wallet: break down sending transaction
+## 0.3.0-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/wallet: add off chain validating signature
+
 ## 0.3.0-alpha.8
 
 ### Patch Changes
