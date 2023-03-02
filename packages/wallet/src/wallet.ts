@@ -440,7 +440,13 @@ export class Wallet extends Signer {
     ];
   }
 
-  async sendSignedTransaction(signedTransactions: SignedTransactions, feeToken?: string) {
+  async sendTransaction(
+    transactions: Deferrable<InputTransaction>,
+    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
+    feeToken?: string,
+    gasLmit: BigNumber = constants.Zero,
+  ): Promise<providers.TransactionResponse> {
+    const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes, undefined, gasLmit);
     const estimateGas = signedTransactions.gasLimit.eq(0)
       ? await this.unipassEstimateGas(signedTransactions)
       : signedTransactions.gasLimit;
@@ -471,16 +477,6 @@ export class Wallet extends Signer {
         return this.waitForTransaction(hash, confirmations, timeout);
       },
     };
-  }
-
-  async sendTransaction(
-    transactions: Deferrable<InputTransaction>,
-    sessionKeyOrSignerIndexes: SessionKey | number[] = [],
-    feeToken?: string,
-    gasLmit: BigNumber = constants.Zero,
-  ): Promise<providers.TransactionResponse> {
-    const signedTransactions = await this.signTransactions(transactions, sessionKeyOrSignerIndexes, undefined, gasLmit);
-    return this.sendSignedTransaction(signedTransactions, feeToken);
   }
 
   async waitForTransaction(
