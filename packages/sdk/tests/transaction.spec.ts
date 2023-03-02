@@ -50,7 +50,7 @@ describe("Test Transactions", () => {
     context = await initTestContext();
   });
   beforeEach(async () => {
-    walletContext = await initWalletContext(context, true, true);
+    walletContext = await initWalletContext(context, true, false);
   });
   it("Test IsValidSignature", async () => {
     let hash = randomBytes(32);
@@ -282,7 +282,7 @@ describe("Test Transactions", () => {
     sessionKey = await sessionKey.generatePermit(timestamp, weight, walletContext.wallet, signerIndexes);
 
     const ret = await (
-      await walletContext.wallet.sendTransaction(
+      await walletContext.wallet.sendTransactions(
         new RawMainExecuteCall([tx], BigNumber.from(walletContext.nonce), sessionKey),
       )
     ).wait();
@@ -448,7 +448,7 @@ describe("Test Transactions", () => {
     tx = (await txBuilder2.generateSignature(walletContext.wallet, signerIndexes)).build();
 
     ret = await (
-      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
     ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await walletContext.wallet.getContract().getLockInfo();
@@ -460,7 +460,7 @@ describe("Test Transactions", () => {
     tx = new UnlockKeysetHashTxBuilder(walletContext.wallet.address, walletContext.metaNonce, true).build();
 
     await expect(
-      walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), [])),
+      walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), [])),
     ).rejects.toThrow();
 
     await new Promise((resolve) =>
@@ -469,7 +469,7 @@ describe("Test Transactions", () => {
     );
 
     ret = await (
-      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
     ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await walletContext.wallet.getContract().getLockInfo();
@@ -501,7 +501,7 @@ describe("Test Transactions", () => {
     let tx = (await txBuilder1.generateSignature(walletContext.wallet, signerIndexes)).build();
 
     let ret = await (
-      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
     ).wait();
     expect(ret.status).toEqual(1);
     let lockInfo = await walletContext.wallet.getContract().getLockInfo();
@@ -529,7 +529,7 @@ describe("Test Transactions", () => {
     tx = (await txBuilder2.generateSignature(walletContext.wallet, signerIndexes)).build();
 
     ret = await (
-      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
     ).wait();
     expect(ret.status).toEqual(1);
     lockInfo = await walletContext.wallet.getContract().getLockInfo();
@@ -559,7 +559,7 @@ describe("Test Transactions", () => {
 
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
     const ret = await (
-      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
     ).wait();
     expect(ret.status).toEqual(1);
     const greeter = walletContext.greeter.attach(walletContext.wallet.address);
@@ -594,7 +594,7 @@ describe("Test Transactions", () => {
     const tx = (await txBuilder.generateSignature(walletContext.wallet, signerIndexes)).build();
 
     const ret = await (
-      await walletContext.wallet.sendTransaction(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
+      await walletContext.wallet.sendTransactions(new RawMainExecuteCall(tx, BigNumber.from(walletContext.nonce), []))
     ).wait();
     expect(ret.status).toEqual(1);
     expect(await walletContext.wallet.getContract().getKeysetHash()).toEqual(`0x${newKeysetHash.toString("hex")}`);

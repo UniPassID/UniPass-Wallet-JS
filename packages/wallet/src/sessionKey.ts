@@ -1,8 +1,7 @@
 import { BytesLike, utils, Wallet as WalletEOA } from "ethers";
 import { KeySecp256k1, sign, SignType } from "@unipasswallet/keys";
 import { defineReadOnly } from "ethers/lib/utils";
-import { IPermit } from "./permit";
-import { subDigest } from "@unipasswallet/utils";
+import { digestPermitMessage, generatePermit, IPermit } from "./permit";
 import { Wallet } from "./wallet";
 
 export interface SessionKeyStore {
@@ -32,11 +31,7 @@ export class SessionKey {
   }
 
   public digestPermitMessage(timestamp: number, weight: number): string {
-    return subDigest(
-      0,
-      this.userAddr,
-      utils.keccak256(utils.solidityPack(["address", "uint32", "uint32"], [this.wallet.address, timestamp, weight])),
-    );
+    return digestPermitMessage(this.userAddr, this.wallet.address, timestamp, weight);
   }
 
   public async generatePermit(
@@ -45,15 +40,9 @@ export class SessionKey {
     wallet: Wallet,
     signerIndexes: number[],
   ): Promise<SessionKey> {
-    const permitDigestHash = this.digestPermitMessage(timestamp, weight);
+    const permit = await generatePermit(wallet, this.wallet.address, timestamp, weight, signerIndexes);
 
-    const permit = await wallet.signPermit(permitDigestHash, signerIndexes);
-
-    this.permit = {
-      timestamp,
-      weight,
-      permit,
-    };
+    this.permit = permit;
 
     return this;
   }
