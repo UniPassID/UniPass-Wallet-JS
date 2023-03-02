@@ -1,5 +1,36 @@
 # @unipasswallet/utils
 
+## 0.3.0
+
+### Minor Changes
+
+- 9da78967: @unipasswallet/wallet: bump relayer version
+
+### Patch Changes
+
+- 426cba3f: @unipasswallet/wallet: fix rpc error define
+- e61f54d6: @unipasswallet/provider: fix: removing fee tx checks
+- ac6e7c57: feat: snap adapt
+- 327a1333: @unipasswallet/wallet: add off chain validating signature
+- 9278eb65: feat: add json serialize and deserialize
+- 652a3c93: feat: back to test environment
+- bump to 0.3.0
+- 8cf24653: feat: back to test environment
+- e0e53cf3: @unipasswallet/provider: fix test api config
+- 8bb65e5d: @unipasswallet/provider: update test api config
+- Updated dependencies [426cba3f]
+- Updated dependencies [e61f54d6]
+- Updated dependencies [ac6e7c57]
+- Updated dependencies [327a1333]
+- Updated dependencies [9278eb65]
+- Updated dependencies [652a3c93]
+- Updated dependencies
+- Updated dependencies [8cf24653]
+- Updated dependencies [e0e53cf3]
+- Updated dependencies [8bb65e5d]
+- Updated dependencies [9da78967]
+  - @unipasswallet/abi@0.3.0
+
 ## 0.2.2
 
 ### Patch Changes
@@ -8,6 +39,7 @@
   @unipasswallet/wallet: break down sending transaction
 - Updated dependencies
   - @unipasswallet/abi@0.2.2
+
 ## 0.3.0-alpha.9
 
 ### Patch Changes
