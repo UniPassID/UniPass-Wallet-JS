@@ -161,7 +161,6 @@ export async function getZKParams(
     }),
   });
   const hash = await buildResponse(res);
-  console.log("hash:", hash);
   let ret;
   while (!ret) {
     // eslint-disable-next-line no-await-in-loop, no-promise-executor-return

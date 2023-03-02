@@ -359,7 +359,7 @@ export class Wallet extends Signer {
     rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
   ): Promise<providers.TransactionResponse> {
     const { execute, chainId, nonce } = await this.signTransactions(rawExecute);
-    return this.sendSignedTransactions(execute, chainId, nonce)
+    return this.sendSignedTransactions(execute, chainId, nonce);
   }
 
   async waitForTransaction(
