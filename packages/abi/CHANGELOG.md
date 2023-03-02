@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.3.1-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/wallet: add session key support
+
 ## 0.3.0
 
 ### Minor Changes
