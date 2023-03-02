@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.3.1-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/wallet: add session key support
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.1-alpha.0
+
 ## 0.3.0
 
 ### Minor Changes

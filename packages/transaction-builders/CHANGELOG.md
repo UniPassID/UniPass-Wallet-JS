@@ -1,5 +1,17 @@
 # @unipasswallet/transaction-builders
 
+## 0.3.1-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/wallet: add session key support
+- Updated dependencies
+  - @unipasswallet/wallet@0.3.1-alpha.0
+  - @unipasswallet/abi@0.3.1-alpha.0
+  - @unipasswallet/keys@0.3.1-alpha.0
+  - @unipasswallet/transactions@0.3.1-alpha.0
+  - @unipasswallet/utils@0.3.1-alpha.0
+
 ## 0.3.0
 
 ### Minor Changes
