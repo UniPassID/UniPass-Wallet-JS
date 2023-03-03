@@ -14,6 +14,7 @@ import {
 } from "./operate";
 import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
+import { IPermit, generatePermit } from "@unipasswallet/wallet";
 import { wallets } from "@unipasswallet/sdk";
 import { MessageTypes, TypedMessage, AccountInfo } from "./interface";
 
@@ -108,5 +109,9 @@ export default class UnipassWalletProvider implements WalletProvider {
   public async wallet(chain: ChainType = "polygon") {
     const wallet = await getWallet(this.config, chain);
     return wallet;
+  }
+
+  public async generatePermit(sessionKeyAddr: string, timestamp: number, weight: number = 100): Promise<IPermit> {
+    return generatePermit(await this.wallet(), sessionKeyAddr, timestamp, weight, [0]);
   }
 }
