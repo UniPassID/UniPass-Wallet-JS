@@ -10,15 +10,17 @@ type AuthChainNode =
   | "rangers-robin"
   | "scroll-testnet"
   | "arbitrum-testnet"
+  | "avalanche-testnet"
   | "polygon-mainnet"
   | "eth-mainnet"
   | "bsc-mainnet"
   | "rangers-mainnet"
-  | "arbitrum-mainnet";
+  | "arbitrum-mainnet"
+  | "avalanche-mainnet";
 
 type Environment = "testnet" | "mainnet";
 
-type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll" | "arbitrum";
+type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll" | "arbitrum" | "avalanche";
 
 export type UrlConfig = {
   backend: string;
@@ -28,13 +30,14 @@ export type UrlConfig = {
     bsc: string;
     rangers: string;
     arbitrum: string;
+    avalanche: string;
   };
 };
 
 interface UnipassWalletProps {
   env: Environment;
   url_config?: UrlConfig;
-  accountInfo?: AccountInfo
+  accountInfo?: AccountInfo;
 }
 
 interface UniTransaction {
