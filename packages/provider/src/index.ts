@@ -11,10 +11,11 @@ import {
   genSignTypedDataMessage,
   innerSimulateExecute,
   operateToRawExecuteCall,
+  innerGeneratePermit,
 } from "./operate";
 import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
-import { IPermit, generatePermit } from "@unipasswallet/wallet";
+import { IPermit } from "@unipasswallet/wallet";
 import { wallets } from "@unipasswallet/sdk";
 import { MessageTypes, TypedMessage, AccountInfo } from "./interface";
 
@@ -111,7 +112,12 @@ export default class UnipassWalletProvider implements WalletProvider {
     return wallet;
   }
 
-  public async generatePermit(sessionKeyAddr: string, timestamp: number, weight: number = 100): Promise<IPermit> {
-    return generatePermit(await this.wallet(), sessionKeyAddr, timestamp, weight, [0]);
+  public async generatePermit(
+    sessionKeyAddr: string,
+    keyset: Keyset,
+    timestamp: number,
+    weight: number = 100,
+  ): Promise<IPermit> {
+    return innerGeneratePermit(sessionKeyAddr, keyset, this.config, timestamp, weight);
   }
 }

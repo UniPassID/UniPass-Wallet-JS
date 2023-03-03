@@ -4,7 +4,13 @@ import { BigNumber, constants, ethers } from "ethers";
 import { Keyset } from "@unipasswallet/keys";
 import { digestTxHash, Transaction } from "@unipasswallet/transactions";
 import { CallTxBuilder } from "@unipasswallet/transaction-builders";
-import { RawBundledExecuteCall, RawMainExecuteCall, RawMainExecuteTransaction } from "@unipasswallet/wallet";
+import {
+  IPermit,
+  RawBundledExecuteCall,
+  RawMainExecuteCall,
+  RawMainExecuteTransaction,
+  generatePermit,
+} from "@unipasswallet/wallet";
 import { SimulateResult } from "@unipasswallet/relayer";
 import api from "./api/backend";
 import WalletError from "./constant/error_map";
@@ -263,4 +269,17 @@ const getUser = async (): Promise<AccountInfo | undefined> => {
   throw new WalletError(402007);
 };
 
-export { genSignMessage, genSignTypedDataMessage, checkLocalStatus, verifySignature, getWallet };
+const innerGeneratePermit = async (
+  sessionKeyAddr: string,
+  keyset: Keyset,
+  config: UnipassWalletProps,
+  timestamp: number,
+  weight: number,
+): Promise<IPermit> => {
+  const user = await getUser();
+  const instance = WalletsCreator.getInstance(keyset, user.address, config);
+  const wallet = instance.polygon;
+  return generatePermit(wallet, sessionKeyAddr, timestamp, weight, [0]);
+};
+
+export { genSignMessage, genSignTypedDataMessage, checkLocalStatus, verifySignature, getWallet, innerGeneratePermit };
