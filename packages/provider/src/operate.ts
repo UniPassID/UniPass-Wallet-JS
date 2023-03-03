@@ -9,7 +9,7 @@ import {
   RawBundledExecuteCall,
   RawMainExecuteCall,
   RawMainExecuteTransaction,
-  generatePermit,
+  digestPermitMessage,
 } from "@unipasswallet/wallet";
 import { SimulateResult } from "@unipasswallet/relayer";
 import api from "./api/backend";
@@ -279,7 +279,33 @@ const innerGeneratePermit = async (
   const user = await getUser();
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance.polygon;
-  return generatePermit(wallet, sessionKeyAddr, timestamp, weight, [0]);
+
+  const permitDigestHash = digestPermitMessage(wallet.address, sessionKeyAddr, timestamp, weight);
+
+  // FIXME: Session Key tss Audit context
+  const auditRes = await api.tssAudit({
+    type: SignType.PersonalSign,
+    content: JSON.stringify({
+      address: wallet.address,
+      sessionKeyAddr,
+      timestamp,
+      weight,
+    }),
+    msg: permitDigestHash,
+  });
+  clearUpSignToken();
+  if (auditRes.data.approveStatus === AuditStatus.Confirming) {
+    throw new Error("SessionKey Permit Signing Failed: Confirming");
+  } else if (auditRes.data.approveStatus === AuditStatus.Rejected) {
+    throw new Error("SessionKey Permit Signing Failed:: Rejected");
+  }
+
+  const permit = await wallet.signPermit(permitDigestHash, [0]);
+  return {
+    timestamp,
+    weight,
+    permit,
+  };
 };
 
 export { genSignMessage, genSignTypedDataMessage, checkLocalStatus, verifySignature, getWallet, innerGeneratePermit };
