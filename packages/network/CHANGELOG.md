@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.3.1-alpha.3
+
+### Patch Changes
+
+- @unipasswallet/provider: fix permit tss audit error
+
 ## 0.3.1-alpha.2
 
 ### Patch Changes
