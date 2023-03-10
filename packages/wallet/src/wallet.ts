@@ -144,12 +144,12 @@ export class Wallet extends Signer {
       .reduce((pre, current) => pre.add(current));
   }
 
-  async signPermit(digestHash: BytesLike, signerIndexer: number[]): Promise<string> {
+  async signPermit(digestHash: BytesLike, signerIndexes: number[]): Promise<string> {
     return hexlify(
       concat(
         await Promise.all(
           this.keyset.keys.map(async (key, index) => {
-            if (signerIndexer.includes(index)) {
+            if (signerIndexes.includes(index)) {
               return key.generateSignature(digestHash);
             }
 

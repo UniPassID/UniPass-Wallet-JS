@@ -59,9 +59,16 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async simulateTransactions(props: TransactionProps) {
-    const { tx, chain, fee, keyset } = props;
+    const { tx, chain, fee, keyset, isAddHook = false } = props;
     const _chain = chain ?? "polygon";
-    const transactions = await innerGenerateTransferTx(tx, _chain, this.config, keyset, fee);
+    const transactions = await innerGenerateTransferTx({
+      tx,
+      chainType: _chain,
+      config: this.config,
+      keyset,
+      fee,
+      isAddHook,
+    });
     return innerSimulateExecute(transactions, chain, this.config);
   }
 
@@ -75,10 +82,17 @@ export default class UnipassWalletProvider implements WalletProvider {
   }
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionResponse> {
-    const { tx, chain, fee, keyset } = props;
+    const { tx, chain, fee, keyset, isAddHook = false } = props;
 
     const _chain = chain ?? "polygon";
-    const generatedTx = await innerGenerateTransferTx(tx, _chain, this.config, keyset, fee);
+    const generatedTx = await innerGenerateTransferTx({
+      tx,
+      chainType: _chain,
+      config: this.config,
+      keyset,
+      fee,
+      isAddHook,
+    });
 
     const execute = await operateToRawExecuteCall(generatedTx);
 

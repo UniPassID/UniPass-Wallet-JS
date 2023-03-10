@@ -7,6 +7,10 @@ export enum AccountLayerActionType {
   SyncAccount = 6,
 }
 
+export * from "./addHookTransactionBuilder";
+
+export * from "./removeHookTransactionBuilder";
+
 export * from "./updateKeysetHashTxBuilder";
 
 export * from "./updateTimeLockDuringTxBuilder";
