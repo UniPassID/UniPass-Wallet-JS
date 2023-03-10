@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.3.1-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: add eip4337 support
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.4
+
 ## 0.3.1-alpha.3
 
 ### Patch Changes

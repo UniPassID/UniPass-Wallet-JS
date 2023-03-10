@@ -14,12 +14,14 @@
     "@unipasswallet/transaction-builders": "0.3.0",
     "@unipasswallet/transactions": "0.3.0",
     "@unipasswallet/utils": "0.3.0",
-    "@unipasswallet/wallet": "0.3.0"
+    "@unipasswallet/wallet": "0.3.0",
+    "@unipasswallet/eip4337-hook": "0.3.0"
   },
   "changesets": [
     "brave-queens-judge",
     "fluffy-poems-act",
     "four-berries-nail",
+    "gentle-needles-float",
     "thick-queens-tell"
   ]
 }
