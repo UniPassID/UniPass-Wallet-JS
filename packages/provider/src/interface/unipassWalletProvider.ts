@@ -56,11 +56,12 @@ interface TransactionFee {
 
 interface TransactionProps {
   keyset?: Keyset;
-  tx: UniTransaction;
+  tx?: UniTransaction;
   fee?: TransactionFee;
   chain?: ChainType;
   timeout?: number;
   gasLimit?: BigNumber;
+  isAddHook?: boolean;
 }
 
 abstract class WalletProvider {

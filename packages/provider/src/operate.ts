@@ -24,14 +24,13 @@ import UnipassWalletProvider from "./index";
 export type OperateTransaction = {
   deployTx?: Transaction;
   syncAccountExecute?: RawMainExecuteCall;
-  callExecute: RawMainExecuteCall;
-  feeTx?: Transaction;
+  callExecute?: RawMainExecuteCall;
 };
 
 export const operateToRawExecuteCall = async (
   operateTransaction: OperateTransaction,
 ): Promise<RawBundledExecuteCall | RawMainExecuteCall> => {
-  const { deployTx, syncAccountExecute, callExecute: callExecuteCall, feeTx } = operateTransaction;
+  const { deployTx, syncAccountExecute, callExecute } = operateTransaction;
 
   const user = await getUser();
 
@@ -48,25 +47,32 @@ export const operateToRawExecuteCall = async (
     }
   }
 
-  let callExecute = callExecuteCall;
-  if (feeTx) {
-    callExecute = callExecute.pushTransaction(feeTx);
-  }
-
-  if (rawExecute) {
+  if (rawExecute && callExecute) {
     const transaction = new RawMainExecuteTransaction({ rawExecuteCall: callExecute, target: user.address });
     return rawExecute.pushTransaction(transaction);
   }
-  return callExecute;
+
+  if (rawExecute) {
+    return rawExecute;
+  }
+
+  if (callExecute) {
+    return callExecute;
+  }
+
+  throw new Error(`Unknown operate transaction: ${operateTransaction}`);
 };
 
-export const innerGenerateTransferTx = async (
-  tx: UniTransaction,
-  chainType: ChainType,
-  config: UnipassWalletProps,
-  keyset: Keyset,
-  fee?: TransactionFee,
-): Promise<OperateTransaction> => {
+export const innerGenerateTransferTx = async (input: {
+  tx?: UniTransaction;
+  addHookTx?: UniTransaction;
+  chainType: ChainType;
+  config: UnipassWalletProps;
+  keyset: Keyset;
+  fee?: TransactionFee;
+  isAddHook?: boolean;
+}): Promise<OperateTransaction> => {
+  const { tx, chainType, config, keyset, fee } = input;
   const user = await getUser();
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
@@ -105,32 +111,46 @@ export const innerGenerateTransferTx = async (
       syncAccountExecute = new RawMainExecuteCall(syncAccountTx, nonce, []);
     }
   }
-  const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
 
-  const callTx = new CallTxBuilder(revertOnError, gasLimit, target, value, data).build();
-  const preSignFunc = async (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => {
-    const {
-      data: { approveStatus },
-    } = await api.tssAudit({
-      type: SignType.PersonalSign,
-      content: JSON.stringify({
-        chainId,
-        address,
-        txs,
-        nonce: nonce.toNumber(),
-      }),
-      msg: digestTxHash(chainId, address, nonce.toNumber(), txs),
-    });
-    clearUpSignToken();
-    return approveStatus === AuditStatus.Approved;
-  };
+  let callExecute: RawMainExecuteCall | undefined;
 
-  nonce = nonce.add(1);
-  const callExecute = new RawMainExecuteCall(callTx, nonce, [0], preSignFunc);
+  if (tx) {
+    const { revertOnError = true, gasLimit = BigNumber.from("0"), target, value, data = "0x00" } = tx;
+
+    const callTx = new CallTxBuilder(revertOnError, gasLimit, target, value, data).build();
+    nonce = nonce.add(1);
+    callExecute = new RawMainExecuteCall(callTx, nonce, [0], preSignFunc);
+  }
 
   const feeTx = fee ? getFeeTx(fee.receiver, fee.token, fee.value) : undefined;
 
-  return { deployTx, syncAccountExecute, callExecute, feeTx };
+  if (feeTx) {
+    if (callExecute) {
+      callExecute = callExecute.pushTransaction(feeTx);
+    } else {
+      nonce = nonce.add(1);
+      callExecute = new RawMainExecuteCall(feeTx, nonce, [0], preSignFunc);
+    }
+  }
+
+  return { deployTx, syncAccountExecute, callExecute };
+};
+
+const preSignFunc = async (chainId: number, address: string, txs: Transaction[], nonce: BigNumber) => {
+  const {
+    data: { approveStatus },
+  } = await api.tssAudit({
+    type: SignType.PersonalSign,
+    content: JSON.stringify({
+      chainId,
+      address,
+      txs,
+      nonce: nonce.toNumber(),
+    }),
+    msg: digestTxHash(chainId, address, nonce.toNumber(), txs),
+  });
+  clearUpSignToken();
+  return approveStatus === AuditStatus.Approved;
 };
 
 export const getFeeTx = (to: string, feeToken: string, feeValue: BigNumber) => {
