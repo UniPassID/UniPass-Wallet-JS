@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/eip4337-hook",
-  "version": "0.3.0",
+  "version": "0.3.1-alpha.4",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,11 +14,11 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/wallet": "workspace:^0.3.0",
-    "@unipasswallet/utils": "workspace:^0.3.0",
-    "@unipasswallet/keys": "workspace:^0.3.0",
-    "@unipasswallet/transactions": "workspace:^0.3.0",
-    "@unipasswallet/transaction-builders": "workspace:^0.3.0",
+    "@unipasswallet/wallet": "workspace:^0.3.1-alpha.4",
+    "@unipasswallet/utils": "workspace:^0.3.1-alpha.4",
+    "@unipasswallet/keys": "workspace:^0.3.1-alpha.4",
+    "@unipasswallet/transactions": "workspace:^0.3.1-alpha.4",
+    "@unipasswallet/transaction-builders": "workspace:^0.3.1-alpha.4",
     "@account-abstraction/contracts": "^0.5.0",
     "@account-abstraction/sdk": "0.5",
     "fetch-ponyfill": "^7.1.0",
