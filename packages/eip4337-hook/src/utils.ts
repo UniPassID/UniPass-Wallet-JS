@@ -8,6 +8,8 @@ import {
 } from "@unipasswallet/transaction-builders";
 import { ModuleHookEIP4337WalletInterface, ModuleMainInterface } from "@unipasswallet/utils";
 import { Contract, constants, providers, utils } from "ethers";
+import { BaseAccountAPI } from "@account-abstraction/sdk/dist/src/BaseAccountAPI";
+import { HttpRpcClient } from "@account-abstraction/sdk";
 
 export function toJSON(op: Partial<UserOperationStruct>): Promise<any> {
   return utils.resolveProperties(op).then((userOp) =>
@@ -125,4 +127,63 @@ export async function getAddEIP4337HookTransaction(
     constants.Zero,
     ModuleMainInterface.encodeFunctionData("selfExecute", [100, 0, 0, txs]),
   ).build();
+}
+
+export async function getRemoveEIP4337HookTransaction(
+  userAddr: string,
+  provider: providers.JsonRpcProvider,
+): Promise<Transaction | undefined> {
+  const unipassWalletContract = new Contract(userAddr, ModuleMainInterface, provider);
+  const txs = (
+    await Promise.all(
+      [
+        ModuleHookEIP4337WalletInterface.getSighash("getEIP4337WalletNonce"),
+        ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint"),
+        ModuleHookEIP4337WalletInterface.getSighash("execFromEntryPoint"),
+        ModuleHookEIP4337WalletInterface.getSighash("validateUserOp"),
+      ].map(async (selector) => {
+        const addr = await unipassWalletContract.readHook(selector);
+        if (addr === constants.AddressZero) {
+          const tx = new RemoveHookTransactionBuilder(true, constants.Zero, userAddr, selector, constants.Zero).build();
+          return tx;
+        }
+        return undefined;
+      }),
+    )
+  ).reduce((txs, v) => {
+    if (v) {
+      txs.push(v);
+    }
+    return txs;
+  }, []);
+
+  if (txs.length === 0) {
+    return undefined;
+  }
+  return new CallTxBuilder(
+    true,
+    constants.Zero,
+    userAddr,
+    constants.Zero,
+    ModuleMainInterface.encodeFunctionData("selfExecute", [100, 0, 0, txs]),
+  ).build();
+}
+
+export async function simulateEIP4337HookTransaction(accountApi: BaseAccountAPI, transaction: Transaction) {
+  const data = ModuleHookEIP4337WalletInterface.encodeFunctionData("execFromEntryPoint", [transaction]);
+  return accountApi.createUnsignedUserOp({
+    target: await accountApi.getAccountAddress(),
+    data,
+  });
+}
+
+export async function sendEIP4337HookTransaction(
+  client: HttpRpcClient,
+  accountApi: BaseAccountAPI,
+  unsignedUserOp: UserOperationStruct,
+): Promise<string> {
+  const userOp = await accountApi.signUserOp(unsignedUserOp);
+  userOp.signature = await userOp.signature;
+
+  return client.sendUserOpToBundler(userOp);
 }
