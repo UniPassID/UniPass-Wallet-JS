@@ -42,16 +42,16 @@ const buildResponse = (res: Response): Promise<any> =>
       throw error;
     }
 
-    if (!res.ok || body.statusCode !== 200) {
+    if (!res.ok && body.error) {
       const error = {
-        code: body.statusCode,
-        message: body.message || body,
+        code: body.error.code,
+        message: body.error.message || body,
         status: res.status,
       } as WebRPCError;
       throw error;
     }
 
-    return body.data;
+    return body.result;
   });
 
 export class VerifyingPaymasterAPI extends PaymasterAPI {
