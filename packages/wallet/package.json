@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/wallet",
-  "version": "0.3.1-alpha.5",
+  "version": "0.3.1-alpha.6",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,13 +14,13 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@unipasswallet/abi": "workspace:^0.3.1-alpha.5",
-    "@unipasswallet/dkim-base": "workspace:^0.3.1-alpha.5",
-    "@unipasswallet/keys": "workspace:^0.3.1-alpha.5",
-    "@unipasswallet/network": "workspace:^0.3.1-alpha.5",
-    "@unipasswallet/relayer": "workspace:^0.3.1-alpha.5",
-    "@unipasswallet/transactions": "workspace:^0.3.1-alpha.5",
-    "@unipasswallet/utils": "workspace:^0.3.1-alpha.5",
+    "@unipasswallet/abi": "workspace:^0.3.1-alpha.6",
+    "@unipasswallet/dkim-base": "workspace:^0.3.1-alpha.6",
+    "@unipasswallet/keys": "workspace:^0.3.1-alpha.6",
+    "@unipasswallet/network": "workspace:^0.3.1-alpha.6",
+    "@unipasswallet/relayer": "workspace:^0.3.1-alpha.6",
+    "@unipasswallet/transactions": "workspace:^0.3.1-alpha.6",
+    "@unipasswallet/utils": "workspace:^0.3.1-alpha.6",
     "ethers": "^5.7.1"
   },
   "devDependencies": {

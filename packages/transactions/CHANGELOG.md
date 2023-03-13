@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.3.1-alpha.6
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix paymaster response parsing
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.6
+  - @unipasswallet/utils@0.3.1-alpha.6
+
 ## 0.3.1-alpha.5
 
 ### Patch Changes
