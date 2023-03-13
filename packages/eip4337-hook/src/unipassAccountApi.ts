@@ -1,8 +1,11 @@
-import { BigNumber, BigNumberish, Contract, Signer } from "ethers";
-import { arrayify } from "ethers/lib/utils";
+import { BigNumber, BigNumberish, Contract } from "ethers";
+import { arrayify, resolveProperties } from "ethers/lib/utils";
 import { BaseAccountAPI, BaseApiParams } from "@account-abstraction/sdk/dist/src/BaseAccountAPI";
 import { Wallet } from "@unipasswallet/wallet";
 import { ModuleHookEIP4337WalletInterface } from "@unipasswallet/utils";
+import { UserOperationStruct } from "@account-abstraction/contracts";
+import { DUMMY_PAYMASTER_AND_DATA } from "./verifyingPaymasterAPI";
+import { calcPreVerificationGas } from "@account-abstraction/sdk";
 
 /**
  * constructor params, added no top of base params:
@@ -11,7 +14,6 @@ import { ModuleHookEIP4337WalletInterface } from "@unipasswallet/utils";
  * @param index nonce value used when creating multiple accounts for the same owner
  */
 export interface UnipassAccountApiParams extends BaseApiParams {
-  owner: Signer;
   factoryAddress?: string;
   signerIndexes?: number[];
   wallet: Wallet;
@@ -27,8 +29,6 @@ export interface UnipassAccountApiParams extends BaseApiParams {
 export class UnipassAccountAPI extends BaseAccountAPI {
   factoryAddress?: string;
 
-  owner: Signer;
-
   signerIndexes: number[];
 
   accountContract?: Contract;
@@ -38,7 +38,6 @@ export class UnipassAccountAPI extends BaseAccountAPI {
   constructor(params: UnipassAccountApiParams) {
     super(params);
     this.factoryAddress = params.factoryAddress;
-    this.owner = params.owner;
     this.signerIndexes = params.signerIndexes ?? [0];
     this.wallet = params.wallet;
   }
@@ -100,5 +99,13 @@ export class UnipassAccountAPI extends BaseAccountAPI {
       await new Promise((resolve) => setTimeout(resolve, interval));
     }
     return null;
+  }
+
+  async getPreVerificationGas(userOp: Partial<UserOperationStruct>): Promise<number> {
+    const p = await resolveProperties({
+      ...userOp,
+      paymasterAndData: DUMMY_PAYMASTER_AND_DATA,
+    });
+    return calcPreVerificationGas(p, this.overheads);
   }
 }

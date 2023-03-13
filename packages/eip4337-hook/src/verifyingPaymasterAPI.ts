@@ -4,8 +4,7 @@ import { UserOperationStruct } from "@account-abstraction/contracts";
 import fetchPonyfill from "fetch-ponyfill";
 import { toJSON } from "./utils";
 
-const SIG_SIZE = 65;
-const DUMMY_PAYMASTER_AND_DATA =
+export const DUMMY_PAYMASTER_AND_DATA =
   "0x0101010101010101010101010101010101010101000000000000000000000000000000000000000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101";
 
 export interface paymasterResponse {
@@ -60,6 +59,7 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
 
   constructor(
     public readonly chainId: number,
+    public readonly sigSize: number,
     public readonly paymasterUrl: string,
     public readonly entryPoint: string,
     originFetch?: typeof fetch,
@@ -86,7 +86,7 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
       maxPriorityFeePerGas: userOp.maxPriorityFeePerGas,
       // A dummy value here is required in order to calculate a correct preVerificationGas value.
       paymasterAndData: DUMMY_PAYMASTER_AND_DATA,
-      signature: ethers.utils.hexlify(Buffer.alloc(SIG_SIZE, 1)),
+      signature: ethers.utils.hexlify(Buffer.alloc(this.sigSize, 1)),
     };
     const op = await ethers.utils.resolveProperties(pmOp);
     op.preVerificationGas = calcPreVerificationGas(op);
