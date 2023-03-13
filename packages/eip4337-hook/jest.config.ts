@@ -5,7 +5,7 @@ import { compilerOptions } from "../../tsconfig.json";
 
 const config: Config.InitialOptions = {
   preset: "ts-jest",
-
+  testTimeout: 1200000,
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
     // This has to match the baseUrl defined in tsconfig.json.
     prefix: "<rootDir>/../../",
