@@ -1,5 +1,19 @@
 # @unipasswallet/wallet
 
+## 0.3.1-alpha.5
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: add eip4337 simulating and sending
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.5
+  - @unipasswallet/dkim-base@0.3.1-alpha.5
+  - @unipasswallet/keys@0.3.1-alpha.5
+  - @unipasswallet/network@0.3.1-alpha.5
+  - @unipasswallet/relayer@0.3.1-alpha.5
+  - @unipasswallet/transactions@0.3.1-alpha.5
+  - @unipasswallet/utils@0.3.1-alpha.5
+
 ## 0.3.1-alpha.4
 
 ### Patch Changes
