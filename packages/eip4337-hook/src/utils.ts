@@ -81,9 +81,11 @@ async function getHooks(userAddr: string, provider: providers.JsonRpcProvider) {
 export async function isAddEIP4337Hook(
   userAddr: string,
   provider: providers.JsonRpcProvider,
-  implement: string,
+  impl: string,
 ): Promise<boolean> {
   const hooks = await getHooks(userAddr, provider);
+
+  const implement = impl.toLowerCase();
 
   return !hooks.some(({ hook }) => {
     return hook !== implement;
@@ -93,9 +95,10 @@ export async function isAddEIP4337Hook(
 export async function getAddEIP4337HookTransaction(
   userAddr: string,
   provider: providers.JsonRpcProvider,
-  implementation: string,
+  impl: string,
 ): Promise<Transaction | undefined> {
   const hooks = await getHooks(userAddr, provider);
+  const implementation = impl.toLowerCase();
   const txs = hooks
     .map(({ hook, selector }) => {
       const txs = [];
