@@ -108,4 +108,8 @@ export class UnipassAccountAPI extends BaseAccountAPI {
     });
     return calcPreVerificationGas(p, this.overheads);
   }
+
+  async getVerificationGasLimit() {
+    return 500000;
+  }
 }
