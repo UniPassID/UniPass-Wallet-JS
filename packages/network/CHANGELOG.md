@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.3.1-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: improving geting hooks
+
 ## 0.3.1-alpha.8
 
 ### Patch Changes
