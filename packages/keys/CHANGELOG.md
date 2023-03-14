@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.3.1-alpha.10
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix lower case comparing
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.1-alpha.10
+  - @unipasswallet/utils@0.3.1-alpha.10
+
 ## 0.3.1-alpha.9
 
 ### Patch Changes
