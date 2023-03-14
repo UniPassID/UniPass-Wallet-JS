@@ -1,5 +1,17 @@
 # @unipasswallet/eip4337-hook
 
+## 0.3.1-alpha.9
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: improving geting hooks
+- Updated dependencies
+  - @unipasswallet/keys@0.3.1-alpha.9
+  - @unipasswallet/transaction-builders@0.3.1-alpha.9
+  - @unipasswallet/transactions@0.3.1-alpha.9
+  - @unipasswallet/utils@0.3.1-alpha.9
+  - @unipasswallet/wallet@0.3.1-alpha.9
+
 ## 0.3.1-alpha.8
 
 ### Patch Changes
