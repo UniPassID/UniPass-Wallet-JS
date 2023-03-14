@@ -83,8 +83,8 @@ describe("Test EIP4337 Hook", () => {
     const provider = new providers.JsonRpcProvider(RPC_URL);
     const tx = await getRemoveEIP4337HookTransaction(addr, provider);
     console.log("tx", tx);
-    const isAddHook = await isAddEIP4337Hook(addr, provider, "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e80");
+    const isAddHook = await isAddEIP4337Hook(addr, provider, "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e87");
     console.log(isAddHook);
-    console.log(await getAddEIP4337HookTransaction(addr, provider, "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e80"));
+    console.log(await getAddEIP4337HookTransaction(addr, provider, "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e87"));
   });
 });
