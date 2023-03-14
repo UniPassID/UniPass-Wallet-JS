@@ -5,6 +5,7 @@ import {
   singletonFactory,
   moduleGuest,
   moduleHookEIP4337Wallet,
+  multiCall,
 } from "@unipasswallet/abi";
 
 export const CreationCode: string =
@@ -21,3 +22,7 @@ export const ModuleMainUpgradableInterface = new Interface(moduleMainUpgradable.
 export const ModuleGuestInterface = new Interface(moduleGuest.abi);
 
 export const ModuleHookEIP4337WalletInterface = new Interface(moduleHookEIP4337Wallet.abi);
+
+export const MultiCallInterface = new Interface(multiCall.abi);
+
+export const MultiCallAddress = "0x175d02d277eac0838af14D09bf59f11B365BAB42";

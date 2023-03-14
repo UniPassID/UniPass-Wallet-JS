@@ -5,7 +5,14 @@ import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet
 import { TESTNET_UNIPASS_WALLET_CONTEXT } from "@unipasswallet/network";
 import { Wallet } from "@unipasswallet/wallet";
 import { RpcRelayer } from "@unipasswallet/relayer";
-import { getSigSize, sendEIP4337HookTransaction, simulateEIP4337HookTransaction } from "../src/utils";
+import {
+  getAddEIP4337HookTransaction,
+  getRemoveEIP4337HookTransaction,
+  getSigSize,
+  isAddEIP4337Hook,
+  sendEIP4337HookTransaction,
+  simulateEIP4337HookTransaction,
+} from "../src/utils";
 import { HttpRpcClient } from "@account-abstraction/sdk";
 import { UnipassAccountAPI } from "../src/unipassAccountApi";
 import { VerifyingPaymasterAPI } from "../src/verifyingPaymasterAPI";
@@ -70,5 +77,14 @@ describe("Test EIP4337 Hook", () => {
     const uoHash = await sendEIP4337HookTransaction(client, walletAPI, op);
     const txHash = await walletAPI.getUserOpReceipt(uoHash);
     console.log("tx hash: ", txHash);
+  });
+  it("Test add hook", async () => {
+    const addr = "0x4135D76d2DD1291258BDbE681bb4b82655eB0E5a";
+    const provider = new providers.JsonRpcProvider(RPC_URL);
+    const tx = await getRemoveEIP4337HookTransaction(addr, provider);
+    console.log("tx", tx);
+    const isAddHook = await isAddEIP4337Hook(addr, provider, "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e80");
+    console.log(isAddHook);
+    console.log(await getAddEIP4337HookTransaction(addr, provider, "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e80"));
   });
 });
