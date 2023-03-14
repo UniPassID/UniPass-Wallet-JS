@@ -43,7 +43,7 @@ export function getSigSize(keyset: Keyset, indexes: number[]): number {
           throw new Error(`Not Support Key: ${key}`);
         }
       } else {
-        return key.generateKey().length;
+        return key.generateKey().length / 2 - 1;
       }
     })
     .reduce((sum, v) => sum + v, 1);

@@ -303,12 +303,12 @@
             },
             {
               "internalType": "uint256",
-              "name": "callGas",
+              "name": "callGasLimit",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "verificationGas",
+              "name": "verificationGasLimit",
               "type": "uint256"
             },
             {
@@ -327,13 +327,8 @@
               "type": "uint256"
             },
             {
-              "internalType": "address",
-              "name": "paymaster",
-              "type": "address"
-            },
-            {
               "internalType": "bytes",
-              "name": "paymasterData",
+              "name": "paymasterAndData",
               "type": "bytes"
             },
             {
@@ -348,17 +343,23 @@
         },
         {
           "internalType": "bytes32",
-          "name": "requestId",
+          "name": "userOpHash",
           "type": "bytes32"
         },
         {
           "internalType": "uint256",
-          "name": "missingWalletFunds",
+          "name": "missingAccountFunds",
           "type": "uint256"
         }
       ],
       "name": "validateUserOp",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "validationData",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     }
