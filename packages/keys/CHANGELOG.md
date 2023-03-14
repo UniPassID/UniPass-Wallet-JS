@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.3.1-alpha.7
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix paymaster abi
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.1-alpha.7
+  - @unipasswallet/utils@0.3.1-alpha.7
+
 ## 0.3.1-alpha.6
 
 ### Patch Changes
