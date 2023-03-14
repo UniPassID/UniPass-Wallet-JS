@@ -89,7 +89,7 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
       signature: ethers.utils.hexlify(Buffer.alloc(this.sigSize, 1)),
     };
     const op = await ethers.utils.resolveProperties(pmOp);
-    op.preVerificationGas = calcPreVerificationGas(op);
+    op.preVerificationGas = calcPreVerificationGas(op, { sigSize: this.sigSize });
 
     // Ask the paymaster to sign the transaction and return a valid paymasterAndData value.
     const ret = await this.fetch(
