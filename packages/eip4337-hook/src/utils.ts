@@ -6,7 +6,12 @@ import {
   CallTxBuilder,
   RemoveHookTransactionBuilder,
 } from "@unipasswallet/transaction-builders";
-import { ModuleHookEIP4337WalletInterface, ModuleMainInterface } from "@unipasswallet/utils";
+import {
+  ModuleHookEIP4337WalletInterface,
+  ModuleMainInterface,
+  MultiCallAddress,
+  MultiCallInterface,
+} from "@unipasswallet/utils";
 import { Contract, constants, providers, utils } from "ethers";
 import { BaseAccountAPI } from "@account-abstraction/sdk/dist/src/BaseAccountAPI";
 import { HttpRpcClient } from "@account-abstraction/sdk";
@@ -49,26 +54,39 @@ export function getSigSize(keyset: Keyset, indexes: number[]): number {
     .reduce((sum, v) => sum + v, 1);
 }
 
+async function getHooks(userAddr: string, provider: providers.JsonRpcProvider) {
+  const multiCall = new Contract(MultiCallAddress, MultiCallInterface, provider);
+  const selectors = [
+    ModuleHookEIP4337WalletInterface.getSighash("getEIP4337WalletNonce"),
+    ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint"),
+    ModuleHookEIP4337WalletInterface.getSighash("execFromEntryPoint"),
+    ModuleHookEIP4337WalletInterface.getSighash("validateUserOp"),
+  ];
+  const { returnData } = await multiCall.callStatic.aggregate(
+    selectors.map((selector) => {
+      return {
+        target: userAddr,
+        callData: ModuleMainInterface.encodeFunctionData("readHook", [selector]),
+      };
+    }),
+  );
+  return returnData.map((v, i) => {
+    return {
+      hook: (utils.defaultAbiCoder.decode(["address"], v)[0] as string).toLowerCase(),
+      selector: selectors[i],
+    };
+  });
+}
+
 export async function isAddEIP4337Hook(
   userAddr: string,
   provider: providers.JsonRpcProvider,
   implement: string,
 ): Promise<boolean> {
-  const unipassWalletContract = new Contract(userAddr, ModuleMainInterface, provider);
-  return !(
-    await Promise.all(
-      [
-        ModuleHookEIP4337WalletInterface.getSighash("getEIP4337WalletNonce"),
-        ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint"),
-        ModuleHookEIP4337WalletInterface.getSighash("execFromEntryPoint"),
-        ModuleHookEIP4337WalletInterface.getSighash("validateUserOp"),
-      ].map(async (selector) => {
-        const addr = await unipassWalletContract.readHook(selector);
-        return addr === implement;
-      }),
-    )
-  ).some((isAddHook) => {
-    return !isAddHook;
+  const hooks = await getHooks(userAddr, provider);
+
+  return !hooks.some(({ hook }) => {
+    return hook !== implement;
   });
 }
 
@@ -77,45 +95,31 @@ export async function getAddEIP4337HookTransaction(
   provider: providers.JsonRpcProvider,
   implementation: string,
 ): Promise<Transaction | undefined> {
-  const unipassWalletContract = new Contract(userAddr, ModuleMainInterface, provider);
-  const txs = (
-    await Promise.all(
-      [
-        ModuleHookEIP4337WalletInterface.getSighash("getEIP4337WalletNonce"),
-        ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint"),
-        ModuleHookEIP4337WalletInterface.getSighash("execFromEntryPoint"),
-        ModuleHookEIP4337WalletInterface.getSighash("validateUserOp"),
-      ].map(async (selector) => {
-        const addr = await unipassWalletContract.readHook(selector);
-        const txs = [];
-        if (addr !== implementation) {
-          if (addr !== constants.AddressZero) {
-            const tx = new RemoveHookTransactionBuilder(
-              true,
-              constants.Zero,
-              userAddr,
-              selector,
-              constants.Zero,
-            ).build();
-            txs.push(tx);
-          }
-          const tx = new AddHookTransactionBuilder(
-            true,
-            constants.Zero,
-            userAddr,
-            selector,
-            implementation,
-            constants.Zero,
-          ).build();
+  const hooks = await getHooks(userAddr, provider);
+  const txs = hooks
+    .map(({ hook, selector }) => {
+      const txs = [];
+      if (hook !== implementation) {
+        if (hook !== constants.AddressZero) {
+          const tx = new RemoveHookTransactionBuilder(true, constants.Zero, userAddr, selector, constants.Zero).build();
           txs.push(tx);
         }
-        return txs;
-      }),
-    )
-  ).reduce((txs, v) => {
-    v.forEach((v) => txs.push(v));
-    return txs;
-  }, []);
+        const tx = new AddHookTransactionBuilder(
+          true,
+          constants.Zero,
+          userAddr,
+          selector,
+          implementation,
+          constants.Zero,
+        ).build();
+        txs.push(tx);
+      }
+      return txs;
+    })
+    .reduce((txs, v) => {
+      v.forEach((v) => txs.push(v));
+      return txs;
+    }, []);
 
   if (txs.length === 0) {
     return undefined;
@@ -133,29 +137,21 @@ export async function getRemoveEIP4337HookTransaction(
   userAddr: string,
   provider: providers.JsonRpcProvider,
 ): Promise<Transaction | undefined> {
-  const unipassWalletContract = new Contract(userAddr, ModuleMainInterface, provider);
-  const txs = (
-    await Promise.all(
-      [
-        ModuleHookEIP4337WalletInterface.getSighash("getEIP4337WalletNonce"),
-        ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint"),
-        ModuleHookEIP4337WalletInterface.getSighash("execFromEntryPoint"),
-        ModuleHookEIP4337WalletInterface.getSighash("validateUserOp"),
-      ].map(async (selector) => {
-        const addr = await unipassWalletContract.readHook(selector);
-        if (addr === constants.AddressZero) {
-          const tx = new RemoveHookTransactionBuilder(true, constants.Zero, userAddr, selector, constants.Zero).build();
-          return tx;
-        }
-        return undefined;
-      }),
-    )
-  ).reduce((txs, v) => {
-    if (v) {
-      txs.push(v);
-    }
-    return txs;
-  }, []);
+  const hooks = await getHooks(userAddr, provider);
+  const txs = hooks
+    .map(({ hook, selector }) => {
+      if (hook !== constants.AddressZero) {
+        const tx = new RemoveHookTransactionBuilder(true, constants.Zero, userAddr, selector, constants.Zero).build();
+        return tx;
+      }
+      return undefined;
+    })
+    .reduce((txs, v) => {
+      if (v) {
+        txs.push(v);
+      }
+      return txs;
+    }, []);
 
   if (txs.length === 0) {
     return undefined;

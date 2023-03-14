@@ -15,3 +15,5 @@ export * as singletonFactory from "./singletonFactory";
 export * as moduleGuest from "./moduleGuest";
 
 export * as moduleHookEIP4337Wallet from "./moduleHookEIP4337Wallet";
+
+export * as multiCall from "./multiCall";
