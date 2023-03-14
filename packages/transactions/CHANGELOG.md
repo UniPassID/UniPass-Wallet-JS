@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.3.1-alpha.8
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix getVerificationGasLimit
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.8
+  - @unipasswallet/utils@0.3.1-alpha.8
+
 ## 0.3.1-alpha.7
 
 ### Patch Changes
