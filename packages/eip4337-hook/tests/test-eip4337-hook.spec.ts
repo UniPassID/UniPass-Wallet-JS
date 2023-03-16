@@ -5,11 +5,13 @@ import { KeySecp256k1Wallet, Keyset, RoleWeight, SignType } from "@unipasswallet
 import { TESTNET_UNIPASS_WALLET_CONTEXT } from "@unipasswallet/network";
 import { Wallet } from "@unipasswallet/wallet";
 import { RpcRelayer } from "@unipasswallet/relayer";
+import fetchPonyfill from "fetch-ponyfill";
 import {
   getAddEIP4337HookTransaction,
   getRemoveEIP4337HookTransaction,
   getSigSize,
   isAddEIP4337Hook,
+  needAddEIP4337Hook,
   sendEIP4337HookTransaction,
   simulateEIP4337HookTransaction,
 } from "../src/utils";
@@ -72,6 +74,16 @@ describe("Test EIP4337 Hook", () => {
       parseEther("0.001"),
       "0x",
     ).build();
+    console.log(
+      await needAddEIP4337Hook({
+        userAddr: wallet.address,
+        provider,
+        impl: "0xf956a5cce43dbcaa57d8b9b23ddea4bcb79b3e87",
+        chain: 5,
+        fetch: fetchPonyfill().fetch,
+        paymasterUrl: PAYMASTER_URL,
+      }),
+    );
     const op = await simulateEIP4337HookTransaction(walletAPI, tx);
     const client = new HttpRpcClient(config.bundlerUrl, config.entryPointAddress, config.chainId);
     const uoHash = await sendEIP4337HookTransaction(client, walletAPI, op);

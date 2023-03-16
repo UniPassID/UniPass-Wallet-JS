@@ -22,13 +22,13 @@ export interface WebRPCError extends Error {
   status: number;
 }
 
-const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
+export const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",
   headers: { ...headers, "Content-Type": "application/json" },
   body: JSON.stringify(body || {}),
 });
 
-const buildResponse = (res: Response): Promise<any> =>
+export const buildResponse = (res: Response): Promise<any> =>
   res.text().then((text) => {
     let body;
 
@@ -113,14 +113,14 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
     return paymaster_and_data;
   }
 
-  async isWhiteList(sender: string): Promise<boolean> {
+  async isWhiteList(chain: number, sender: string): Promise<boolean> {
     const ret = await this.fetch(
       this.paymasterUrl,
       createPostHTTPRequest({
         jsonrpc: "2.0",
         id: 1,
         method: "pm_isWhiteList",
-        params: [sender],
+        params: [chain, sender],
       }),
     );
     const data: boolean = await buildResponse(ret);

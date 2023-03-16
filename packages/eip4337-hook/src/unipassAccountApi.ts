@@ -114,9 +114,9 @@ export class UnipassAccountAPI extends BaseAccountAPI {
     return 500000;
   }
 
-  async needAddHook(impl: string): Promise<boolean> {
+  async needAddHook(chain: number, impl: string): Promise<boolean> {
     if (VerifyingPaymasterAPI.isVerifyingPaymasterAPI(this.paymasterAPI)) {
-      if (!(await this.paymasterAPI.isWhiteList(this.wallet.address))) {
+      if (!(await this.paymasterAPI.isWhiteList(chain, this.wallet.address))) {
         return false;
       }
     }

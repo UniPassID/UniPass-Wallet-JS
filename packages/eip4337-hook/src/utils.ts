@@ -15,6 +15,7 @@ import {
 import { Contract, constants, providers, utils } from "ethers";
 import { BaseAccountAPI } from "@account-abstraction/sdk/dist/src/BaseAccountAPI";
 import { HttpRpcClient } from "@account-abstraction/sdk";
+import { Fetch, buildResponse, createPostHTTPRequest } from "./verifyingPaymasterAPI";
 
 export function toJSON(op: Partial<UserOperationStruct>): Promise<any> {
   return utils.resolveProperties(op).then((userOp) =>
@@ -86,6 +87,34 @@ export async function isAddEIP4337Hook(userAddr: string, provider: providers.Pro
   return !hooks.some(({ hook }) => {
     return hook !== implement;
   });
+}
+
+export async function needAddEIP4337Hook(input: {
+  userAddr: string;
+  provider: providers.Provider;
+  impl: string;
+  fetch: Fetch;
+  paymasterUrl: string;
+  chain: number;
+}): Promise<boolean> {
+  const { chain, userAddr, provider, impl, paymasterUrl, fetch } = input;
+
+  const ret = await fetch(
+    paymasterUrl,
+    createPostHTTPRequest({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "pm_isWhiteList",
+      params: [chain, userAddr],
+    }),
+  );
+  const isWhiteList: boolean = await buildResponse(ret);
+
+  if (!isWhiteList) {
+    return false;
+  }
+
+  return !isAddEIP4337Hook(userAddr, provider, impl);
 }
 
 export async function getAddEIP4337HookTransaction(
