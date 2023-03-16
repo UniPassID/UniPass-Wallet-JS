@@ -1,5 +1,19 @@
 # @unipasswallet/wallet
 
+## 0.3.1-alpha.11
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: add white list
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.11
+  - @unipasswallet/dkim-base@0.3.1-alpha.11
+  - @unipasswallet/keys@0.3.1-alpha.11
+  - @unipasswallet/network@0.3.1-alpha.11
+  - @unipasswallet/relayer@0.3.1-alpha.11
+  - @unipasswallet/transactions@0.3.1-alpha.11
+  - @unipasswallet/utils@0.3.1-alpha.11
+
 ## 0.3.1-alpha.10
 
 ### Patch Changes

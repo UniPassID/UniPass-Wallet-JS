@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.3.1-alpha.11
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: add white list
+- Updated dependencies
+  - @unipasswallet/utils@0.3.1-alpha.11
+
 ## 0.3.1-alpha.10
 
 ### Patch Changes

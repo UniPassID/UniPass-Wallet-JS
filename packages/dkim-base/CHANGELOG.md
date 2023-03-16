@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.3.1-alpha.11
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: add white list
+
 ## 0.3.1-alpha.10
 
 ### Patch Changes
