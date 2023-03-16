@@ -1,5 +1,17 @@
 # @unipasswallet/eip4337-hook
 
+## 0.3.1-alpha.12
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: split chain for white list
+- Updated dependencies
+  - @unipasswallet/keys@0.3.1-alpha.12
+  - @unipasswallet/transaction-builders@0.3.1-alpha.12
+  - @unipasswallet/transactions@0.3.1-alpha.12
+  - @unipasswallet/utils@0.3.1-alpha.12
+  - @unipasswallet/wallet@0.3.1-alpha.12
+
 ## 0.3.1-alpha.11
 
 ### Patch Changes
