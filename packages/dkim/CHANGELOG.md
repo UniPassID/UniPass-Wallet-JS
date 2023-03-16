@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.3.1-alpha.12
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: split chain for white list
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.1-alpha.12
+
 ## 0.3.1-alpha.11
 
 ### Patch Changes
