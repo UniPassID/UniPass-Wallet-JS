@@ -19,7 +19,7 @@ async function main() {
   const timestamp = Math.ceil(Date.now() / 1000) + 5000;
 
   // Got Permit From Unipass
-  const permit = await provider.generatePermit(sessionKeyWallet.address, timestamp);
+  const permit = await provider.generatePermit(sessionKeyWallet.address, wallet.keyset, timestamp);
 
   const sessionKey = new SessionKey(sessionKeyWallet, SignType.EthSign, wallet.address, permit);
 

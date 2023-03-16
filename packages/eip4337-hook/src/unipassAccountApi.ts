@@ -4,8 +4,9 @@ import { BaseAccountAPI, BaseApiParams } from "@account-abstraction/sdk/dist/src
 import { Wallet } from "@unipasswallet/wallet";
 import { ModuleHookEIP4337WalletInterface } from "@unipasswallet/utils";
 import { UserOperationStruct } from "@account-abstraction/contracts";
-import { DUMMY_PAYMASTER_AND_DATA } from "./verifyingPaymasterAPI";
+import { DUMMY_PAYMASTER_AND_DATA, VerifyingPaymasterAPI } from "./verifyingPaymasterAPI";
 import { calcPreVerificationGas } from "@account-abstraction/sdk";
+import { isAddEIP4337Hook } from "./utils";
 
 /**
  * constructor params, added no top of base params:
@@ -111,5 +112,15 @@ export class UnipassAccountAPI extends BaseAccountAPI {
 
   async getVerificationGasLimit() {
     return 500000;
+  }
+
+  async needAddHook(impl: string): Promise<boolean> {
+    if (VerifyingPaymasterAPI.isVerifyingPaymasterAPI(this.paymasterAPI)) {
+      if (!(await this.paymasterAPI.isWhiteList(this.wallet.address))) {
+        throw new Error(`User[${this.wallet.address}] Not in the White List`);
+      }
+    }
+
+    return isAddEIP4337Hook(this.wallet.address, this.wallet.provider!, impl);
   }
 }

@@ -54,7 +54,7 @@ export function getSigSize(keyset: Keyset, indexes: number[]): number {
     .reduce((sum, v) => sum + v, 1);
 }
 
-async function getHooks(userAddr: string, provider: providers.JsonRpcProvider) {
+async function getHooks(userAddr: string, provider: providers.Provider) {
   const multiCall = new Contract(MultiCallAddress, MultiCallInterface, provider);
   const selectors = [
     ModuleHookEIP4337WalletInterface.getSighash("getEIP4337WalletNonce"),
@@ -78,11 +78,7 @@ async function getHooks(userAddr: string, provider: providers.JsonRpcProvider) {
   });
 }
 
-export async function isAddEIP4337Hook(
-  userAddr: string,
-  provider: providers.JsonRpcProvider,
-  impl: string,
-): Promise<boolean> {
+export async function isAddEIP4337Hook(userAddr: string, provider: providers.Provider, impl: string): Promise<boolean> {
   const hooks = await getHooks(userAddr, provider);
 
   const implement = impl.toLowerCase();

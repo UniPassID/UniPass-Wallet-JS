@@ -3,6 +3,7 @@ import { PaymasterAPI, calcPreVerificationGas } from "@account-abstraction/sdk";
 import { UserOperationStruct } from "@account-abstraction/contracts";
 import fetchPonyfill from "fetch-ponyfill";
 import { toJSON } from "./utils";
+import { defineReadOnly } from "ethers/lib/utils";
 
 export const DUMMY_PAYMASTER_AND_DATA =
   "0x0101010101010101010101010101010101010101000000000000000000000000000000000000000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101";
@@ -57,6 +58,8 @@ const buildResponse = (res: Response): Promise<any> =>
 export class VerifyingPaymasterAPI extends PaymasterAPI {
   public readonly fetch: Fetch;
 
+  public readonly _isVerifyingPaymasterAPI: boolean;
+
   constructor(
     public readonly chainId: number,
     public readonly sigSize: number,
@@ -66,6 +69,7 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
   ) {
     super();
     this.fetch = originFetch || fetchPonyfill().fetch;
+    defineReadOnly(this, "_isVerifyingPaymasterAPI", true);
   }
 
   async getPaymasterAndData(userOp: Partial<UserOperationStruct>): Promise<string> {
@@ -101,7 +105,29 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
         params: [this.chainId, await toJSON(op), this.entryPoint],
       }),
     );
-    const data: string = await buildResponse(ret);
+    const { isWhiteList, paymaster_and_data } = await buildResponse(ret);
+
+    if (!isWhiteList) {
+      throw new Error(`Sender[${op.sender}] is not in the white list`);
+    }
+    return paymaster_and_data;
+  }
+
+  async isWhiteList(sender: string): Promise<boolean> {
+    const ret = await this.fetch(
+      this.paymasterUrl,
+      createPostHTTPRequest({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "pm_isWhiteList",
+        params: [sender],
+      }),
+    );
+    const data: boolean = await buildResponse(ret);
     return data;
+  }
+
+  static isVerifyingPaymasterAPI(v: any): v is VerifyingPaymasterAPI {
+    return v._isVerifyingPaymasterAPI;
   }
 }
