@@ -117,10 +117,10 @@ export class UnipassAccountAPI extends BaseAccountAPI {
   async needAddHook(impl: string): Promise<boolean> {
     if (VerifyingPaymasterAPI.isVerifyingPaymasterAPI(this.paymasterAPI)) {
       if (!(await this.paymasterAPI.isWhiteList(this.wallet.address))) {
-        throw new Error(`User[${this.wallet.address}] Not in the White List`);
+        return false;
       }
     }
 
-    return isAddEIP4337Hook(this.wallet.address, this.wallet.provider!, impl);
+    return !isAddEIP4337Hook(this.wallet.address, this.wallet.provider!, impl);
   }
 }
