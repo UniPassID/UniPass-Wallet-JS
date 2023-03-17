@@ -61,15 +61,15 @@ const genProviders = (
       arbitrum_url = chain_config["arbitrum-mainnet"].rpc_url;
       avalanche_url = chain_config["avalanche-mainnet"].rpc_url;
   }
-  const eth = new providers.JsonRpcProvider(eth_url);
-  const polygon = new providers.JsonRpcProvider(polygon_url);
-  const bsc = new providers.JsonRpcProvider(bsc_url);
-  const rangers = new providers.JsonRpcProvider(rangers_url);
-  const arbitrum = new providers.JsonRpcProvider(arbitrum_url);
-  const avalanche = new providers.JsonRpcBatchProvider(avalanche_url);
+  const eth = new providers.StaticJsonRpcProvider(eth_url);
+  const polygon = new providers.StaticJsonRpcProvider(polygon_url);
+  const bsc = new providers.StaticJsonRpcProvider(bsc_url);
+  const rangers = new providers.StaticJsonRpcProvider(rangers_url);
+  const arbitrum = new providers.StaticJsonRpcProvider(arbitrum_url);
+  const avalanche = new providers.StaticJsonRpcProvider(avalanche_url);
   return scroll_url === ""
     ? { polygon, bsc, rangers, eth, scroll: undefined, arbitrum, avalanche }
-    : { polygon, bsc, rangers, eth, scroll: new providers.JsonRpcProvider(scroll_url), arbitrum, avalanche };
+    : { polygon, bsc, rangers, eth, scroll: new providers.StaticJsonRpcProvider(scroll_url), arbitrum, avalanche };
 };
 
 const genRelayers = (
