@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.3.1-alpha.13
+
+### Patch Changes
+
+- @unipasswallet/provider: update provider to static provider
+
 ## 0.3.1-alpha.12
 
 ### Patch Changes
