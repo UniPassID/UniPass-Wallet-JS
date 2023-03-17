@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.3.1-alpha.15
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: update verifacation gas limit
+
 ## 0.3.1-alpha.14
 
 ### Patch Changes
