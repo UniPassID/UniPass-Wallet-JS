@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.3.1-alpha.14
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: removing 4337 paymaster data checking
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.1-alpha.14
+
 ## 0.3.1-alpha.13
 
 ### Patch Changes
