@@ -11,16 +11,18 @@ type AuthChainNode =
   | "scroll-testnet"
   | "arbitrum-testnet"
   | "avalanche-testnet"
+  | "kcc-testnet"
   | "polygon-mainnet"
   | "eth-mainnet"
   | "bsc-mainnet"
   | "rangers-mainnet"
   | "arbitrum-mainnet"
-  | "avalanche-mainnet";
+  | "avalanche-mainnet"
+  | "kcc-mainnet";
 
 type Environment = "testnet" | "mainnet";
 
-type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll" | "arbitrum" | "avalanche";
+type ChainType = "polygon" | "eth" | "bsc" | "rangers" | "scroll" | "arbitrum" | "avalanche" | "kcc";
 
 export type UrlConfig = {
   backend: string;
@@ -30,6 +32,7 @@ export type UrlConfig = {
     bsc: string;
     rangers: string;
     arbitrum: string;
+    kcc: string;
     avalanche: string;
   };
 };
