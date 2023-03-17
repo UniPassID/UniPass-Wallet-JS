@@ -16,6 +16,9 @@ export const chain_config = {
   "arbitrum-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/arbitrum-mainnet",
   },
+  "kcc-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/kcc-mainnet",
+  },
   "eth-goerli": {
     rpc_url: "https://node.wallet.unipass.id/eth-goerli",
   },
@@ -40,6 +43,9 @@ export const chain_config = {
   "avalanche-testnet": {
     rpc_url: "https://node.wallet.unipass.id/avalanche-testnet",
   },
+  "kcc-testnet": {
+    rpc_url: "https://node.wallet.unipass.id/kcc-testnet",
+  },
 };
 
 export const mainnet_api_config = {
@@ -51,6 +57,7 @@ export const mainnet_api_config = {
     rangers: "https://wallet.unipass.id/relayer-v2-rangers",
     arbitrum: "https://wallet.unipass.id/relayer-v2-arbitrum",
     avalanche: "https://wallet.unipass.id/relayer-v2-avalanche",
+    kcc: "https://wallet.unipass.id/relayer-v2-kcc",
   },
 };
 
@@ -63,6 +70,7 @@ export const mainnet_preview_api_config = {
     rangers: "https://m.wallet.unipass.vip/relayer-v2-rangers",
     arbitrum: "https://m.wallet.unipass.vip/relayer-v2-arbitrum",
     avalanche: "https://m.wallet.unipass.vip/relayer-v2-avalanche",
+    kcc: "https://m.wallet.unipass.vip/relayer-v2-kcc",
   },
 };
 
@@ -76,6 +84,7 @@ export const dev_api_config = {
     scroll: "https://d.wallet.unipass.vip/relayer-v2-scroll",
     arbitrum: "https://d.wallet.unipass.vip/relayer-v2-arbitrum",
     avalanche: "https://d.wallet.unipass.vip/relayer-v2-avalanche",
+    kcc: "https://d.wallet.unipass.vip/relayer-v2-kcc",
   },
 };
 
@@ -89,6 +98,7 @@ export const test_api_config = {
     scroll: "https://t.wallet.unipass.vip/relayer-v2-scroll",
     arbitrum: "https://t.wallet.unipass.vip/relayer-v2-arbitrum",
     avalanche: "https://t.wallet.unipass.vip/relayer-v2-avalanche",
+    kcc: "https://t.wallet.unipass.vip/relayer-v2-kcc",
   },
 };
 
@@ -102,6 +112,7 @@ export const testnet_api_config = {
     scroll: "https://testnet.wallet.unipass.id/relayer-v2-scroll",
     arbitrum: "https://testnet.wallet.unipass.id/relayer-v2-arbitrum",
     avalanche: "https://testnet.wallet.unipass.id/relayer-v2-avalanche",
+    kcc: "https://testnet.wallet.unipass.id/relayer-v2-kcc",
   },
 };
 
