@@ -111,7 +111,7 @@ export class UnipassAccountAPI extends BaseAccountAPI {
   }
 
   async getVerificationGasLimit() {
-    return 500000;
+    return 200000;
   }
 
   async needAddHook(chain: number, impl: string): Promise<boolean> {
