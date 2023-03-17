@@ -105,11 +105,11 @@ export class VerifyingPaymasterAPI extends PaymasterAPI {
         params: [this.chainId, await toJSON(op), this.entryPoint],
       }),
     );
-    const { isWhiteList, paymasterAndData } = await buildResponse(ret);
+    const { paymasterAndData } = await buildResponse(ret);
 
-    if (!isWhiteList) {
-      throw new Error(`Sender[${op.sender}] is not in the white list`);
-    }
+    // if (!isWhiteList) {
+    //   throw new Error(`Sender[${op.sender}] is not in the white list`);
+    // }
     return paymasterAndData;
   }
 
