@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.3.1-alpha.13
+
+### Patch Changes
+
+- @unipasswallet/provider: update provider to static provider
+- Updated dependencies
+  - @unipasswallet/keys@0.3.1-alpha.13
+  - @unipasswallet/network@0.3.1-alpha.13
+  - @unipasswallet/relayer@0.3.1-alpha.13
+  - @unipasswallet/sdk@0.3.1-alpha.13
+  - @unipasswallet/transaction-builders@0.3.1-alpha.13
+  - @unipasswallet/transactions@0.3.1-alpha.13
+  - @unipasswallet/utils@0.3.1-alpha.13
+  - @unipasswallet/wallet@0.3.1-alpha.13
+
 ## 0.3.1-alpha.12
 
 ### Patch Changes
