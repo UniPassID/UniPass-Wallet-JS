@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.3.1-alpha.14
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: removing 4337 paymaster data checking
+- Updated dependencies
+  - @unipasswallet/keys@0.3.1-alpha.14
+  - @unipasswallet/network@0.3.1-alpha.14
+  - @unipasswallet/relayer@0.3.1-alpha.14
+  - @unipasswallet/sdk@0.3.1-alpha.14
+  - @unipasswallet/transaction-builders@0.3.1-alpha.14
+  - @unipasswallet/transactions@0.3.1-alpha.14
+  - @unipasswallet/utils@0.3.1-alpha.14
+  - @unipasswallet/wallet@0.3.1-alpha.14
+
 ## 0.3.1-alpha.13
 
 ### Patch Changes
