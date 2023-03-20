@@ -1,5 +1,34 @@
 # @unipasswallet/abi
 
+## 0.3.1
+
+### Patch Changes
+
+- 3b881fa7: @unipasswallet/provider: update session key generating
+- 5f5bc01a: @unipasswallet/eip4337-hook: update verifacation gas limit
+- 5e9a2824: @unipasswallet/eip4337-hook: add eip4337 simulating and sending
+- 056ce8c5: @unipasswallet/eip4337-hook: fix hooks info when contract not deployed
+- 83dda2ac: @unipasswallet/provider: fix permit tss audit error
+- fca1bf75: @unipasswallet/wallet: add session key support
+- c6adfd0d: @unipasswallet/eip4337-hook: fix paymaster response parsing
+- 4a1de91b: @unipasswallet/eip4337-hook: add eip4337 support
+- ce44711a: @unipasswallet/eip4337-hook: add white list
+- 1c964373: @unipasswallet/provider: update provider to static provider
+- 83e34185: @unipasswallet/eip4337-hook: fix getVerificationGasLimit
+- 8991b506: @unipasswallet/eip4337-hook: removing 4337 paymaster data checking
+- bump versions
+- 9bcf3389: @unipasswallet/eip4337-hook: improving geting hooks
+- 30e110e4: @unipasswallet/eip4337-hook: fix paymaster abi
+- ebf15e4e: @unipasswallet/provider: add session key support
+- 01de6d94: @unipasswallet/eip4337-hook: split chain for white list
+- 645509ac: @unipasswallet/eip4337-hook: fix lower case comparing
+
+## 0.3.1-alpha.16
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix hooks info when contract not deployed
+
 ## 0.3.1-alpha.15
 
 ### Patch Changes

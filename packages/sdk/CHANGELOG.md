@@ -1,5 +1,71 @@
 # @unipasswallet/sdk
 
+## 0.3.1
+
+### Patch Changes
+
+- 3b881fa7: @unipasswallet/provider: update session key generating
+- 5f5bc01a: @unipasswallet/eip4337-hook: update verifacation gas limit
+- 5e9a2824: @unipasswallet/eip4337-hook: add eip4337 simulating and sending
+- 056ce8c5: @unipasswallet/eip4337-hook: fix hooks info when contract not deployed
+- 83dda2ac: @unipasswallet/provider: fix permit tss audit error
+- fca1bf75: @unipasswallet/wallet: add session key support
+- c6adfd0d: @unipasswallet/eip4337-hook: fix paymaster response parsing
+- 4a1de91b: @unipasswallet/eip4337-hook: add eip4337 support
+- ce44711a: @unipasswallet/eip4337-hook: add white list
+- 1c964373: @unipasswallet/provider: update provider to static provider
+- 83e34185: @unipasswallet/eip4337-hook: fix getVerificationGasLimit
+- 8991b506: @unipasswallet/eip4337-hook: removing 4337 paymaster data checking
+- bump versions
+- 9bcf3389: @unipasswallet/eip4337-hook: improving geting hooks
+- 30e110e4: @unipasswallet/eip4337-hook: fix paymaster abi
+- ebf15e4e: @unipasswallet/provider: add session key support
+- 01de6d94: @unipasswallet/eip4337-hook: split chain for white list
+- 645509ac: @unipasswallet/eip4337-hook: fix lower case comparing
+- Updated dependencies [3b881fa7]
+- Updated dependencies [5f5bc01a]
+- Updated dependencies [5e9a2824]
+- Updated dependencies [056ce8c5]
+- Updated dependencies [83dda2ac]
+- Updated dependencies [fca1bf75]
+- Updated dependencies [c6adfd0d]
+- Updated dependencies [4a1de91b]
+- Updated dependencies [ce44711a]
+- Updated dependencies [1c964373]
+- Updated dependencies [83e34185]
+- Updated dependencies [8991b506]
+- Updated dependencies
+- Updated dependencies [9bcf3389]
+- Updated dependencies [30e110e4]
+- Updated dependencies [ebf15e4e]
+- Updated dependencies [01de6d94]
+- Updated dependencies [645509ac]
+  - @unipasswallet/abi@0.3.1
+  - @unipasswallet/dkim-base@0.3.1
+  - @unipasswallet/keys@0.3.1
+  - @unipasswallet/network@0.3.1
+  - @unipasswallet/relayer@0.3.1
+  - @unipasswallet/transaction-builders@0.3.1
+  - @unipasswallet/transactions@0.3.1
+  - @unipasswallet/utils@0.3.1
+  - @unipasswallet/wallet@0.3.1
+
+## 0.3.1-alpha.16
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix hooks info when contract not deployed
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.16
+  - @unipasswallet/dkim-base@0.3.1-alpha.16
+  - @unipasswallet/keys@0.3.1-alpha.16
+  - @unipasswallet/network@0.3.1-alpha.16
+  - @unipasswallet/relayer@0.3.1-alpha.16
+  - @unipasswallet/transaction-builders@0.3.1-alpha.16
+  - @unipasswallet/transactions@0.3.1-alpha.16
+  - @unipasswallet/utils@0.3.1-alpha.16
+  - @unipasswallet/wallet@0.3.1-alpha.16
+
 ## 0.3.1-alpha.15
 
 ### Patch Changes
