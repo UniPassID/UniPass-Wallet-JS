@@ -73,7 +73,8 @@ async function getHooks(userAddr: string, provider: providers.Provider) {
   );
   return returnData.map((v, i) => {
     return {
-      hook: (utils.defaultAbiCoder.decode(["address"], v)[0] as string).toLowerCase(),
+      hook:
+        v === "0x" ? constants.AddressZero : (utils.defaultAbiCoder.decode(["address"], v)[0] as string).toLowerCase(),
       selector: selectors[i],
     };
   });
