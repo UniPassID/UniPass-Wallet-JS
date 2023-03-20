@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.3.1-alpha.16
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix hooks info when contract not deployed
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.1-alpha.16
+
 ## 0.3.1-alpha.15
 
 ### Patch Changes

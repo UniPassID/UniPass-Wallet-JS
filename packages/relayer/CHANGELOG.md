@@ -1,5 +1,17 @@
 # @unipasswallet/relayer
 
+## 0.3.1-alpha.16
+
+### Patch Changes
+
+- @unipasswallet/eip4337-hook: fix hooks info when contract not deployed
+- Updated dependencies
+  - @unipasswallet/abi@0.3.1-alpha.16
+  - @unipasswallet/keys@0.3.1-alpha.16
+  - @unipasswallet/network@0.3.1-alpha.16
+  - @unipasswallet/transactions@0.3.1-alpha.16
+  - @unipasswallet/utils@0.3.1-alpha.16
+
 ## 0.3.1-alpha.15
 
 ### Patch Changes
