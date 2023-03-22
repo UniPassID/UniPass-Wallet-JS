@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.3.2-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/provider: add kcc support
+- Updated dependencies
+  - @unipasswallet/utils@0.3.2-alpha.0
+
 ## 0.3.1
 
 ### Patch Changes

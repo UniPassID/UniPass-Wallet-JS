@@ -1,5 +1,17 @@
 # @unipasswallet/eip4337-hook
 
+## 0.3.2-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/provider: add kcc support
+- Updated dependencies
+  - @unipasswallet/keys@0.3.2-alpha.0
+  - @unipasswallet/transaction-builders@0.3.2-alpha.0
+  - @unipasswallet/transactions@0.3.2-alpha.0
+  - @unipasswallet/utils@0.3.2-alpha.0
+  - @unipasswallet/wallet@0.3.2-alpha.0
+
 ## 0.3.1
 
 ### Patch Changes
