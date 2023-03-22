@@ -1,5 +1,11 @@
 # @unipasswallet/dkim-base
 
+## 0.3.2-alpha.0
+
+### Patch Changes
+
+- @unipasswallet/provider: add kcc support
+
 ## 0.3.1
 
 ### Patch Changes
