@@ -19,6 +19,9 @@ export const chain_config = {
   "kcc-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/kcc-mainnet",
   },
+  "okc-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/okc-mainnet",
+  },
   "eth-goerli": {
     rpc_url: "https://node.wallet.unipass.id/eth-goerli",
   },
@@ -46,6 +49,9 @@ export const chain_config = {
   "kcc-testnet": {
     rpc_url: "https://node.wallet.unipass.id/kcc-testnet",
   },
+  "okc-testnet": {
+    rpc_url: "https://node.wallet.unipass.id/okc-testnet",
+  },
 };
 
 export const mainnet_api_config = {
@@ -58,6 +64,7 @@ export const mainnet_api_config = {
     arbitrum: "https://wallet.unipass.id/relayer-v2-arbitrum",
     avalanche: "https://wallet.unipass.id/relayer-v2-avalanche",
     kcc: "https://wallet.unipass.id/relayer-v2-kcc",
+    okc: "https://wallet.unipass.id/relayer-v2-okc",
   },
 };
 
@@ -71,6 +78,7 @@ export const mainnet_preview_api_config = {
     arbitrum: "https://m.wallet.unipass.vip/relayer-v2-arbitrum",
     avalanche: "https://m.wallet.unipass.vip/relayer-v2-avalanche",
     kcc: "https://m.wallet.unipass.vip/relayer-v2-kcc",
+    okc: "https://m.wallet.unipass.vip/relayer-v2-okc",
   },
 };
 
@@ -85,6 +93,7 @@ export const dev_api_config = {
     arbitrum: "https://d.wallet.unipass.vip/relayer-v2-arbitrum",
     avalanche: "https://d.wallet.unipass.vip/relayer-v2-avalanche",
     kcc: "https://d.wallet.unipass.vip/relayer-v2-kcc",
+    okc: "https://d.wallet.unipass.vip/relayer-v2-okc",
   },
 };
 
@@ -99,6 +108,7 @@ export const test_api_config = {
     arbitrum: "https://t.wallet.unipass.vip/relayer-v2-arbitrum",
     avalanche: "https://t.wallet.unipass.vip/relayer-v2-avalanche",
     kcc: "https://t.wallet.unipass.vip/relayer-v2-kcc",
+    okc: "https://t.wallet.unipass.vip/relayer-v2-okc",
   },
 };
 
@@ -113,6 +123,7 @@ export const testnet_api_config = {
     arbitrum: "https://testnet.wallet.unipass.id/relayer-v2-arbitrum",
     avalanche: "https://testnet.wallet.unipass.id/relayer-v2-avalanche",
     kcc: "https://testnet.wallet.unipass.id/relayer-v2-kcc",
+    okc: "https://testnet.wallet.unipass.id/relayer-v2-okc",
   },
 };
 
