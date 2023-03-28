@@ -22,6 +22,9 @@ export const chain_config = {
   "okc-mainnet": {
     rpc_url: "https://node.wallet.unipass.id/okc-mainnet",
   },
+  "platon-mainnet": {
+    rpc_url: "https://node.wallet.unipass.id/platon-mainnet",
+  },
   "eth-goerli": {
     rpc_url: "https://node.wallet.unipass.id/eth-goerli",
   },
@@ -52,6 +55,9 @@ export const chain_config = {
   "okc-testnet": {
     rpc_url: "https://node.wallet.unipass.id/okc-testnet",
   },
+  "platon-testnet": {
+    rpc_url: "https://node.wallet.unipass.id/platon-testnet",
+  },
 };
 
 export const mainnet_api_config = {
@@ -65,6 +71,7 @@ export const mainnet_api_config = {
     avalanche: "https://wallet.unipass.id/relayer-v2-avalanche",
     kcc: "https://wallet.unipass.id/relayer-v2-kcc",
     okc: "https://wallet.unipass.id/relayer-v2-okc",
+    platon: "https://wallet.unipass.id/relayer-v2-platon",
   },
 };
 
@@ -79,6 +86,7 @@ export const mainnet_preview_api_config = {
     avalanche: "https://m.wallet.unipass.vip/relayer-v2-avalanche",
     kcc: "https://m.wallet.unipass.vip/relayer-v2-kcc",
     okc: "https://m.wallet.unipass.vip/relayer-v2-okc",
+    platon: "https://m.wallet.unipass.vip/relayer-v2-platon",
   },
 };
 
@@ -94,6 +102,7 @@ export const dev_api_config = {
     avalanche: "https://d.wallet.unipass.vip/relayer-v2-avalanche",
     kcc: "https://d.wallet.unipass.vip/relayer-v2-kcc",
     okc: "https://d.wallet.unipass.vip/relayer-v2-okc",
+    platon: "https://d.wallet.unipass.vip/relayer-v2-platon",
   },
 };
 
@@ -109,6 +118,7 @@ export const test_api_config = {
     avalanche: "https://t.wallet.unipass.vip/relayer-v2-avalanche",
     kcc: "https://t.wallet.unipass.vip/relayer-v2-kcc",
     okc: "https://t.wallet.unipass.vip/relayer-v2-okc",
+    platon: "https://t.wallet.unipass.vip/relayer-v2-platon",
   },
 };
 
@@ -124,6 +134,7 @@ export const testnet_api_config = {
     avalanche: "https://testnet.wallet.unipass.id/relayer-v2-avalanche",
     kcc: "https://testnet.wallet.unipass.id/relayer-v2-kcc",
     okc: "https://testnet.wallet.unipass.id/relayer-v2-okc",
+    platon: "https://testnet.wallet.unipass.id/relayer-v2-platon",
   },
 };
 
