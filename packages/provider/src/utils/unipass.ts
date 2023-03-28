@@ -28,6 +28,7 @@ const genProviders = (
   arbitrum: providers.JsonRpcProvider;
   avalanche: providers.JsonRpcProvider;
   kcc: providers.JsonRpcProvider;
+  okc: providers.JsonRpcProvider;
 } => {
   let polygon_url = "";
   let bsc_url = "";
@@ -37,6 +38,7 @@ const genProviders = (
   let arbitrum_url = "";
   let avalanche_url = "";
   let kcc_url = "";
+  let okc_url = "";
   switch (config.env) {
     case "testnet":
       eth_url = chain_config["eth-goerli"].rpc_url;
@@ -47,6 +49,7 @@ const genProviders = (
       arbitrum_url = chain_config["arbitrum-testnet"].rpc_url;
       avalanche_url = chain_config["avalanche-testnet"].rpc_url;
       kcc_url = chain_config["kcc-testnet"].rpc_url;
+      okc_url = chain_config["okc-testnet"].rpc_url;
       break;
     case "mainnet":
       eth_url = chain_config["eth-mainnet"].rpc_url;
@@ -56,6 +59,7 @@ const genProviders = (
       arbitrum_url = chain_config["arbitrum-mainnet"].rpc_url;
       avalanche_url = chain_config["avalanche-mainnet"].rpc_url;
       kcc_url = chain_config["kcc-mainnet"].rpc_url;
+      okc_url = chain_config["okc-mainnet"].rpc_url;
       break;
     default:
       eth_url = chain_config["eth-mainnet"].rpc_url;
@@ -64,7 +68,7 @@ const genProviders = (
       rangers_url = chain_config["rangers-mainnet"].rpc_url;
       arbitrum_url = chain_config["arbitrum-mainnet"].rpc_url;
       avalanche_url = chain_config["avalanche-mainnet"].rpc_url;
-      kcc_url = chain_config["kcc-mainnet"].rpc_url;
+      okc_url = chain_config["okc-mainnet"].rpc_url;
   }
   const eth = new providers.StaticJsonRpcProvider(eth_url);
   const polygon = new providers.StaticJsonRpcProvider(polygon_url);
@@ -73,9 +77,20 @@ const genProviders = (
   const arbitrum = new providers.StaticJsonRpcProvider(arbitrum_url);
   const avalanche = new providers.StaticJsonRpcProvider(avalanche_url);
   const kcc = new providers.StaticJsonRpcProvider(kcc_url);
+  const okc = new providers.StaticJsonRpcProvider(okc_url);
   return scroll_url === ""
-    ? { polygon, bsc, rangers, eth, scroll: undefined, arbitrum, avalanche, kcc }
-    : { polygon, bsc, rangers, eth, scroll: new providers.StaticJsonRpcProvider(scroll_url), arbitrum, avalanche, kcc };
+    ? { polygon, bsc, rangers, eth, scroll: undefined, arbitrum, avalanche, kcc, okc }
+    : {
+        polygon,
+        bsc,
+        rangers,
+        eth,
+        scroll: new providers.StaticJsonRpcProvider(scroll_url),
+        arbitrum,
+        avalanche,
+        kcc,
+        okc,
+      };
 };
 
 const genRelayers = (
@@ -87,6 +102,7 @@ const genRelayers = (
   arbitrumProvider: providers.JsonRpcProvider,
   avalancheProvider: providers.JsonRpcProvider,
   kccProvider: providers.JsonRpcProvider,
+  okcProvider: providers.JsonRpcProvider,
   scrollProvider?: providers.JsonRpcProvider,
 ): {
   polygon: RpcRelayer;
@@ -97,6 +113,7 @@ const genRelayers = (
   arbitrum: RpcRelayer;
   avalanche: RpcRelayer;
   kcc: RpcRelayer;
+  okc: RpcRelayer;
 } => {
   let relayer_config: {
     eth: string;
@@ -107,6 +124,7 @@ const genRelayers = (
     arbitrum: string;
     avalanche: string;
     kcc: string;
+    okc: string;
   };
   const context = genUnipassWalletContext(config.env);
 
@@ -121,6 +139,7 @@ const genRelayers = (
         arbitrum: testnet_api_config.relayer.arbitrum,
         avalanche: testnet_api_config.relayer.avalanche,
         kcc: testnet_api_config.relayer.kcc,
+        okc: testnet_api_config.relayer.okc,
       };
       break;
     case "mainnet":
@@ -132,6 +151,7 @@ const genRelayers = (
         arbitrum: mainnet_api_config.relayer.arbitrum,
         avalanche: mainnet_api_config.relayer.avalanche,
         kcc: mainnet_api_config.relayer.kcc,
+        okc: mainnet_api_config.relayer.okc,
       };
       break;
     default:
@@ -143,6 +163,7 @@ const genRelayers = (
         arbitrum: mainnet_api_config.relayer.arbitrum,
         avalanche: mainnet_api_config.relayer.avalanche,
         kcc: mainnet_api_config.relayer.kcc,
+        okc: mainnet_api_config.relayer.okc,
       };
   }
   relayer_config = config?.url_config?.relayer || relayer_config;
@@ -155,8 +176,9 @@ const genRelayers = (
   const arbitrum = new RpcRelayer(relayer_config.arbitrum, context, arbitrumProvider);
   const avalanche = new RpcRelayer(relayer_config.avalanche, context, avalancheProvider);
   const kcc = new RpcRelayer(relayer_config.kcc, context, kccProvider);
+  const okc = new RpcRelayer(relayer_config.okc, context, okcProvider);
 
-  return { polygon, bsc, rangers, eth, scroll, arbitrum, avalanche, kcc };
+  return { polygon, bsc, rangers, eth, scroll, arbitrum, avalanche, kcc, okc };
 };
 export class WalletsCreator {
   public static instance: WalletsCreator;
@@ -176,6 +198,8 @@ export class WalletsCreator {
   public avalanche: Wallet;
 
   public kcc: Wallet;
+
+  public okc: Wallet;
 
   static getInstance(keyset: Keyset, address: string, config: UnipassWalletProps) {
     if (!WalletsCreator.instance) {
@@ -203,6 +227,9 @@ export class WalletsCreator {
     WalletsCreator.instance.kcc.address = address;
     WalletsCreator.instance.kcc.keyset = keyset;
 
+    WalletsCreator.instance.okc.address = address;
+    WalletsCreator.instance.okc.keyset = keyset;
+
     if (WalletsCreator.instance.scroll) {
       WalletsCreator.instance.scroll.address = address;
       WalletsCreator.instance.scroll.keyset = keyset;
@@ -222,6 +249,7 @@ export class WalletsCreator {
       arbitrum: arbitrumProvider,
       avalanche: avalancheProvider,
       kcc: kccProvider,
+      okc: okcProvider,
     } = genProviders(config);
     const {
       eth: ethRelayer,
@@ -232,6 +260,7 @@ export class WalletsCreator {
       arbitrum: arbitrumRelayer,
       avalanche: avalancheRelayer,
       kcc: kccRelayer,
+      okc: okcRelayer,
     } = genRelayers(
       config,
       ethProvider,
@@ -241,6 +270,7 @@ export class WalletsCreator {
       arbitrumProvider,
       avalancheProvider,
       kccProvider,
+      okcProvider,
       scrollProvider,
     );
 
@@ -295,6 +325,13 @@ export class WalletsCreator {
       address,
       context,
     });
+    this.okc = Wallet.create({
+      keyset,
+      provider: okcProvider,
+      relayer: okcRelayer,
+      address,
+      context,
+    });
   }
 
   static getPolygonProvider(keyset: Keyset, env: Environment): Wallet {
@@ -335,6 +372,8 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
         return "avalanche-testnet";
       case "kcc":
         return "kcc-testnet";
+      case "okc":
+        return "okc-testnet";
       default:
         return "polygon-mumbai";
     }
@@ -356,6 +395,8 @@ export const getAuthNodeChain = (env: Environment, chainType: ChainType): AuthCh
         return "avalanche-mainnet";
       case "kcc":
         return "kcc-mainnet";
+      case "okc":
+        return "okc-mainnet";
       default:
         return "polygon-mainnet";
     }
