@@ -154,7 +154,7 @@ const genRelayers = (
   const scroll = relayer_config.scroll ? new RpcRelayer(relayer_config.scroll, context, scrollProvider) : undefined;
   const arbitrum = new RpcRelayer(relayer_config.arbitrum, context, arbitrumProvider);
   const avalanche = new RpcRelayer(relayer_config.avalanche, context, avalancheProvider);
-  const kcc = new RpcRelayer(relayer_config.kcc, context, avalancheProvider);
+  const kcc = new RpcRelayer(relayer_config.kcc, context, kccProvider);
 
   return { polygon, bsc, rangers, eth, scroll, arbitrum, avalanche, kcc };
 };
