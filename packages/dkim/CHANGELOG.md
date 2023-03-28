@@ -1,5 +1,13 @@
 # @unipasswallet/dkim
 
+## 0.3.2-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/provider: fix kcc provider for relayer
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.2-alpha.1
+
 ## 0.3.2-alpha.0
 
 ### Patch Changes

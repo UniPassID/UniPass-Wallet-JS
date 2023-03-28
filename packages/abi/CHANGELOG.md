@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.3.2-alpha.1
+
+### Patch Changes
+
+- @unipasswallet/provider: fix kcc provider for relayer
+
 ## 0.3.2-alpha.0
 
 ### Patch Changes
