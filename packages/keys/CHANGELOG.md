@@ -1,5 +1,14 @@
 # @unipasswallet/keys
 
+## 0.3.2-alpha.2
+
+### Patch Changes
+
+- @unipasswallet/provider: add okc and platon support
+- Updated dependencies
+  - @unipasswallet/dkim-base@0.3.2-alpha.2
+  - @unipasswallet/utils@0.3.2-alpha.2
+
 ## 0.3.2-alpha.1
 
 ### Patch Changes
