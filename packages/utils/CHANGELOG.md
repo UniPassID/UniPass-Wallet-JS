@@ -1,5 +1,13 @@
 # @unipasswallet/utils
 
+## 0.3.2-alpha.2
+
+### Patch Changes
+
+- @unipasswallet/provider: add okc and platon support
+- Updated dependencies
+  - @unipasswallet/abi@0.3.2-alpha.2
+
 ## 0.3.2-alpha.1
 
 ### Patch Changes
