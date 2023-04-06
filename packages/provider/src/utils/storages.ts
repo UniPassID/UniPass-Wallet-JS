@@ -1,4 +1,5 @@
 import jwt_decode from "jwt-decode";
+import { AccountInfo } from "../interface";
 
 export enum OAuthProvider {
   GOOGLE,
@@ -56,4 +57,16 @@ export const clearUpSignToken = () => {
   }
 };
 
-export { getOAuthUserInfo, getUpSignToken };
+const getAccountInfo = () => {
+  try {
+    const _account_info = localStorage.get("__account_info");
+    if (!_account_info) {
+      return;
+    }
+    return JSON.parse(_account_info) as AccountInfo;
+  } catch (e) {
+    return undefined;
+  }
+};
+
+export { getOAuthUserInfo, getUpSignToken, getAccountInfo };

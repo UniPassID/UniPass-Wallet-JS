@@ -17,8 +17,7 @@ import WalletError from "./constant/error_map";
 import { ChainType, TransactionFee, UnipassWalletProps, UniTransaction } from "./interface/unipassWalletProvider";
 import { WalletsCreator, getAuthNodeChain } from "./utils/unipass";
 import { ADDRESS_ZERO } from "./constant";
-import DB from "./utils/index_db";
-import { clearUpSignToken } from "./utils/storages";
+import { clearUpSignToken, getAccountInfo } from "./utils/storages";
 import UnipassWalletProvider from "./index";
 
 export type OperateTransaction = {
@@ -281,11 +280,10 @@ const getUser = async (): Promise<AccountInfo | undefined> => {
   if (cachedAccountInfo) {
     return cachedAccountInfo;
   }
-  const accountInfo = await DB.getAccountInfo();
+  const accountInfo = await getAccountInfo();
 
-  if (accountInfo) {
-    return accountInfo;
-  }
+  if (accountInfo) return accountInfo;
+
   throw new WalletError(402007);
 };
 

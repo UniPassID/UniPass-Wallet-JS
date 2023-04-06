@@ -335,10 +335,6 @@ export enum OAuthProvider {
 export interface AccountInfo {
   email: string;
   id_token: string;
-  user_key: {
-    encrypted_key: string;
-    aes_key: CryptoKey;
-  };
   address: string;
   oauth_provider: OAuthProvider;
   expires_at: string;

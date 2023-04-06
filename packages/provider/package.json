@@ -24,7 +24,6 @@
     "@unipasswallet/network": "workspace:^0.3.2-alpha.1",
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
-    "dexie": "^3.2.2",
     "ethers": "^5.7.1",
     "comlink": "^4.3.1",
     "jwt-decode": "^3.1.2",
