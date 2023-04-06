@@ -59,7 +59,7 @@ export const clearUpSignToken = () => {
 
 const getAccountInfo = () => {
   try {
-    const _account_info = localStorage.get("__account_info");
+    const _account_info = localStorage.getItem("__account_info");
     if (!_account_info) {
       return;
     }
