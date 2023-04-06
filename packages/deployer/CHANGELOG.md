@@ -1,5 +1,13 @@
 # @unipasswallet/deployer
 
+## 0.4.0-alpha.3
+
+### Patch Changes
+
+- @unipasswallet/provider: fix localStorage
+- Updated dependencies
+  - @unipasswallet/utils@0.4.0-alpha.3
+
 ## 0.4.0-alpha.2
 
 ### Minor Changes
