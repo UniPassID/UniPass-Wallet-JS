@@ -1,5 +1,22 @@
 # @unipasswallet/wallet
 
+## 0.4.0-alpha.2
+
+### Minor Changes
+
+- @unipasswallet/provider: indexedDB to localStorage
+
+### Patch Changes
+
+- Updated dependencies
+  - @unipasswallet/abi@0.4.0-alpha.2
+  - @unipasswallet/dkim-base@0.4.0-alpha.2
+  - @unipasswallet/keys@0.4.0-alpha.2
+  - @unipasswallet/network@0.4.0-alpha.2
+  - @unipasswallet/relayer@0.4.0-alpha.2
+  - @unipasswallet/transactions@0.4.0-alpha.2
+  - @unipasswallet/utils@0.4.0-alpha.2
+
 ## 0.3.2-alpha.1
 
 ### Patch Changes

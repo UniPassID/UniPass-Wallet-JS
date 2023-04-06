@@ -1,5 +1,20 @@
 # @unipasswallet/eip4337-hook
 
+## 0.4.0-alpha.2
+
+### Minor Changes
+
+- @unipasswallet/provider: indexedDB to localStorage
+
+### Patch Changes
+
+- Updated dependencies
+  - @unipasswallet/keys@0.4.0-alpha.2
+  - @unipasswallet/transaction-builders@0.4.0-alpha.2
+  - @unipasswallet/transactions@0.4.0-alpha.2
+  - @unipasswallet/utils@0.4.0-alpha.2
+  - @unipasswallet/wallet@0.4.0-alpha.2
+
 ## 0.3.2-alpha.1
 
 ### Patch Changes
