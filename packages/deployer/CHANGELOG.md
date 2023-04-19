@@ -1,5 +1,24 @@
 # @unipasswallet/deployer
 
+## 0.3.2-alpha.3
+
+### Patch Changes
+
+- @unipasswallet/relayer:
+
+  - feat: support action point
+
+  @unipasswallet/provider:
+
+  - feat: support action point
+
+  @unipasswallet/wallet:
+
+  - feat: support action point
+
+- Updated dependencies
+  - @unipasswallet/utils@0.3.2-alpha.3
+
 ## 0.3.2-alpha.2
 
 ### Patch Changes
