@@ -20,6 +20,7 @@ import {
   SimulateResult,
   SimulateKey,
   SimulateExecute,
+  FeeActionPointSig,
 } from "@unipasswallet/relayer";
 import { MAINNET_UNIPASS_WALLET_CONTEXT, UnipassWalletContext } from "@unipasswallet/network";
 import { moduleMain, gasEstimator } from "@unipasswallet/abi";
@@ -333,11 +334,17 @@ export class Wallet extends Signer {
     return this.context.moduleGuest;
   }
 
-  async sendSignedTransactions(execute: BundledExecuteCall | MainExecuteCall, chainId: number, nonce: BigNumber) {
+  async sendSignedTransactions(
+    execute: BundledExecuteCall | MainExecuteCall,
+    chainId: number,
+    nonce: BigNumber,
+    feeActionPointSig?: FeeActionPointSig,
+  ) {
     const call: ExecuteCall = execute.toExecuteCall();
     const args: PendingExecuteCallArgs = {
       call: JSON.stringify(call),
       walletAddress: this.target(execute),
+      feeActionPointSig,
     };
     const hash = await this.relayer.relay(args);
     return {
@@ -357,9 +364,10 @@ export class Wallet extends Signer {
 
   async sendTransactions(
     rawExecute: RawMainExecuteCall | RawBundledExecuteCall,
+    feeActionPointSig?: FeeActionPointSig,
   ): Promise<providers.TransactionResponse> {
     const { execute, chainId, nonce } = await this.signTransactions(rawExecute);
-    return this.sendSignedTransactions(execute, chainId, nonce);
+    return this.sendSignedTransactions(execute, chainId, nonce, feeActionPointSig);
   }
 
   async waitForTransaction(

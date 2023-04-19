@@ -55,6 +55,13 @@ export interface ExecuteCall {
 export interface PendingExecuteCallArgs {
   walletAddress: string;
   call: string;
+  feeActionPointSig?: FeeActionPointSig;
+}
+
+export interface FeeActionPointSig {
+  value: string;
+  sig: string;
+  timestamp: number;
 }
 
 export interface TxnReciptLog {
