@@ -99,6 +99,7 @@ export interface SimulateResult {
   feeReceiver: string;
   isFeeRequired: boolean;
   gasPrice: string;
+  feeActionPoint: FeeActionPoint | undefined;
 }
 
 export interface TokenInfo {
@@ -106,6 +107,11 @@ export interface TokenInfo {
   gasUsed: string;
   tokenPrice: number;
   nativeTokenPrice: number;
+}
+
+export interface FeeActionPoint {
+  gasUsed: string;
+  value: number;
 }
 
 export interface RpcService {

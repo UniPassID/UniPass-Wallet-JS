@@ -61,6 +61,7 @@ export class LocalRelayer implements Relayer {
       feeReceiver: constants.AddressZero,
       isFeeRequired: false,
       gasPrice: constants.Zero.toHexString(),
+      feeActionPoint: undefined,
     };
   }
 
