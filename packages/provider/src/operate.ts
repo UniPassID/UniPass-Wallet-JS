@@ -11,7 +11,7 @@ import {
   RawMainExecuteTransaction,
   digestPermitMessage,
 } from "@unipasswallet/wallet";
-import { SimulateResult } from "@unipasswallet/relayer";
+import { FeeActionPointSig, SimulateResult } from "@unipasswallet/relayer";
 import api from "./api/backend";
 import WalletError from "./constant/error_map";
 import { ChainType, TransactionFee, UnipassWalletProps, UniTransaction } from "./interface/unipassWalletProvider";
@@ -186,13 +186,14 @@ export const sendTransaction = async (
   chainType: ChainType,
   config: UnipassWalletProps,
   keyset: Keyset,
+  feeActionPointSig?: FeeActionPointSig,
 ) => {
   const user = await getUser();
 
   const instance = WalletsCreator.getInstance(keyset, user.address, config);
   const wallet = instance[chainType];
 
-  const ret = await wallet.sendTransactions(tx);
+  const ret = await wallet.sendTransactions(tx, feeActionPointSig);
   return ret;
 };
 

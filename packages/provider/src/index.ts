@@ -17,6 +17,7 @@ import { getApiConfig } from "./config";
 import { Keyset } from "@unipasswallet/keys";
 import { IPermit } from "@unipasswallet/wallet";
 import { wallets } from "@unipasswallet/sdk";
+import { FeeActionPointSig } from "@unipasswallet/relayer";
 import { MessageTypes, TypedMessage, AccountInfo } from "./interface";
 
 export * from "./interface/unipassWalletProvider";
@@ -76,13 +77,14 @@ export default class UnipassWalletProvider implements WalletProvider {
     transactions: wallets.RawMainExecuteCall | wallets.RawBundledExecuteCall,
     keyset: Keyset,
     chainType?: ChainType,
+    feeActionPointSig?: FeeActionPointSig,
   ) {
     const chain = chainType ?? "polygon";
-    return sendTransaction(transactions, chain, this.config, keyset);
+    return sendTransaction(transactions, chain, this.config, keyset, feeActionPointSig);
   }
 
   public async transaction(props: TransactionProps): Promise<providers.TransactionResponse> {
-    const { tx, chain, fee, keyset, isAddHook = false } = props;
+    const { tx, chain, fee, keyset, isAddHook = false, feeActionPointSig } = props;
 
     const _chain = chain ?? "polygon";
     const generatedTx = await innerGenerateTransferTx({
@@ -99,7 +101,7 @@ export default class UnipassWalletProvider implements WalletProvider {
     // FIX ME: set gas limit for rangers to disable estimate gas in wallet
     // if (_chain === "rangers") simulateResult.feeTokens = simulateResult.feeTokens.map( BigNumber.from("1000000"));
 
-    return sendTransaction(execute, chain, this.config, keyset);
+    return sendTransaction(execute, chain, this.config, keyset, feeActionPointSig);
   }
 
   public async signMessage(message: string, keyset: Keyset, isEIP191Prefix = false) {

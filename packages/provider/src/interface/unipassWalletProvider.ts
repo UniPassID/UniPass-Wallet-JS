@@ -1,5 +1,6 @@
 import { Keyset } from "@unipasswallet/keys";
 import { Wallet } from "@unipasswallet/wallet";
+import { FeeActionPointSig } from "@unipasswallet/relayer";
 import { BigNumber, BytesLike, providers } from "ethers";
 import { AccountInfo } from "./index";
 
@@ -71,6 +72,7 @@ interface TransactionProps {
   timeout?: number;
   gasLimit?: BigNumber;
   isAddHook?: boolean;
+  feeActionPointSig?: FeeActionPointSig;
 }
 
 abstract class WalletProvider {
