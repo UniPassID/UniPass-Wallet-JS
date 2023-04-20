@@ -1,5 +1,11 @@
 # @unipasswallet/network
 
+## 0.3.2-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/provider: add getRawExecuteCall method
+
 ## 0.3.2-alpha.3
 
 ### Patch Changes
