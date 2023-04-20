@@ -59,6 +59,21 @@ export default class UnipassWalletProvider implements WalletProvider {
     return this.config.accountInfo;
   }
 
+  public async getRawExecuteCall(props: TransactionProps) {
+    const { tx, chain, fee, keyset, isAddHook = false } = props;
+    const _chain = chain ?? "polygon";
+    const transactions = await innerGenerateTransferTx({
+      tx,
+      chainType: _chain,
+      config: this.config,
+      keyset,
+      fee,
+      isAddHook,
+    });
+    const rawExecuteCall = await operateToRawExecuteCall(transactions);
+    return rawExecuteCall;
+  }
+
   public async simulateTransactions(props: TransactionProps) {
     const { tx, chain, fee, keyset, isAddHook = false } = props;
     const _chain = chain ?? "polygon";
