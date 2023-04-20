@@ -1,5 +1,21 @@
 # @unipasswallet/sdk
 
+## 0.3.2-alpha.4
+
+### Patch Changes
+
+- @unipasswallet/provider: add getRawExecuteCall method
+- Updated dependencies
+  - @unipasswallet/abi@0.3.2-alpha.4
+  - @unipasswallet/dkim-base@0.3.2-alpha.4
+  - @unipasswallet/keys@0.3.2-alpha.4
+  - @unipasswallet/network@0.3.2-alpha.4
+  - @unipasswallet/relayer@0.3.2-alpha.4
+  - @unipasswallet/transaction-builders@0.3.2-alpha.4
+  - @unipasswallet/transactions@0.3.2-alpha.4
+  - @unipasswallet/utils@0.3.2-alpha.4
+  - @unipasswallet/wallet@0.3.2-alpha.4
+
 ## 0.3.2-alpha.3
 
 ### Patch Changes
