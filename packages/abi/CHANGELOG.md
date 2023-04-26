@@ -1,5 +1,27 @@
 # @unipasswallet/abi
 
+## 0.3.2
+
+### Patch Changes
+
+- 062b0f88: @unipasswallet/provider: add kcc support
+- @unipasswallet/eip4337-hook: fix max priority fee per gas
+- 8a91e194: @unipasswallet/provider: add getRawExecuteCall method
+- ecdb9634: @unipasswallet/provider: add okc and platon support
+- 95f8e409: @unipasswallet/relayer:
+
+  - feat: support action point
+
+  @unipasswallet/provider:
+
+  - feat: support action point
+
+  @unipasswallet/wallet:
+
+  - feat: support action point
+
+- 319729e0: @unipasswallet/provider: fix kcc provider for relayer
+
 ## 0.3.2-alpha.4
 
 ### Patch Changes
