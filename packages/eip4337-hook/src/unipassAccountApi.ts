@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish, Contract } from "ethers";
+import { BigNumber, BigNumberish, Contract, providers } from "ethers";
 import { arrayify, resolveProperties } from "ethers/lib/utils";
 import { BaseAccountAPI, BaseApiParams } from "@account-abstraction/sdk/dist/src/BaseAccountAPI";
 import { Wallet } from "@unipasswallet/wallet";
@@ -7,6 +7,10 @@ import { UserOperationStruct } from "@account-abstraction/contracts";
 import { DUMMY_PAYMASTER_AND_DATA, VerifyingPaymasterAPI } from "./verifyingPaymasterAPI";
 import { calcPreVerificationGas } from "@account-abstraction/sdk";
 import { isAddEIP4337Hook } from "./utils";
+import { TransactionDetailsForUserOp } from "@account-abstraction/sdk/dist/src/TransactionDetailsForUserOp";
+
+const EIP1559_FEE_ESTIMATION_PAST_BLOCKS = 10;
+const EIP1559_FEE_ESTIMATION_REWARD_PERCENTILE = 5.0;
 
 /**
  * constructor params, added no top of base params:
@@ -82,6 +86,15 @@ export class UnipassAccountAPI extends BaseAccountAPI {
 
   async signUserOpHash(userOpHash: string): Promise<string> {
     return this.wallet.signMessage(arrayify(userOpHash), this.signerIndexes);
+  }
+
+  async createUnsignedUserOp(info: TransactionDetailsForUserOp): Promise<UserOperationStruct> {
+    const [userOp, maxPriorityFeePerGas] = await Promise.all([
+      super.createUnsignedUserOp(info),
+      (this.provider as providers.JsonRpcProvider).send("eth_maxPriorityFeePerGas", []),
+    ]);
+    userOp.maxPriorityFeePerGas = maxPriorityFeePerGas;
+    return userOp;
   }
 
   async getUserOpReceipt(userOpHash: string, timeout = 30000, interval = 5000): Promise<string | null> {
