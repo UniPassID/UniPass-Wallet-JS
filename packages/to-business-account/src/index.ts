@@ -1,7 +1,9 @@
-export * from "./storage";
+export { LocalUnipassStorage } from "./storage";
 
-export * from "./toBusinessStorage";
+export { UnipassToBusinessStorage } from "./toBusinessStorage";
 
-export * from "./toBusinessAccount";
+export { UnipassToBusinessAccount } from "./toBusinessAccount";
 
-export * from "./toBusinessStorage";
+export { UnipassToBusinessClient } from "./toBusinessClient";
+
+export * from "./interface";

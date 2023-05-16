@@ -1,7 +1,18 @@
 import { computeAddress } from "ethers/lib/utils";
 import { worker } from "./tss";
-
-export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+import { UnipassToBusinessError, UnipassToBusinessResCode } from "./interface/utils";
+import {
+  AccountLogin,
+  AccountRegister,
+  Fetch,
+  RegisterParams,
+  ToBusinessConfig,
+  TssKey,
+  TssKeyGenFinishParams,
+  TssKeyGenParams,
+  TssRes,
+  UnipassSource,
+} from "./interface/unipassClient";
 
 const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",
@@ -14,18 +25,6 @@ const createGetHTTPRequest = (headers: object = {}): object => ({
   method: "GET",
   headers: { ...headers },
 });
-
-export type UnipassToBusinessError<T> = {
-  code: number;
-  message: string;
-  data: T;
-};
-
-export enum UnipassToBusinessResCode {
-  UnknownError = 1000,
-  Web3AuthLoginFailed = 2000,
-  InvalidIdToken = 3000,
-}
 
 const buildResponse = (res: Response): Promise<any> =>
   res.text().then((text) => {
@@ -156,77 +155,3 @@ export class UnipassToBusinessClient {
     return data;
   }
 }
-
-export enum UnipassSource {
-  Sparkle = "sparkle",
-}
-
-export enum UnipassKeyType {
-  ToBusiness = 5,
-  ToBusinessEOA = 6,
-}
-
-export type AccountLogin = {
-  authorization: string;
-  isRegistered: boolean;
-  unipassInfo?: {
-    keyset: string;
-    address: string;
-    keystore: string;
-    keyType: UnipassKeyType;
-  };
-};
-
-export type RegisterParams = {
-  keysetJson: string;
-  masterKey: {
-    masterKeyAddress: string;
-    keystore: string;
-    keyType: UnipassKeyType;
-  };
-};
-
-export type AccountRegister = {
-  authorization: string;
-  unipassInfo: {
-    keyset: string;
-    address: string;
-    keystore: string;
-    keyType: UnipassKeyType;
-  };
-};
-
-export type TssRes = {
-  tssRes: TssKeyGenInner;
-};
-
-export interface TssKeyGenInner {
-  userId: string;
-  sessionId: string;
-  msg: any;
-}
-
-export type TssKey = {
-  tssKeyAddress: string;
-  userId: string;
-  userKeySignContext: string;
-};
-
-export type TssKeyGenParams = {
-  sessionId: string;
-  tssMsg: any;
-};
-
-export type TssKeyGenFinishParams = {
-  userId: string;
-  sessionId: string;
-  tssKeyAddress: string;
-};
-
-export type ToBusinessConfig = {
-  web3authConfig: {
-    clientId: string;
-    verifierName: string;
-  };
-  unipassRelayerUrl: string;
-};

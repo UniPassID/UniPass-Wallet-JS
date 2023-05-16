@@ -1,5 +1,5 @@
 {
-  "name": "@unipasswallet/to-business-account",
+  "name": "@unipasswallet/core-sdk",
   "version": "0.3.2",
   "main": "dist/index",
   "types": "dist/index",

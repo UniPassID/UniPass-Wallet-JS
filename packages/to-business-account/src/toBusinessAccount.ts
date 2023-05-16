@@ -1,34 +1,22 @@
-import { Signer, providers } from "ethers";
+import { providers } from "ethers";
 import { UnipassToBusinessStorage } from "./toBusinessStorage";
-import {
-  Fetch,
-  UnipassKeyType,
-  UnipassSource,
-  UnipassToBusinessClient,
-  UnipassToBusinessError,
-  UnipassToBusinessResCode,
-} from "./toBusinessClient";
 import fetchPonyfill from "fetch-ponyfill";
 import { base64, getCreate2Address, keccak256, solidityPack } from "ethers/lib/utils";
 import { KeySecp256k1, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
 import { CreationCode, SingletonFactoryAddress, decryptKeystore, encryptKeystore } from "@unipasswallet/utils";
 import { Web3Auth } from "@web3auth/single-factor-auth";
 import { MAINNET_UNIPASS_WALLET_CONTEXT } from "@unipasswallet/network";
-
-export type UnipassToBusinessAccountOptions = {
-  walletAddress: string;
-  keyset: Keyset;
-  storage: UnipassToBusinessStorage;
-  accountType: UnipassToBusinessOpenIDAccount | UnipassToBusinessEOAAccount;
-  masterKeyIndex?: number;
-  provider: providers.JsonRpcProvider;
-};
-
-export type Web3AuthOptions = {
-  clientId: string;
-  verifier: string;
-  verifierId: string;
-};
+import {
+  UnipassToBusinessAccountOptions,
+  UnipassToBusinessConnectByEOAWallet,
+  UnipassToBusinessConnectByOAuth,
+  UnipassToBusinessConnectParams,
+  UnipassToBusinessEOAAccount,
+  UnipassToBusinessOpenIDAccount,
+} from "./interface/smartAccount";
+import { Fetch, UnipassKeyType } from "./interface/unipassClient";
+import { UnipassToBusinessClient } from "./toBusinessClient";
+import { UnipassToBusinessError, UnipassToBusinessResCode } from "./interface/utils";
 
 export class UnipassToBusinessAccount {
   public readonly walletAddress: string;
@@ -285,33 +273,3 @@ export class UnipassToBusinessAccount {
     }
   }
 }
-
-export type UnipassToBusinessConnectParams = {
-  connectParams: UnipassToBusinessConnectByOAuth | UnipassToBusinessConnectByEOAWallet;
-  storage: UnipassToBusinessStorage;
-  appId: string;
-  rpcUrl: string;
-};
-
-export type UnipassToBusinessConnectByOAuth = {
-  idToken: string;
-  accessToken: string;
-  unipassServerUrl: string;
-  source: UnipassSource;
-  fetch?: Fetch;
-};
-
-export type UnipassToBusinessConnectByEOAWallet = {
-  signer: Signer;
-};
-
-export type UnipassToBusinessOpenIDAccount = {
-  unipassClient: UnipassToBusinessClient;
-  authorization: string;
-  userKey: string;
-  unipassRelayerUrl: string;
-};
-
-export type UnipassToBusinessEOAAccount = {
-  signer: Signer;
-};

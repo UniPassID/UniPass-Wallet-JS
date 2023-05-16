@@ -1,4 +1,5 @@
-import { UnipassStorage } from "./storage";
+import { UnipassStorage } from "./interface";
+import { WalletInfo } from "./interface/storage";
 
 export class UnipassToBusinessStorage {
   constructor(public readonly storage: UnipassStorage) {}
@@ -50,12 +51,3 @@ export class UnipassToBusinessStorage {
     );
   }
 }
-
-export type WalletInfo = {
-  keyset: string;
-  userKey: string;
-  unipassServerUrl: string;
-  authorization: string;
-  rpcUrl: string;
-  unipassRelayerUrl: string;
-};

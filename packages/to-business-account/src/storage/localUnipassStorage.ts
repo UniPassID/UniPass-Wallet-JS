@@ -1,4 +1,4 @@
-import { UnipassStorage } from ".";
+import { UnipassStorage } from "../interface/storage";
 
 export const LocalUnipassStorage: UnipassStorage = {
   getItem: async (key: string) => localStorage.getItem(key) || undefined,
