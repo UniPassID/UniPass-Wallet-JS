@@ -6,6 +6,7 @@
     "paths": {
       "@unipass-wallet.js/*": ["packages/*/src"]
     },
+    "strictNullChecks": true,
     "noEmit": true
   }
 }

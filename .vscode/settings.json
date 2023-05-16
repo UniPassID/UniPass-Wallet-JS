@@ -1,3 +1,4 @@
 {
-    "editor.maxTokenizationLineLength": 20000
+    "editor.maxTokenizationLineLength": 20000,
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
