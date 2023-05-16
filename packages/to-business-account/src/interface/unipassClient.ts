@@ -73,3 +73,8 @@ export type ToBusinessConfig = {
 };
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+
+export enum UnipassRunningEnv {
+  Dev = "dev",
+  Testnet = "testnet",
+}

@@ -12,9 +12,10 @@ import {
   UnipassToBusinessConnectByOAuth,
   UnipassToBusinessConnectParams,
   UnipassToBusinessEOAAccount,
-  UnipassToBusinessOpenIDAccount,
+  UnipassToBusinessLocalConnectParams,
+  UnipassToBusinessOpenIDAccount as UnipassToBusinessOAuthAccount,
 } from "./interface/smartAccount";
-import { Fetch, UnipassKeyType } from "./interface/unipassClient";
+import { UnipassKeyType, UnipassRunningEnv } from "./interface/unipassClient";
 import { UnipassToBusinessClient } from "./toBusinessClient";
 import { UnipassToBusinessError, UnipassToBusinessResCode } from "./interface/utils";
 
@@ -25,7 +26,7 @@ export class UnipassToBusinessAccount {
 
   public readonly masterKeyIndex: number;
 
-  public readonly accountType: UnipassToBusinessOpenIDAccount | UnipassToBusinessEOAAccount;
+  public readonly accountType: UnipassToBusinessOAuthAccount | UnipassToBusinessEOAAccount;
 
   public readonly provider: providers.JsonRpcProvider;
 
@@ -40,7 +41,7 @@ export class UnipassToBusinessAccount {
     this.provider = provider;
   }
 
-  public static getAuthorizationExpires(authorization: string): number | undefined {
+  private static getAuthorizationExpires(authorization: string): number | undefined {
     const payload = authorization.split(".")[1];
     if (payload) {
       const decodedPayload = JSON.parse(base64.decode(payload).toString());
@@ -49,7 +50,7 @@ export class UnipassToBusinessAccount {
     return undefined;
   }
 
-  public static getIdTokenSub(idToken: string): string | undefined {
+  private static getIdTokenSub(idToken: string): string | undefined {
     const payload = idToken.split(".")[1];
     if (payload) {
       const decodedPayload = JSON.parse(base64.decode(payload).toString());
@@ -58,10 +59,10 @@ export class UnipassToBusinessAccount {
     return undefined;
   }
 
-  public static async connectFromStorage(
-    storage: UnipassToBusinessStorage,
-    fetch: Fetch = fetchPonyfill().fetch,
+  private static async localConnect(
+    options: UnipassToBusinessLocalConnectParams,
   ): Promise<UnipassToBusinessAccount | undefined> {
+    const { storage, fetch = fetchPonyfill().fetch } = options;
     const walletIdentity = await storage.getCurrentWalletIdentity();
     if (walletIdentity) {
       const { address: walletAddress, chainId } = walletIdentity;
@@ -91,7 +92,7 @@ export class UnipassToBusinessAccount {
     return undefined;
   }
 
-  public static async getWeb3AuthPrivateKey(
+  private static async getWeb3AuthPrivateKey(
     clientId: string,
     idToken: string,
     verifier: string,
@@ -112,32 +113,38 @@ export class UnipassToBusinessAccount {
     return undefined;
   }
 
-  public static async connect(params: UnipassToBusinessConnectParams): Promise<UnipassToBusinessAccount> {
-    const { connectParams, appId, rpcUrl, storage } = params;
-    const provider = new providers.StaticJsonRpcProvider(rpcUrl);
-    let account: UnipassToBusinessAccount;
-    if ("signer" in connectParams) {
-      account = await UnipassToBusinessAccount.connectToBuninessAccountByEOA(connectParams, storage, provider);
-    } else {
-      account = await UnipassToBusinessAccount.connectToBusinessAccountByOpenID(
-        connectParams,
-        provider,
-        appId,
-        storage,
-      );
-    }
+  public static async connect(
+    params: UnipassToBusinessConnectParams | UnipassToBusinessLocalConnectParams,
+  ): Promise<UnipassToBusinessAccount | undefined> {
+    if ("appId" in params) {
+      const { connectParams, appId, rpcUrl, storage } = params;
+      const provider = new providers.StaticJsonRpcProvider(rpcUrl);
+      let account: UnipassToBusinessAccount;
+      if ("signer" in connectParams) {
+        account = await UnipassToBusinessAccount.connectToBuninessAccountByEOA(connectParams, storage, provider);
+      } else {
+        account = await UnipassToBusinessAccount.connectToBusinessAccountByOpenID(
+          connectParams,
+          provider,
+          appId,
+          storage,
+        );
+      }
 
-    await account.store();
-    return account;
+      await account.store();
+      return account;
+    } else {
+      return this.localConnect(params);
+    }
   }
 
-  public static async connectToBusinessAccountByOpenID(
+  private static async connectToBusinessAccountByOpenID(
     connectParams: UnipassToBusinessConnectByOAuth,
     provider: providers.StaticJsonRpcProvider,
     appId: string,
     storage: UnipassToBusinessStorage,
   ): Promise<UnipassToBusinessAccount> {
-    const { idToken, accessToken, unipassServerUrl, fetch = fetchPonyfill().fetch, source } = connectParams;
+    const { idToken, accessToken, fetch = fetchPonyfill().fetch, source, runningEnv } = connectParams;
 
     const verifierId = UnipassToBusinessAccount.getIdTokenSub(idToken);
     if (!verifierId) {
@@ -149,7 +156,7 @@ export class UnipassToBusinessAccount {
 
       throw error;
     }
-
+    const unipassServerUrl = getUnipassServerUrl(runningEnv);
     const unipassClient = new UnipassToBusinessClient(unipassServerUrl, fetch);
 
     const [{ isRegistered, authorization, unipassInfo }, { chainId }] = await Promise.all([
@@ -253,7 +260,7 @@ export class UnipassToBusinessAccount {
     return account;
   }
 
-  public async store(): Promise<void> {
+  private async store(): Promise<void> {
     const { chainId } = await this.provider.getNetwork();
     if (!("signer" in this.accountType)) {
       const { userKey, unipassClient, authorization, unipassRelayerUrl } = this.accountType;
@@ -271,5 +278,16 @@ export class UnipassToBusinessAccount {
     } else {
       await this.storage.updateCurrentWalletIdentity(this.walletAddress, chainId);
     }
+  }
+}
+
+export function getUnipassServerUrl(runningEnv: UnipassRunningEnv): string {
+  switch (runningEnv) {
+    case UnipassRunningEnv.Dev:
+      return "https://d.wallet.unipass.vip/wallet-v2/backend";
+    case UnipassRunningEnv.Testnet:
+      return "https://t.wallet.unipass.vip/wallet-v2/backend";
+    default:
+      throw new Error(`Unknown Env: ${runningEnv}`);
   }
 }

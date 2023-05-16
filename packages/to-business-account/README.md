@@ -9,10 +9,10 @@ npm install @unipasswallet/to-business-account
 ## How to use
 
 ```typescript
-let account = await UnipassToBusinessAccount.connectFromStorage(storage);
-if (!account) {
-  account = await UnipassToBusinessAccount.connect(options);
-}
+let account = await UnipassToBusinessAccount.connect(params);
+
+// Connect By Local
+const options = {storage};
 
 // Connect By OAuth
 const options = {

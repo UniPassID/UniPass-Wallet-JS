@@ -2,7 +2,7 @@ import { Keyset } from "@unipasswallet/keys";
 import { Signer, providers } from "ethers";
 import { UnipassToBusinessStorage } from "../toBusinessStorage";
 import { UnipassToBusinessClient } from "../toBusinessClient";
-import { Fetch, UnipassSource } from "./unipassClient";
+import { Fetch, UnipassRunningEnv, UnipassSource } from "./unipassClient";
 
 export type UnipassToBusinessAccountOptions = {
   walletAddress: string;
@@ -26,10 +26,15 @@ export type UnipassToBusinessConnectParams = {
   rpcUrl: string;
 };
 
+export type UnipassToBusinessLocalConnectParams = {
+  storage: UnipassToBusinessStorage;
+  fetch?: Fetch;
+};
+
 export type UnipassToBusinessConnectByOAuth = {
   idToken: string;
   accessToken: string;
-  unipassServerUrl: string;
+  runningEnv: UnipassRunningEnv;
   source: UnipassSource;
   fetch?: Fetch;
 };
