@@ -34,10 +34,14 @@ export class SmartAccount {
       },
     );
     const keyset = new Keyset([masterKey]);
-    this.walelt = new Wallet({
+    this.walelt = Wallet.create({
       keyset,
       provider: this.provider,
     });
     return this;
+  }
+
+  async getAddress(): Promise<string> {
+    return this.walelt.getAddress();
   }
 }
