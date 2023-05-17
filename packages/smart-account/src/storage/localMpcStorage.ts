@@ -1,6 +1,6 @@
-import { UnipassStorage } from "../interface/storage";
+import { IStorage } from "../interface/storage";
 
-export const LocalUnipassStorage: UnipassStorage = {
+export const LocalMpcStorage: IStorage = {
   getItem: async (key: string) => localStorage.getItem(key) || undefined,
   removeItem: async (key: string) => localStorage.removeItem(key),
   setItem: async (key: string, value: string) => localStorage.setItem(key, value),

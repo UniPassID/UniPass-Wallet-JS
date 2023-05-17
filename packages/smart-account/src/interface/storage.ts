@@ -1,14 +1,14 @@
-export interface UnipassStorage {
+import { MpcRunningEnv } from "./mpcClient";
+
+export interface IStorage {
   getItem(key: string): Promise<string | undefined>;
   removeItem(key: string): Promise<void>;
   setItem(key: string, value: string): Promise<void>;
 }
 
-export type WalletInfo = {
-  keyset: string;
+export type MpcSignerInfo = {
   userKey: string;
-  unipassServerUrl: string;
   authorization: string;
-  rpcUrl: string;
-  unipassRelayerUrl: string;
+  runningEnv: MpcRunningEnv;
+  address: string;
 };

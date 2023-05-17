@@ -1,5 +1,5 @@
 {
-  "name": "@unipasswallet/core-sdk",
+  "name": "@unipasswallet/smart-account",
   "version": "0.3.2",
   "main": "dist/index",
   "types": "dist/index",
@@ -15,7 +15,10 @@
   "dependencies": {
     "@unipasswallet/keys": "workspace:^0.3.2",
     "@unipasswallet/utils": "workspace:^0.3.2",
+    "@unipasswallet/wallet": "workspace:^0.3.2",
     "@unipasswallet/network": "workspace:^0.3.2",
+    "@ethersproject/abstract-provider": "^5.7.0",
+    "@ethersproject/properties": "^5.7.0",
     "@web3auth/base": "^5.2.0",
     "@web3auth/single-factor-auth": "^5.1.1",
     "comlink": "^4.3.1",

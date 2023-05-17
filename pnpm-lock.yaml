@@ -466,6 +466,12 @@ importers:
 
   packages/to-business-account:
     dependencies:
+      '@ethersproject/abstract-provider':
+        specifier: ^5.7.0
+        version: 5.7.0
+      '@ethersproject/properties':
+        specifier: ^5.7.0
+        version: 5.7.0
       '@unipasswallet/keys':
         specifier: workspace:^0.3.2
         version: link:../keys
@@ -475,6 +481,9 @@ importers:
       '@unipasswallet/utils':
         specifier: workspace:^0.3.2
         version: link:../utils
+      '@unipasswallet/wallet':
+        specifier: workspace:^0.3.2
+        version: link:../wallet
       '@web3auth/base':
         specifier: ^5.2.0
         version: 5.2.0(@babel/runtime@7.21.5)

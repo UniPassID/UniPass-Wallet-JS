@@ -1,6 +1,6 @@
 import { computeAddress } from "ethers/lib/utils";
 import { worker } from "./tss";
-import { UnipassToBusinessError, UnipassToBusinessResCode } from "./interface/utils";
+import { SmartAccountError, SmartAccountErrorCode } from "./interface/utils";
 import {
   AccountLogin,
   AccountRegister,
@@ -11,8 +11,8 @@ import {
   TssKeyGenFinishParams,
   TssKeyGenParams,
   TssRes,
-  UnipassSource,
-} from "./interface/unipassClient";
+  Web3AuthSig,
+} from "./interface/mpcClient";
 
 const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",
@@ -34,26 +34,26 @@ const buildResponse = (res: Response): Promise<any> =>
       body = JSON.parse(text);
     } catch (err) {
       const error = {
-        code: UnipassToBusinessResCode.UnknownError,
+        code: SmartAccountErrorCode.UnknownError,
         message: `expecting JSON, got: ${text}`,
         data: undefined,
-      } as UnipassToBusinessError<undefined>;
+      } as SmartAccountError<undefined>;
       throw error;
     }
 
     if (!res.ok || body.statusCode !== 200) {
       const error = {
-        code: body.statusCode,
-        message: body.message,
-        data: body.data,
-      } as UnipassToBusinessError<any>;
+        code: SmartAccountErrorCode.MpcServerError,
+        message: `MPC Server Error: ${body.message}`,
+        data: body,
+      } as SmartAccountError<any>;
       throw error;
     }
 
     return body.data;
   });
 
-export class UnipassToBusinessClient {
+export class MpcClient {
   constructor(public readonly baseUrl: string, public readonly fetch: Fetch) {}
 
   private getUrl(path: string): string {
@@ -61,15 +61,15 @@ export class UnipassToBusinessClient {
   }
 
   public async login(
-    accessToken: string,
-    source: UnipassSource,
+    appId: string,
+    web3AuthSig: Web3AuthSig,
     expirationInterval: string = "30d",
   ): Promise<AccountLogin> {
     const res = await this.fetch(
-      this.getUrl("/api/v1/to-business-account/login"),
+      this.getUrl("/api/v1/custom-auth-account/login"),
       createPostHTTPRequest({
-        accessToken,
-        source,
+        web3auth: web3AuthSig,
+        appId,
         expirationInterval,
       }),
     );
@@ -79,7 +79,7 @@ export class UnipassToBusinessClient {
   }
 
   public async register(input: RegisterParams): Promise<AccountRegister> {
-    const res = await this.fetch(this.getUrl("/api/v1/to-business-account/register"), createPostHTTPRequest(input));
+    const res = await this.fetch(this.getUrl("/api/v1/custom-auth-account/register"), createPostHTTPRequest(input));
 
     const data = await buildResponse(res);
     return data;
@@ -87,7 +87,7 @@ export class UnipassToBusinessClient {
 
   public async tssKeyGenStart(authorization: string): Promise<TssRes> {
     const res = await this.fetch(
-      this.getUrl("/api/v1/to-business-account/tss/keygen/start"),
+      this.getUrl("/api/v1/custom-auth-account/tss/keygen/start"),
       createPostHTTPRequest({}, { Authorization: `Bearer ${authorization}` }),
     );
 
@@ -97,7 +97,7 @@ export class UnipassToBusinessClient {
 
   public async tssKeyGen(authorization: string, tssParams: TssKeyGenParams): Promise<TssRes> {
     const res = await this.fetch(
-      this.getUrl("/api/v1/to-business-account/tss/keygen"),
+      this.getUrl("/api/v1/custom-auth-account/tss/keygen"),
       createPostHTTPRequest(tssParams, { Authorization: `Bearer ${authorization}` }),
     );
 
@@ -107,7 +107,7 @@ export class UnipassToBusinessClient {
 
   public async tssKeyGenFinish(authorization: string, tssParams: TssKeyGenFinishParams): Promise<TssRes> {
     const res = await this.fetch(
-      this.getUrl("/api/v1/to-business-account/tss/keygen/finish"),
+      this.getUrl("/api/v1/custom-auth-account/tss/keygen/finish"),
       createPostHTTPRequest(tssParams, { Authorization: `Bearer ${authorization}` }),
     );
 
@@ -139,16 +139,13 @@ export class UnipassToBusinessClient {
     };
   }
 
-  public async config(authorization: string, appId: string, chainId: number): Promise<ToBusinessConfig> {
+  public async config(appId: string, chainId: number): Promise<ToBusinessConfig> {
     const res = await this.fetch(
-      this.getUrl("/api/v1/to-business-account/tss/gen/finish"),
-      createPostHTTPRequest(
-        {
-          appId,
-          chainId,
-        },
-        { Authorization: `Bearer ${authorization}` },
-      ),
+      this.getUrl("/api/v1/custom-auth-account/tss/gen/finish"),
+      createPostHTTPRequest({
+        appId,
+        chainId,
+      }),
     );
 
     const data = await buildResponse(res);

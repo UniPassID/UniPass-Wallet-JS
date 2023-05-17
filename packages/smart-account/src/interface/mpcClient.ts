@@ -1,7 +1,3 @@
-export enum UnipassSource {
-  Sparkle = "sparkle",
-}
-
 export enum UnipassKeyType {
   ToBusiness = 5,
   ToBusinessEOA = 6,
@@ -25,6 +21,7 @@ export type RegisterParams = {
     keystore: string;
     keyType: UnipassKeyType;
   };
+  web3Auth: Web3AuthSig;
 };
 
 export type AccountRegister = {
@@ -70,11 +67,19 @@ export type ToBusinessConfig = {
     verifierName: string;
   };
   unipassRelayerUrl: string;
+  verifierIdKey: string;
 };
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 
-export enum UnipassRunningEnv {
+export enum MpcRunningEnv {
   Dev = "dev",
   Testnet = "testnet",
+  Production = "prod",
 }
+
+export type Web3AuthSig = {
+  address: string;
+  sig: string;
+  message: string;
+};

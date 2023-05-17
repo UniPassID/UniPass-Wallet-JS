@@ -2,6 +2,8 @@ export * from "./storage";
 
 export * from "./smartAccount";
 
-export * from "./unipassClient";
+export * from "./mpcClient";
 
 export * from "./utils";
+
+export * from "./mpcSigner";
