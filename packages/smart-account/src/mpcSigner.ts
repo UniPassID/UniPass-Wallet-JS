@@ -1,5 +1,5 @@
 import { Bytes, Signer, Wallet, providers } from "ethers";
-import { base64, toUtf8String } from "ethers/lib/utils";
+import { base64, hexlify, toUtf8String } from "ethers/lib/utils";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { Deferrable, defineReadOnly } from "@ethersproject/properties";
 import { KeySecp256k1, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
@@ -15,10 +15,10 @@ import {
 } from "./interface";
 import { MpcStorage } from "./mpcStorage";
 import { MpcClient } from "./mpcClient";
-import { getMpcServerUrl } from "./utils";
-import fetchPonyfill from "fetch-ponyfill";
+import { getMpcServerInfo } from "./utils";
 import Web3Auth from "@web3auth/single-factor-auth";
 import { decryptKeystore, encryptKeystore } from "@unipasswallet/utils";
+import * as crossFetch from "cross-fetch";
 
 export class MpcSigner extends Signer {
   private readonly storage?: MpcStorage;
@@ -56,7 +56,7 @@ export class MpcSigner extends Signer {
     const {
       idToken,
       noStorage = false,
-      fetch = fetchPonyfill().fetch,
+      fetch = crossFetch.fetch,
       runningEnv = MpcRunningEnv.Production,
       appId,
       expireationInterval,
@@ -97,7 +97,7 @@ export class MpcSigner extends Signer {
       throw error;
     }
 
-    const mpcServerUrl = getMpcServerUrl(runningEnv);
+    const { mpcServerUrl } = getMpcServerInfo(runningEnv);
 
     this.mpcClient = new MpcClient(mpcServerUrl, fetch);
     this.userKey = userKey;
@@ -114,14 +114,22 @@ export class MpcSigner extends Signer {
     fetch: Fetch,
     expirationInterval?: string,
   ): Promise<MpcSigner> {
-    const mpcServerUrl = getMpcServerUrl(runningEnv);
+    const { mpcServerUrl, chainId, env, nodeUrl } = getMpcServerInfo(runningEnv);
     const mpcClient = new MpcClient(mpcServerUrl, fetch);
 
     const {
       web3authConfig: { clientId, verifierName },
       verifierIdKey,
-    } = await mpcClient.config(appId, 0);
-    const web3AuthPrivateKey = await MpcSigner.getWeb3AuthPrivateKey(clientId, idToken, verifierName, verifierIdKey);
+    } = await mpcClient.config(appId, chainId);
+    const web3AuthPrivateKey = await MpcSigner.getWeb3AuthPrivateKey(
+      clientId,
+      idToken,
+      verifierName,
+      verifierIdKey,
+      chainId,
+      env,
+      nodeUrl,
+    );
 
     if (!web3AuthPrivateKey) {
       const error = {
@@ -184,10 +192,14 @@ export class MpcSigner extends Signer {
     idToken: string,
     verifier: string,
     subKey: string,
+    chainId: number,
+    web3AuthNetwork: "testnet" | "mainnet",
+    nodeUrl: string,
   ): Promise<string | undefined> {
     const web3Auth = new Web3Auth({
       clientId,
-      chainConfig: { chainNamespace: "eip155" },
+      chainConfig: { chainNamespace: "eip155", chainId: hexlify(chainId), rpcTarget: nodeUrl },
+      web3AuthNetwork,
     });
     web3Auth.init();
     const verifierId = MpcSigner.getIdTokenSub(idToken, subKey);

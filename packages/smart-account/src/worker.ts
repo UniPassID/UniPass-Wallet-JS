@@ -24,8 +24,3 @@ Comlink.expose({
   li17_p2_sign1,
   li17_p2_sign2,
 });
-
-// @ts-ignore
-export const webWorker = new Worker(new URL("./worker", import.meta.url));
-
-export const worker = Comlink.wrap<any>(webWorker);

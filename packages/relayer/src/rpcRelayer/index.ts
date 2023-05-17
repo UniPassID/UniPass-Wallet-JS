@@ -1,6 +1,6 @@
 import { UnipassWalletContext } from "@unipasswallet/network";
 import { FeeOption, Relayer } from "..";
-import fetchPonyfill from "fetch-ponyfill";
+import * as CrossFetch from "cross-fetch";
 import {
   PendingExecuteCallArgs,
   RpcService,
@@ -21,9 +21,9 @@ export class RpcRelayer implements Relayer {
     relayerUrl: string,
     public readonly context: UnipassWalletContext,
     public readonly provider: providers.Provider,
-    originFetch?: typeof fetch
+    originFetch?: typeof fetch,
   ) {
-    this.rpcService = new RpcService(relayerUrl, originFetch || fetchPonyfill().fetch);
+    this.rpcService = new RpcService(relayerUrl, originFetch || CrossFetch.fetch);
   }
 
   async isWalletDeployed(walletAddress: string): Promise<boolean> {

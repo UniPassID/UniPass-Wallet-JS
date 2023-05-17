@@ -1,5 +1,4 @@
 import { computeAddress } from "ethers/lib/utils";
-import { worker } from "./tss";
 import { SmartAccountError, SmartAccountErrorCode } from "./interface/utils";
 import {
   AccountLogin,
@@ -13,6 +12,7 @@ import {
   TssRes,
   Web3AuthSig,
 } from "./interface/mpcClient";
+import { worker } from "./worker-provider";
 
 const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",
@@ -141,7 +141,7 @@ export class MpcClient {
 
   public async config(appId: string, chainId: number): Promise<ToBusinessConfig> {
     const res = await this.fetch(
-      this.getUrl("/api/v1/custom-auth-account/tss/gen/finish"),
+      this.getUrl("/api/v1/custom-auth-account/config"),
       createPostHTTPRequest({
         appId,
         chainId,

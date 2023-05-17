@@ -3,7 +3,7 @@ import { CallType, Transactionish, toTransaction, toTransactions } from "@unipas
 import { KeyType } from "@unipasswallet/keys";
 import { BigNumber, providers } from "ethers";
 import { hexlify } from "ethers/lib/utils";
-import {} from "ethers";
+import * as CrossFetch from "cross-fetch";
 
 const CONTRACT_NOT_DEPLOYED_CODE = 1002;
 export interface FeeTokensReturn {

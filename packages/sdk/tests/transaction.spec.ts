@@ -40,7 +40,7 @@ import { digestTxHash } from "@unipasswallet/transactions";
 import { initTestContext, initWalletContext, TestContext, WalletContext } from "./utils/testContext";
 import { randomInt } from "crypto";
 import fetchPonyfill from "fetch-ponyfill";
-import { keccak256, toUtf8Bytes } from "ethers/lib/utils";
+import { keccak256, toUtf8Bytes } from "ethers";
 
 describe("Test Transactions", () => {
   let context: TestContext;
