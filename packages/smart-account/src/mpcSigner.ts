@@ -239,7 +239,7 @@ export class MpcSigner extends Signer {
   private static getIdTokenSub(idToken: string, subKey: string): string | undefined {
     const payload = idToken.split(".")[1];
     if (payload) {
-      const decodedPayload = JSON.parse(base64.decode(payload).toString());
+      const decodedPayload = JSON.parse(toUtf8String(base64.decode(payload)));
       return decodedPayload[subKey];
     }
     return undefined;
