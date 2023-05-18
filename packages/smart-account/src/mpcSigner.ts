@@ -1,8 +1,8 @@
 import { Bytes, Signer, Wallet, providers } from "ethers";
-import { base64, hexlify, toUtf8String } from "ethers/lib/utils";
+import { base64, hexlify, toUtf8Bytes, toUtf8String } from "ethers/lib/utils";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { Deferrable, defineReadOnly } from "@ethersproject/properties";
-import { KeySecp256k1, Keyset, RoleWeight, SignType } from "@unipasswallet/keys";
+import { KeySecp256k1, Keyset, SignType } from "@unipasswallet/keys";
 import {
   Fetch,
   MpcRunningEnv,
@@ -15,7 +15,7 @@ import {
 } from "./interface";
 import { MpcStorage } from "./mpcStorage";
 import { MpcClient } from "./mpcClient";
-import { getMpcServerInfo } from "./utils";
+import { DEFAULT_MASTER_KEY_ROLE_WEIGHT, getMpcServerInfo } from "./utils";
 import Web3Auth from "@web3auth/single-factor-auth";
 import { decryptKeystore, encryptKeystore } from "@unipasswallet/utils";
 import * as crossFetch from "cross-fetch";
@@ -119,13 +119,13 @@ export class MpcSigner extends Signer {
 
     const {
       web3authConfig: { clientId, verifierName },
-      verifierIdKey,
+      jwtVerifierIdKey,
     } = await mpcClient.config(appId, chainId);
     const web3AuthPrivateKey = await MpcSigner.getWeb3AuthPrivateKey(
       clientId,
       idToken,
       verifierName,
-      verifierIdKey,
+      jwtVerifierIdKey,
       chainId,
       env,
       nodeUrl,
@@ -152,10 +152,10 @@ export class MpcSigner extends Signer {
       this.address = (Keyset.fromJson(keyset).keys[0] as KeySecp256k1).address;
     } else {
       const { tssKeyAddress, userKeySignContext } = await mpcClient.tssGenerateKey(authorization);
-      const keystore = await encryptKeystore(userKeySignContext, web3AuthPrivateKey, {
+      const keystore = await encryptKeystore(toUtf8Bytes(userKeySignContext), web3AuthPrivateKey, {
         scrypt: { N: 16 },
       });
-      const masterKey = new KeySecp256k1(tssKeyAddress, new RoleWeight(100, 100, 100), SignType.EthSign);
+      const masterKey = new KeySecp256k1(tssKeyAddress, DEFAULT_MASTER_KEY_ROLE_WEIGHT, SignType.EthSign);
       const keyset = new Keyset([masterKey]);
 
       const { authorization: registerAuthorization } = await mpcClient.register({
@@ -166,12 +166,19 @@ export class MpcSigner extends Signer {
           keyType: UnipassKeyType.ToBusiness,
         },
         web3Auth: web3AuthSig,
+        appId,
       });
       this.mpcClient = new MpcClient(mpcServerUrl, fetch);
       this.userKey = userKeySignContext;
       this.authorization = registerAuthorization;
       this.address = masterKey.address;
     }
+    this.storage?.updateMpcSignerInfo({
+      userKey: this.userKey,
+      authorization: this.authorization,
+      runningEnv,
+      address: this.address,
+    });
     return this;
   }
 

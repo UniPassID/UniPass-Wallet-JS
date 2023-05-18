@@ -19,6 +19,10 @@ export class MpcStorage {
     return undefined;
   }
 
+  public async updateMpcSignerInfo(mpcSignerInfo: MpcSignerInfo): Promise<void> {
+    return this.storage.setItem(MpcStorage.getMpcSignerItemKey(), JSON.stringify(mpcSignerInfo));
+  }
+
   // static getCurrentWalletIdentityKey() {
   //   return MpcStorage.getKey(`current-wallet-identity`);
   // }

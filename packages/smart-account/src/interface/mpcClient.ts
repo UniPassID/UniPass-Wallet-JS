@@ -22,6 +22,7 @@ export type RegisterParams = {
     keyType: UnipassKeyType;
   };
   web3Auth: Web3AuthSig;
+  appId: string;
 };
 
 export type AccountRegister = {
@@ -67,7 +68,7 @@ export type ToBusinessConfig = {
     verifierName: string;
   };
   unipassRelayerUrl: string;
-  verifierIdKey: string;
+  jwtVerifierIdKey: string;
 };
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;

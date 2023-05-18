@@ -79,7 +79,26 @@ export class MpcClient {
   }
 
   public async register(input: RegisterParams): Promise<AccountRegister> {
-    const res = await this.fetch(this.getUrl("/api/v1/custom-auth-account/register"), createPostHTTPRequest(input));
+    const {
+      keysetJson,
+      masterKey: { masterKeyAddress, keyType, keystore },
+      web3Auth,
+      appId,
+    } = input;
+
+    const res = await this.fetch(
+      this.getUrl("/api/v1/custom-auth-account/register"),
+      createPostHTTPRequest({
+        keysetJson,
+        masterKey: {
+          masterKeyAddress,
+          keyType,
+          keyStore: keystore,
+        },
+        web3auth: web3Auth,
+        appId,
+      }),
+    );
 
     const data = await buildResponse(res);
     return data;
@@ -108,7 +127,14 @@ export class MpcClient {
   public async tssKeyGenFinish(authorization: string, tssParams: TssKeyGenFinishParams): Promise<TssRes> {
     const res = await this.fetch(
       this.getUrl("/api/v1/custom-auth-account/tss/keygen/finish"),
-      createPostHTTPRequest(tssParams, { Authorization: `Bearer ${authorization}` }),
+      createPostHTTPRequest(
+        {
+          localKeyAddress: tssParams.tssKeyAddress,
+          userId: tssParams.userId,
+          sessionId: tssParams.sessionId,
+        },
+        { Authorization: `Bearer ${authorization}` },
+      ),
     );
 
     const data = await buildResponse(res);
@@ -123,7 +149,7 @@ export class MpcClient {
       tssMsg: p2FirstMsg,
     };
     const { tssRes: tssKeyGenRes } = await this.tssKeyGen(authorization, tssKeyGenParams);
-    const [signContext2, pubkey] = await worker.li17_p2_key_gen2(tssKeyGenRes, context2);
+    const [signContext2, pubkey] = await worker.li17_p2_key_gen2(context2, tssKeyGenRes.msg);
     const tssKeyAddress = computeAddress(pubkey.point);
     const tssKeyGenFinishParams = {
       userId: tssRes.userId,
@@ -135,7 +161,7 @@ export class MpcClient {
     return {
       tssKeyAddress,
       userId: tssRes.userId,
-      userKeySignContext: signContext2,
+      userKeySignContext: JSON.stringify(signContext2),
     };
   }
 
