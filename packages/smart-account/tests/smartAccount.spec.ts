@@ -11,7 +11,7 @@ describe("Test Smart Account", () => {
     const jsonRpcNode = process.env.JSON_RPC_NODE!;
     const masterKeySigner = Wallet.createRandom();
     const smartAccount = new SmartAccount({
-      nodeUrl: jsonRpcNode,
+      rpcUrl: jsonRpcNode,
       masterKeySigner,
     });
   });

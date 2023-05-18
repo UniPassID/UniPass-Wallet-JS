@@ -1,5 +1,4 @@
 import { computeAddress } from "ethers/lib/utils";
-import { SmartAccountError, SmartAccountErrorCode } from "./interface/utils";
 import {
   AccountLogin,
   AccountRegister,
@@ -11,8 +10,9 @@ import {
   TssKeyGenParams,
   TssRes,
   Web3AuthSig,
-} from "./interface/mpcClient";
-import { worker } from "./worker-provider";
+} from "../interface/mpcClient";
+import { worker } from "./workerProvider";
+import { SmartAccountError, SmartAccountErrorCode } from "@unipasswallet/smart-account";
 
 const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",

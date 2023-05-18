@@ -8,17 +8,16 @@ import {
   MpcRunningEnv,
   MpcSignerInitOptions,
   MpcSignerOptions,
-  SmartAccountError,
-  SmartAccountErrorCode,
   UnipassKeyType,
   Web3AuthSig,
-} from "./interface";
+} from "../interface";
 import { MpcStorage } from "./mpcStorage";
 import { MpcClient } from "./mpcClient";
-import { DEFAULT_MASTER_KEY_ROLE_WEIGHT, getMpcServerInfo } from "./utils";
 import Web3Auth from "@web3auth/single-factor-auth";
 import { decryptKeystore, encryptKeystore } from "@unipasswallet/utils";
 import * as crossFetch from "cross-fetch";
+import { SmartAccountError, SmartAccountErrorCode, DEFAULT_MASTER_KEY_ROLE_WEIGHT } from "@unipasswallet/smart-account";
+import { getMpcServerInfo } from "../utils";
 
 export class MpcSigner extends Signer {
   private readonly storage?: MpcStorage;

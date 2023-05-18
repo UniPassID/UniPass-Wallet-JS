@@ -528,6 +528,61 @@ importers:
         specifier: ~4.8.3
         version: 4.8.4
 
+  packages/smart-account-signer:
+    dependencies:
+      '@ethersproject/abstract-provider':
+        specifier: ^5.7.0
+        version: 5.7.0
+      '@ethersproject/properties':
+        specifier: ^5.7.0
+        version: 5.7.0
+      '@unipasswallet/smart-account':
+        specifier: workspace:^0.3.2
+        version: link:../smart-account
+      '@web3auth/base':
+        specifier: ^5.2.0
+        version: 5.2.0(@babel/runtime@7.21.5)
+      '@web3auth/single-factor-auth':
+        specifier: ^5.1.1
+        version: 5.1.1(@babel/runtime@7.21.5)(@solana/web3.js@1.76.0)
+      comlink:
+        specifier: ^4.3.1
+        version: 4.3.1
+      cross-fetch:
+        specifier: ^3.1.6
+        version: 3.1.6
+      ethers:
+        specifier: ^5.7.1
+        version: 5.7.2
+      tss-wasm:
+        specifier: 0.6.0
+        version: 0.6.0
+    devDependencies:
+      '@jest/types':
+        specifier: ^29.0.3
+        version: 29.3.1
+      '@types/jest':
+        specifier: ^29.0.3
+        version: 29.2.2
+      '@types/node':
+        specifier: ^18.7.18
+        version: 18.11.9
+      dotenv:
+        specifier: ^16.0.2
+        version: 16.0.3
+      jest:
+        specifier: ^29.0.3
+        version: 29.3.1(@types/node@18.11.9)(ts-node@10.9.1)
+      rimraf:
+        specifier: ~3.0.2
+        version: 3.0.2
+      ts-jest:
+        specifier: ^29.0.1
+        version: 29.0.3(@babel/core@7.20.2)(@jest/types@29.3.1)(jest@29.3.1)(typescript@4.8.4)
+      typescript:
+        specifier: ~4.8.3
+        version: 4.8.4
+
   packages/transaction-builders:
     dependencies:
       '@unipasswallet/abi':

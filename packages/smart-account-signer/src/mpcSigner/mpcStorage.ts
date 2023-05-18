@@ -1,4 +1,4 @@
-import { IStorage, MpcSignerInfo } from "./interface";
+import { IStorage, MpcSignerInfo } from "../interface";
 
 export class MpcStorage {
   constructor(public readonly storage: IStorage) {}

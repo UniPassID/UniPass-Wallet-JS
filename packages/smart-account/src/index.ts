@@ -1,11 +1,5 @@
-export { LocalMpcStorage } from "./storage";
-
-export { MpcStorage } from "./mpcStorage";
-
 export { SmartAccount } from "./smartAccount";
 
-export { MpcClient } from "./mpcClient";
-
-export { MpcSigner } from "./mpcSigner";
+export { DEFAULT_MASTER_KEY_ROLE_WEIGHT } from "./utils";
 
 export * from "./interface";
