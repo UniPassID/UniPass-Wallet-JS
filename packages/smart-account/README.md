@@ -14,24 +14,16 @@ npm install @unipasswallet/smart-account
 
 It has to inherit the `Signer` in `ethers.js`.
 
-#### Mpc Signer
+#### Web3Auth Signer
 
 ```typescript
-import { LocalStorage, MpcSigner } from "@unipasswallet/smart-account";
+import { Web3AuthSigner } from "@unipasswallet/smart-account-signer";
 
-const signer = new MpcSigner({
-  storage: LocalMpcStorage,
-});
-
-// If initalized by reading from storage.
-await signer.init();
-
-// If initalized by id token.
-await signer.init({
-  idToken,
-  noStorage: true,
+let signer = new Web3AuthSigner({
   appId,
 });
+
+signer = await signer.init();
 ```
 
 ### Generate Smart Account
@@ -41,6 +33,7 @@ import { SmartAccount } from "@unipasswallet/smart-account";
 const smartAccount = new SmartAccount({
   rpcUrl: "https://node.wallet.unipass.id/eth-mainnet",
   masterKeySigner: signer,
+  appId,
 });
 
 await smartAccount.init();
