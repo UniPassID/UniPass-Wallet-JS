@@ -6,7 +6,7 @@ import { getUnipassServerInfo, getWeb3AuthPrivateKey } from "./utils";
 import * as CrossFetch from "cross-fetch";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { defineReadOnly } from "@ethersproject/properties";
-import { UnipassRunningEnv } from "./interface";
+import { Environment } from "./interface";
 
 export class Web3AuthSigner extends Signer {
   private appId: string;
@@ -26,7 +26,7 @@ export class Web3AuthSigner extends Signer {
   constructor(options: Web3AuthSignerOptions) {
     super();
 
-    const { appId, runningEnv = UnipassRunningEnv.Production, fetch = CrossFetch.fetch, idToken } = options;
+    const { appId, env: runningEnv = Environment.Production, fetch = CrossFetch.fetch, idToken } = options;
 
     const { unipassServerUrl, chainId, rpcUrl, env } = getUnipassServerInfo(runningEnv);
 

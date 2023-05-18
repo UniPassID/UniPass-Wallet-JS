@@ -1,23 +1,23 @@
 import Web3Auth from "@web3auth/single-factor-auth";
 import { base64, hexlify, toUtf8String } from "ethers/lib/utils";
-import { UnipassRunningEnv } from "./interface";
+import { Environment } from "./interface";
 import { SmartAccountError, SmartAccountErrorCode } from "@unipasswallet/smart-account";
 
-export function getUnipassServerInfo(runningEnv: UnipassRunningEnv): {
+export function getUnipassServerInfo(env: Environment): {
   unipassServerUrl: string;
   chainId: number;
   env: "testnet" | "mainnet";
   rpcUrl: string;
 } {
-  switch (runningEnv) {
-    case UnipassRunningEnv.Dev:
+  switch (env) {
+    case Environment.Dev:
       return {
         unipassServerUrl: "https://d.wallet.unipass.vip/wallet-v2",
         chainId: 5,
         env: "testnet",
         rpcUrl: "https://node.wallet.unipass.id/eth-goerli",
       };
-    case UnipassRunningEnv.Testnet:
+    case Environment.Testnet:
       return {
         unipassServerUrl: "https://t.wallet.unipass.vip/wallet-v2",
         chainId: 5,
@@ -25,7 +25,7 @@ export function getUnipassServerInfo(runningEnv: UnipassRunningEnv): {
         rpcUrl: "https://node.wallet.unipass.id/eth-goerli",
       };
     default:
-      throw new Error(`Unknown Env: ${runningEnv}`);
+      throw new Error(`Unknown Env: ${env}`);
   }
 }
 

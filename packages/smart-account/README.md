@@ -32,7 +32,7 @@ signer = await signer.init();
 ```typescript
 import { SmartAccount } from "@unipasswallet/smart-account";
 const smartAccount = new SmartAccount({
-  rpcUrl: "https://node.wallet.unipass.id/eth-mainnet",
+  rpcUrl: "https://rpc.ankr.com/eth_goerli",
   masterKeySigner: signer,
   appId,
 });

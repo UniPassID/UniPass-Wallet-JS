@@ -1,8 +1,8 @@
-import { Fetch, UnipassRunningEnv } from "./unipassClient";
+import { Fetch, Environment } from "./unipassClient";
 
 export type Web3AuthSignerOptions = {
   appId: string;
-  runningEnv?: UnipassRunningEnv;
+  env?: Environment;
   fetch?: Fetch;
   idToken:string;
 };

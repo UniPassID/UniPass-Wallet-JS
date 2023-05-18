@@ -8,7 +8,7 @@ import {
   MpcSignerInitOptions,
   MpcSignerOptions,
   UnipassKeyType,
-  UnipassRunningEnv,
+  Environment,
   Web3AuthSig,
 } from "../interface";
 import { MpcStorage } from "./mpcStorage";
@@ -55,7 +55,7 @@ export class MpcSigner extends Signer {
       idToken,
       noStorage = false,
       fetch = crossFetch.fetch,
-      runningEnv = UnipassRunningEnv.Production,
+      env: runningEnv = Environment.Production,
       appId,
       expirationInterval,
     } = initOptions || {};
@@ -75,7 +75,7 @@ export class MpcSigner extends Signer {
     return this.initByIdToken(appId, idToken, runningEnv, fetch, expirationInterval);
   }
 
-  private async initByStorage(runningEnv: UnipassRunningEnv, fetch: Fetch): Promise<MpcSigner> {
+  private async initByStorage(runningEnv: Environment, fetch: Fetch): Promise<MpcSigner> {
     const mpcInfo = await this.storage?.getMpcSignerInfo();
     if (!mpcInfo) {
       const error = {
@@ -108,7 +108,7 @@ export class MpcSigner extends Signer {
   private async initByIdToken(
     appId: string,
     idToken: string,
-    runningEnv: UnipassRunningEnv,
+    runningEnv: Environment,
     fetch: Fetch,
     expirationInterval?: string,
   ): Promise<MpcSigner> {

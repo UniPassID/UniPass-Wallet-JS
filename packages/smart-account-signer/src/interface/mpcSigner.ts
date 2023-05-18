@@ -1,4 +1,4 @@
-import { Fetch, UnipassRunningEnv } from "./unipassClient";
+import { Fetch, Environment } from "./unipassClient";
 import { IStorage } from "./storage";
 
 export type MpcSignerInitOptions = {
@@ -6,7 +6,7 @@ export type MpcSignerInitOptions = {
   appId?: string;
   noStorage?: boolean;
   fetch?: Fetch;
-  runningEnv?: UnipassRunningEnv;
+  env?: Environment;
   expirationInterval?: string;
 };
 

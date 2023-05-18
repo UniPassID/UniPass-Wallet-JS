@@ -1,4 +1,4 @@
-import { UnipassRunningEnv } from "./unipassClient";
+import { Environment } from "./unipassClient";
 
 export interface IStorage {
   getItem(key: string): Promise<string | undefined>;
@@ -9,6 +9,6 @@ export interface IStorage {
 export type MpcSignerInfo = {
   userKey: string;
   authorization: string;
-  runningEnv: UnipassRunningEnv;
+  runningEnv: Environment;
   address: string;
 };
