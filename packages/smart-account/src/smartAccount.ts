@@ -12,10 +12,18 @@ export class SmartAccount {
 
   private masterKeySigner: Signer;
 
+  private chainId: number;
+
+  private appId: string;
+
   constructor(options: SmartAccountOptions) {
-    const { masterKeySigner, rpcUrl } = options;
+    const { masterKeySigner, rpcUrl, chainId, appId } = options;
     this.provider = new providers.StaticJsonRpcProvider(rpcUrl);
     this.masterKeySigner = masterKeySigner;
+    this.appId = appId;
+    if (chainId) {
+      this.chainId = chainId;
+    }
   }
 
   async init(): Promise<SmartAccount> {
@@ -33,6 +41,9 @@ export class SmartAccount {
       keyset,
       provider: this.provider,
     });
+    if (!this.chainId) {
+      this.chainId = (await this.provider.getNetwork()).chainId;
+    }
     return this;
   }
 

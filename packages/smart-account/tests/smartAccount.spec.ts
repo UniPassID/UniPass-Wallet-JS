@@ -13,6 +13,7 @@ describe("Test Smart Account", () => {
     const smartAccount = new SmartAccount({
       rpcUrl: jsonRpcNode,
       masterKeySigner,
+      appId: "test-app-id",
     });
   });
 });
