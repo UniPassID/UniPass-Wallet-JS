@@ -7,7 +7,7 @@ import { MpcSigner } from "./mpcSigner";
 import { DEFAULT_MASTER_KEY_ROLE_WEIGHT } from "./utils";
 
 export class SmartAccount {
-  private walelt: Wallet;
+  private wallet: Wallet;
 
   private provider: providers.Provider;
 
@@ -34,7 +34,7 @@ export class SmartAccount {
       },
     );
     const keyset = new Keyset([masterKey]);
-    this.walelt = Wallet.create({
+    this.wallet = Wallet.create({
       keyset,
       provider: this.provider,
     });
@@ -42,6 +42,6 @@ export class SmartAccount {
   }
 
   async getAddress(): Promise<string> {
-    return this.walelt.getAddress();
+    return this.wallet.getAddress();
   }
 }

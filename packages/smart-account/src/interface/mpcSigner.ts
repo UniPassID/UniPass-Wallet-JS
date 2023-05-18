@@ -7,7 +7,7 @@ export type MpcSignerInitOptions = {
   noStorage?: boolean;
   fetch?: Fetch;
   runningEnv?: MpcRunningEnv;
-  expireationInterval?: string;
+  expirationInterval?: string;
 };
 
 export type MpcSignerOptions = {

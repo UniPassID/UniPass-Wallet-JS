@@ -49,7 +49,7 @@ export class MpcSigner extends Signer {
 
   /**
    *
-   * @param initOptions The initalization options
+   * @param initOptions The initialization options
    * @returns
    */
   async init(initOptions?: MpcSignerInitOptions): Promise<MpcSigner> {
@@ -59,7 +59,7 @@ export class MpcSigner extends Signer {
       fetch = crossFetch.fetch,
       runningEnv = MpcRunningEnv.Production,
       appId,
-      expireationInterval,
+      expirationInterval,
     } = initOptions || {};
     if (!noStorage) {
       return this.initByStorage(runningEnv, fetch);
@@ -74,7 +74,7 @@ export class MpcSigner extends Signer {
       throw error;
     }
 
-    return this.initByIdToken(appId, idToken, runningEnv, fetch, expireationInterval);
+    return this.initByIdToken(appId, idToken, runningEnv, fetch, expirationInterval);
   }
 
   private async initByStorage(runningEnv: MpcRunningEnv, fetch: Fetch): Promise<MpcSigner> {
@@ -258,7 +258,7 @@ export class MpcSigner extends Signer {
   }
 
   async signMessage(message: Bytes | string): Promise<string> {
-    throw new Error("Unsupport");
+    throw new Error("Unsupported");
   }
 
   async getAddress(): Promise<string> {
@@ -266,6 +266,6 @@ export class MpcSigner extends Signer {
   }
 
   async signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
-    throw new Error("Unsupport");
+    throw new Error("Unsupported");
   }
 }
