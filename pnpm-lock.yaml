@@ -536,9 +536,15 @@ importers:
       '@ethersproject/properties':
         specifier: ^5.7.0
         version: 5.7.0
+      '@unipasswallet/keys':
+        specifier: workspace:^0.3.2
+        version: link:../keys
       '@unipasswallet/smart-account':
         specifier: workspace:^0.3.2
         version: link:../smart-account
+      '@unipasswallet/utils':
+        specifier: workspace:^0.3.2
+        version: link:../utils
       '@web3auth/base':
         specifier: ^5.2.0
         version: 5.2.0(@babel/runtime@7.21.5)

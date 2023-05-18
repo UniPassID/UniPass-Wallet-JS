@@ -26,7 +26,7 @@ export class Web3AuthSigner extends Signer {
   constructor(options: Web3AuthSignerOptions) {
     super();
 
-    const { appId, runningEnv = UnipassRunningEnv.Production, fetch = CrossFetch.fetch } = options;
+    const { appId, runningEnv = UnipassRunningEnv.Production, fetch = CrossFetch.fetch, idToken } = options;
 
     const { unipassServerUrl, chainId, rpcUrl, env } = getUnipassServerInfo(runningEnv);
 
@@ -35,6 +35,7 @@ export class Web3AuthSigner extends Signer {
     this.chainId = chainId;
     this.rpcUrl = rpcUrl;
     this.env = env;
+    this.idToken = idToken;
   }
 
   async init(): Promise<Web3AuthSigner> {

@@ -1,5 +1,7 @@
 export { LocalMpcStorage } from "./storage";
 
-export { MpcSigner } from "./mpcSigner";
+export { MpcSigner, UnipassClient } from "./mpcSigner";
 
-export { UnipassClient as MpcClient } from "./mpcSigner/unipassClient";
+export { Web3AuthSigner } from "./web3AuthSigner";
+
+export * from "./interface";

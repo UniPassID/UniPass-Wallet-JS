@@ -21,6 +21,7 @@ import { Web3AuthSigner } from "@unipasswallet/smart-account-signer";
 
 let signer = new Web3AuthSigner({
   appId,
+  idToken,
 });
 
 signer = await signer.init();
