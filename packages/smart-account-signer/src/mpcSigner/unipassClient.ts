@@ -10,7 +10,7 @@ import {
   TssKeyGenParams,
   TssRes,
   Web3AuthSig,
-} from "../interface/mpcClient";
+} from "../interface/unipassClient";
 import { worker } from "./workerProvider";
 import { SmartAccountError, SmartAccountErrorCode } from "@unipasswallet/smart-account";
 
@@ -53,7 +53,7 @@ const buildResponse = (res: Response): Promise<any> =>
     return body.data;
   });
 
-export class MpcClient {
+export class UnipassClient {
   constructor(public readonly baseUrl: string, public readonly fetch: Fetch) {}
 
   private getUrl(path: string): string {

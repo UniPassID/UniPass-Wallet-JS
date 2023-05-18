@@ -1,4 +1,4 @@
-export { MpcClient } from "./mpcClient";
+export { UnipassClient } from "./unipassClient";
 
 export { MpcSigner } from "./mpcSigner";
 

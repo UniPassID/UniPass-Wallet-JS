@@ -15,5 +15,6 @@ describe("Test Smart Account", () => {
       masterKeySigner,
       appId: "test-app-id",
     });
+    await smartAccount.init();
   });
 });

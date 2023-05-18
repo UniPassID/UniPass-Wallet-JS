@@ -1,4 +1,4 @@
-import { MpcRunningEnv } from "./mpcClient";
+import { MpcRunningEnv } from "./unipassClient";
 
 export interface IStorage {
   getItem(key: string): Promise<string | undefined>;

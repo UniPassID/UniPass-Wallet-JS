@@ -1,4 +1,4 @@
-export * from "./mpcClient";
+export * from "./unipassClient";
 
 export * from "./mpcSigner";
 
