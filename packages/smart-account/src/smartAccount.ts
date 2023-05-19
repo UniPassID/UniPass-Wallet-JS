@@ -52,7 +52,7 @@ export class SmartAccount {
       this.chainId = (await this.provider.getNetwork()).chainId;
     }
     try {
-      this.unipassClient.register({
+      await this.unipassClient.register({
         keysetJson: keyset.toJson(),
         masterKey: {
           masterKeyAddress: masterKey.address,
