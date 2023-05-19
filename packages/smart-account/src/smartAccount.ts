@@ -3,7 +3,10 @@ import { arrayify } from "ethers/lib/utils";
 import { KeySecp256k1, Keyset, SignType } from "@unipasswallet/keys";
 import { SmartAccountOptions } from "./interface/smartAccount";
 import { Wallet } from "@unipasswallet/wallet";
-import { DEFAULT_MASTER_KEY_ROLE_WEIGHT } from "./utils";
+import * as CrossFetch from "cross-fetch";
+import { DEFAULT_MASTER_KEY_ROLE_WEIGHT, getUnipassServerInfo } from "./utils";
+import { Environment, UnipassKeyType } from "./interface";
+import { UnipassClient } from "./unipassClient";
 
 export class SmartAccount {
   private wallet: Wallet;
@@ -16,14 +19,18 @@ export class SmartAccount {
 
   private appId: string;
 
+  private unipassClient: UnipassClient;
+
   constructor(options: SmartAccountOptions) {
-    const { masterKeySigner, rpcUrl, chainId, appId } = options;
+    const { masterKeySigner, rpcUrl, chainId, appId, env = Environment.Production, fetch = CrossFetch.fetch } = options;
     this.provider = new providers.StaticJsonRpcProvider(rpcUrl);
     this.masterKeySigner = masterKeySigner;
     this.appId = appId;
     if (chainId) {
       this.chainId = chainId;
     }
+    const { unipassServerUrl } = getUnipassServerInfo(env);
+    this.unipassClient = new UnipassClient(unipassServerUrl, fetch);
   }
 
   async init(): Promise<SmartAccount> {
@@ -44,7 +51,19 @@ export class SmartAccount {
     if (!this.chainId) {
       this.chainId = (await this.provider.getNetwork()).chainId;
     }
-    return this;
+    try {
+      this.unipassClient.register({
+        keysetJson: keyset.toJson(),
+        masterKey: {
+          masterKeyAddress: masterKey.address,
+          keyType: UnipassKeyType.ToBusinessEOA,
+        },
+        appId: this.appId,
+      });
+      return this;
+    } catch {
+      return this;
+    }
   }
 
   async getAddress(): Promise<string> {

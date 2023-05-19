@@ -1,4 +1,4 @@
-import { Environment } from "./unipassClient";
+import { Environment } from "@unipasswallet/smart-account";
 
 export interface IStorage {
   getItem(key: string): Promise<string | undefined>;

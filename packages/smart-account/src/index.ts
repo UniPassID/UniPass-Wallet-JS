@@ -1,5 +1,7 @@
+export * from "./interface";
+
 export { SmartAccount } from "./smartAccount";
 
-export { DEFAULT_MASTER_KEY_ROLE_WEIGHT } from "./utils";
+export { DEFAULT_MASTER_KEY_ROLE_WEIGHT, getUnipassServerInfo } from "./utils";
 
-export * from "./interface";
+export { UnipassClient } from "./unipassClient";

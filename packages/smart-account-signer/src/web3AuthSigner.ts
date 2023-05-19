@@ -1,12 +1,16 @@
 import { Bytes, Signer, Wallet } from "ethers";
-import { SmartAccountError, SmartAccountErrorCode } from "@unipasswallet/smart-account";
+import {
+  Environment,
+  SmartAccountError,
+  SmartAccountErrorCode,
+  getUnipassServerInfo,
+  UnipassClient,
+} from "@unipasswallet/smart-account";
 import { Web3AuthSignerOptions } from "./interface/web3AuthSigner";
-import { UnipassClient } from "./mpcSigner/unipassClient";
-import { getUnipassServerInfo, getWeb3AuthPrivateKey } from "./utils";
+import { getWeb3AuthPrivateKey } from "./utils";
 import * as CrossFetch from "cross-fetch";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { defineReadOnly } from "@ethersproject/properties";
-import { Environment } from "./interface";
 
 export class Web3AuthSigner extends Signer {
   private appId: string;

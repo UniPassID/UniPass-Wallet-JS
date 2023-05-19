@@ -1,18 +1,16 @@
-import { computeAddress } from "ethers/lib/utils";
 import {
+  SmartAccountError,
+  SmartAccountErrorCode,
   AccountLogin,
   AccountRegister,
   Fetch,
   RegisterParams,
   ToBusinessConfig,
-  TssKey,
   TssKeyGenFinishParams,
   TssKeyGenParams,
   TssRes,
   Web3AuthSig,
-} from "../interface/unipassClient";
-import { worker } from "./workerProvider";
-import { SmartAccountError, SmartAccountErrorCode } from "@unipasswallet/smart-account";
+} from "./interface";
 
 const createPostHTTPRequest = (body: object = {}, headers: object = {}): object => ({
   method: "POST",
@@ -139,30 +137,6 @@ export class UnipassClient {
 
     const data = await buildResponse(res);
     return data;
-  }
-
-  public async tssGenerateKey(authorization: string): Promise<TssKey> {
-    const { tssRes } = await this.tssKeyGenStart(authorization);
-    const [context2, p2FirstMsg] = await worker.li17_p2_key_gen1(tssRes.msg);
-    const tssKeyGenParams = {
-      sessionId: tssRes.sessionId,
-      tssMsg: p2FirstMsg,
-    };
-    const { tssRes: tssKeyGenRes } = await this.tssKeyGen(authorization, tssKeyGenParams);
-    const [signContext2, pubkey] = await worker.li17_p2_key_gen2(context2, tssKeyGenRes.msg);
-    const tssKeyAddress = computeAddress(pubkey.point);
-    const tssKeyGenFinishParams = {
-      userId: tssRes.userId,
-      sessionId: tssRes.sessionId,
-      tssKeyAddress,
-    };
-    await this.tssKeyGenFinish(authorization, tssKeyGenFinishParams);
-
-    return {
-      tssKeyAddress,
-      userId: tssRes.userId,
-      userKeySignContext: JSON.stringify(signContext2),
-    };
   }
 
   public async config(appId: string, chainId: number): Promise<ToBusinessConfig> {

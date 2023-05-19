@@ -1,22 +1,26 @@
 import { Bytes, Signer, Wallet, providers } from "ethers";
-import { base64, toUtf8Bytes, toUtf8String } from "ethers/lib/utils";
+import { base64, computeAddress, toUtf8Bytes, toUtf8String } from "ethers/lib/utils";
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { Deferrable, defineReadOnly } from "@ethersproject/properties";
 import { KeySecp256k1, Keyset, SignType } from "@unipasswallet/keys";
-import {
-  Fetch,
-  MpcSignerInitOptions,
-  MpcSignerOptions,
-  UnipassKeyType,
-  Environment,
-  Web3AuthSig,
-} from "../interface";
+import { MpcSignerInitOptions, MpcSignerOptions } from "../interface";
 import { MpcStorage } from "./mpcStorage";
-import { UnipassClient } from "./unipassClient";
 import { decryptKeystore, encryptKeystore } from "@unipasswallet/utils";
 import * as crossFetch from "cross-fetch";
-import { SmartAccountError, SmartAccountErrorCode, DEFAULT_MASTER_KEY_ROLE_WEIGHT } from "@unipasswallet/smart-account";
-import { getUnipassServerInfo, getWeb3AuthPrivateKey } from "../utils";
+import {
+  SmartAccountError,
+  SmartAccountErrorCode,
+  DEFAULT_MASTER_KEY_ROLE_WEIGHT,
+  Environment,
+  getUnipassServerInfo,
+  TssKey,
+  UnipassClient,
+  Fetch,
+  UnipassKeyType,
+  Web3AuthSig,
+} from "@unipasswallet/smart-account";
+import { getWeb3AuthPrivateKey } from "../utils";
+import { worker } from "./workerProvider";
 
 export class MpcSigner extends Signer {
   private readonly storage?: MpcStorage;
@@ -149,7 +153,7 @@ export class MpcSigner extends Signer {
       this.authorization = authorization;
       this.address = (Keyset.fromJson(keyset).keys[0] as KeySecp256k1).address;
     } else {
-      const { tssKeyAddress, userKeySignContext } = await mpcClient.tssGenerateKey(authorization);
+      const { tssKeyAddress, userKeySignContext } = await tssGenerateKey(authorization, mpcClient);
       const keystore = await encryptKeystore(toUtf8Bytes(userKeySignContext), web3AuthPrivateKey, {
         scrypt: { N: 16 },
       });
@@ -222,4 +226,28 @@ export class MpcSigner extends Signer {
   async signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
     throw new Error("Unsupported");
   }
+}
+
+async function tssGenerateKey(authorization: string, unipassClient: UnipassClient): Promise<TssKey> {
+  const { tssRes } = await unipassClient.tssKeyGenStart(authorization);
+  const [context2, p2FirstMsg] = await worker.li17_p2_key_gen1(tssRes.msg);
+  const tssKeyGenParams = {
+    sessionId: tssRes.sessionId,
+    tssMsg: p2FirstMsg,
+  };
+  const { tssRes: tssKeyGenRes } = await unipassClient.tssKeyGen(authorization, tssKeyGenParams);
+  const [signContext2, pubkey] = await worker.li17_p2_key_gen2(context2, tssKeyGenRes.msg);
+  const tssKeyAddress = computeAddress(pubkey.point);
+  const tssKeyGenFinishParams = {
+    userId: tssRes.userId,
+    sessionId: tssRes.sessionId,
+    tssKeyAddress,
+  };
+  await unipassClient.tssKeyGenFinish(authorization, tssKeyGenFinishParams);
+
+  return {
+    tssKeyAddress,
+    userId: tssRes.userId,
+    userKeySignContext: JSON.stringify(signContext2),
+  };
 }

@@ -18,10 +18,10 @@ export type RegisterParams = {
   keysetJson: string;
   masterKey: {
     masterKeyAddress: string;
-    keystore: string;
+    keystore?: string;
     keyType: UnipassKeyType;
   };
-  web3Auth: Web3AuthSig;
+  web3Auth?: Web3AuthSig;
   appId: string;
 };
 
@@ -72,12 +72,6 @@ export type ToBusinessConfig = {
 };
 
 export type Fetch = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-
-export enum Environment {
-  Dev = "dev",
-  Testnet = "testnet",
-  Production = "prod",
-}
 
 export type Web3AuthSig = {
   address: string;

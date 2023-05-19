@@ -13,3 +13,9 @@ export enum SmartAccountErrorCode {
   MpcStorageMissing = 4002,
   MpcInitFailed = 4003,
 }
+
+export enum Environment {
+  Dev = "dev",
+  Testnet = "testnet",
+  Production = "prod",
+}

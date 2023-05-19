@@ -1,4 +1,5 @@
-import { Fetch, Environment } from "./unipassClient";
+import { Environment } from "@unipasswallet/smart-account";
+import { Fetch } from "@unipasswallet/smart-account/src/interface/unipassClient";
 import { IStorage } from "./storage";
 
 export type MpcSignerInitOptions = {
