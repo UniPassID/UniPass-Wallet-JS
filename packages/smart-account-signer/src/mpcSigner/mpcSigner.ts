@@ -71,11 +71,6 @@ export class MpcSigner extends Signer {
     return !!(value && value._isMpcSigner);
   }
 
-  /**
-   *
-   * @param initOptions The initialization options
-   * @returns
-   */
   async init(): Promise<MpcSigner> {
     if (this.storage) {
       const signer = await this.initByStorage();

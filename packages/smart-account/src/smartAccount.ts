@@ -69,4 +69,17 @@ export class SmartAccount {
   async getAddress(): Promise<string> {
     return this.wallet.getAddress();
   }
+
+  async isDeployed(): Promise<boolean> {
+    const address = await this.getAddress();
+    return (await this.provider.getCode(address)) !== "0x";
+  }
+
+  getProvider(): providers.Provider {
+    return this.provider;
+  }
+
+  getChainId(): number {
+    return this.chainId;
+  }
 }
