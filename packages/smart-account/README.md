@@ -1,9 +1,15 @@
-# To Business Account SDK
+# Smart Account SDK
 
 ## Install
 
 ```bash
 npm install @unipasswallet/smart-account
+```
+
+If you want to use signers from `UniPass`, also need to run this command:
+
+```bash
+npm install @unipasswallet/smart-account-signer
 ```
 
 ## How to use
