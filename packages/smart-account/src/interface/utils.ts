@@ -5,6 +5,7 @@ export interface SmartAccountError<T> extends Error {
 }
 
 export enum SmartAccountErrorCode {
+  BadParams = 400,
   UnknownError = 1000,
   Web3AuthLoginFailed = 2000,
   InvalidIdToken = 3000,

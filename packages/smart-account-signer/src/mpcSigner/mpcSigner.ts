@@ -3,7 +3,7 @@ import { base64, computeAddress, toUtf8Bytes, toUtf8String } from "ethers/lib/ut
 import { Provider, TransactionRequest } from "@ethersproject/abstract-provider";
 import { Deferrable, defineReadOnly } from "@ethersproject/properties";
 import { KeySecp256k1, Keyset, SignType } from "@unipasswallet/keys";
-import { MpcSignerInitOptions, MpcSignerOptions } from "../interface";
+import { MpcSignerOptions } from "../interface";
 import { MpcStorage } from "./mpcStorage";
 import { decryptKeystore, encryptKeystore } from "@unipasswallet/utils";
 import * as crossFetch from "cross-fetch";
@@ -27,21 +27,43 @@ export class MpcSigner extends Signer {
 
   private address: string;
 
+  private idToken?: string;
+
+  private appId: string;
+
+  private fetch: Fetch;
+
   private userKey: string;
 
   private authorization: string;
 
-  private mpcClient: UnipassClient;
+  private unipassClient: UnipassClient;
+
+  private authExpirationInterval: string;
+
+  private env: Environment;
 
   readonly provider?: providers.Provider;
 
   public readonly _isMpcSigner: boolean;
 
   constructor(options: MpcSignerOptions) {
-    const { storage } = options;
     super();
 
+    const {
+      storage,
+      idToken,
+      appId,
+      fetch = crossFetch.fetch,
+      env = Environment.Production,
+      expirationInterval = "30d",
+    } = options;
     this.storage = new MpcStorage(storage);
+    this.idToken = idToken;
+    this.appId = appId;
+    this.fetch = fetch;
+    this.env = env;
+    this.authExpirationInterval = expirationInterval;
     defineReadOnly(this, "_isMpcSigner", true);
   }
 
@@ -54,40 +76,31 @@ export class MpcSigner extends Signer {
    * @param initOptions The initialization options
    * @returns
    */
-  async init(initOptions?: MpcSignerInitOptions): Promise<MpcSigner> {
-    const {
-      idToken,
-      noStorage = false,
-      fetch = crossFetch.fetch,
-      env: runningEnv = Environment.Production,
-      appId,
-      expirationInterval,
-    } = initOptions || {};
-    if (!noStorage) {
-      return this.initByStorage(runningEnv, fetch);
+  async init(): Promise<MpcSigner> {
+    if (this.storage) {
+      const signer = await this.initByStorage();
+      if (signer) {
+        return signer;
+      }
     }
 
-    if (!idToken || !appId) {
-      const error = {
-        code: SmartAccountErrorCode.MpcInitFailed,
-        data: undefined,
-        message: "Expected id token and app id",
-      } as SmartAccountError<undefined>;
-      throw error;
+    const signer = await this.initByIdToken();
+    if (signer) {
+      return signer;
     }
 
-    return this.initByIdToken(appId, idToken, runningEnv, fetch, expirationInterval);
+    const error = {
+      code: SmartAccountErrorCode.BadParams,
+      data: undefined,
+      message: "Expected Id Token or Valid Storage",
+    } as SmartAccountError<undefined>;
+    throw error;
   }
 
-  private async initByStorage(runningEnv: Environment, fetch: Fetch): Promise<MpcSigner> {
+  private async initByStorage(): Promise<MpcSigner | undefined> {
     const mpcInfo = await this.storage?.getMpcSignerInfo();
     if (!mpcInfo) {
-      const error = {
-        code: SmartAccountErrorCode.MpcStorageMissing,
-        data: undefined,
-        message: "MPC storage missed",
-      } as SmartAccountError<undefined>;
-      throw error;
+      return undefined;
     }
     const { userKey, authorization, address } = mpcInfo;
     if (MpcSigner.isAuthorizationExpired(authorization)) {
@@ -99,9 +112,9 @@ export class MpcSigner extends Signer {
       throw error;
     }
 
-    const { unipassServerUrl: mpcServerUrl } = getUnipassServerInfo(runningEnv);
+    const { unipassServerUrl: mpcServerUrl } = getUnipassServerInfo(this.env);
 
-    this.mpcClient = new UnipassClient(mpcServerUrl, fetch);
+    this.unipassClient = new UnipassClient(mpcServerUrl, fetch);
     this.userKey = userKey;
     this.authorization = authorization;
     this.address = address;
@@ -109,79 +122,80 @@ export class MpcSigner extends Signer {
     return this;
   }
 
-  private async initByIdToken(
-    appId: string,
-    idToken: string,
-    runningEnv: Environment,
-    fetch: Fetch,
-    expirationInterval?: string,
-  ): Promise<MpcSigner> {
-    const { unipassServerUrl: mpcServerUrl, chainId, env, rpcUrl: nodeUrl } = getUnipassServerInfo(runningEnv);
-    const mpcClient = new UnipassClient(mpcServerUrl, fetch);
+  private async initByIdToken(): Promise<MpcSigner | undefined> {
+    if (this.idToken) {
+      const { unipassServerUrl: mpcServerUrl, chainId, env, rpcUrl: nodeUrl } = getUnipassServerInfo(this.env);
+      const mpcClient = new UnipassClient(mpcServerUrl, fetch);
 
-    const {
-      web3authConfig: { clientId, verifierName },
-      jwtVerifierIdKey,
-    } = await mpcClient.config(appId, chainId);
-    const web3AuthPrivateKey = await getWeb3AuthPrivateKey(
-      clientId,
-      idToken,
-      verifierName,
-      jwtVerifierIdKey,
-      chainId,
-      env,
-      nodeUrl,
-    );
+      const {
+        web3authConfig: { clientId, verifierName },
+        jwtVerifierIdKey,
+      } = await mpcClient.config(this.appId, chainId);
+      const web3AuthPrivateKey = await getWeb3AuthPrivateKey(
+        clientId,
+        this.idToken,
+        verifierName,
+        jwtVerifierIdKey,
+        chainId,
+        env,
+        nodeUrl,
+      );
 
-    if (!web3AuthPrivateKey) {
-      const error = {
-        code: SmartAccountErrorCode.Web3AuthLoginFailed,
-        message: "Web3Auth Login Failed",
-        data: undefined,
-      } as SmartAccountError<undefined>;
-      throw error;
-    }
+      if (!web3AuthPrivateKey) {
+        const error = {
+          code: SmartAccountErrorCode.Web3AuthLoginFailed,
+          message: "Web3Auth Login Failed",
+          data: undefined,
+        } as SmartAccountError<undefined>;
+        throw error;
+      }
 
-    const web3AuthSig = await MpcSigner.getIdTokenWeb3AuthSig(idToken, web3AuthPrivateKey);
+      const web3AuthSig = await MpcSigner.getIdTokenWeb3AuthSig(this.idToken, web3AuthPrivateKey);
 
-    const { isRegistered, authorization, unipassInfo } = await mpcClient.login(appId, web3AuthSig, expirationInterval);
-    if (isRegistered && unipassInfo) {
-      const { keyset, keystore } = unipassInfo;
-      const userKey = await decryptKeystore(keystore, web3AuthPrivateKey);
-      this.mpcClient = new UnipassClient(mpcServerUrl, fetch);
-      this.userKey = userKey;
-      this.authorization = authorization;
-      this.address = (Keyset.fromJson(keyset).keys[0] as KeySecp256k1).address;
-    } else {
-      const { tssKeyAddress, userKeySignContext } = await tssGenerateKey(authorization, mpcClient);
-      const keystore = await encryptKeystore(toUtf8Bytes(userKeySignContext), web3AuthPrivateKey, {
-        scrypt: { N: 16 },
+      const { isRegistered, authorization, unipassInfo } = await mpcClient.login(
+        this.appId,
+        web3AuthSig,
+        this.authExpirationInterval,
+      );
+      if (isRegistered && unipassInfo) {
+        const { keyset, keystore } = unipassInfo;
+        const userKey = await decryptKeystore(keystore, web3AuthPrivateKey);
+        this.unipassClient = new UnipassClient(mpcServerUrl, fetch);
+        this.userKey = userKey;
+        this.authorization = authorization;
+        this.address = (Keyset.fromJson(keyset).keys[0] as KeySecp256k1).address;
+      } else {
+        const { tssKeyAddress, userKeySignContext } = await tssGenerateKey(authorization, mpcClient);
+        const keystore = await encryptKeystore(toUtf8Bytes(userKeySignContext), web3AuthPrivateKey, {
+          scrypt: { N: 16 },
+        });
+        const masterKey = new KeySecp256k1(tssKeyAddress, DEFAULT_MASTER_KEY_ROLE_WEIGHT, SignType.EthSign);
+        const keyset = new Keyset([masterKey]);
+
+        const { authorization: registerAuthorization } = await mpcClient.register({
+          keysetJson: keyset.toJson(),
+          masterKey: {
+            masterKeyAddress: tssKeyAddress,
+            keystore,
+            keyType: UnipassKeyType.ToBusiness,
+          },
+          web3Auth: web3AuthSig,
+          appId: this.appId,
+        });
+        this.unipassClient = new UnipassClient(mpcServerUrl, fetch);
+        this.userKey = userKeySignContext;
+        this.authorization = registerAuthorization;
+        this.address = masterKey.address;
+      }
+      this.storage?.updateMpcSignerInfo({
+        userKey: this.userKey,
+        authorization: this.authorization,
+        runningEnv: this.env,
+        address: this.address,
       });
-      const masterKey = new KeySecp256k1(tssKeyAddress, DEFAULT_MASTER_KEY_ROLE_WEIGHT, SignType.EthSign);
-      const keyset = new Keyset([masterKey]);
-
-      const { authorization: registerAuthorization } = await mpcClient.register({
-        keysetJson: keyset.toJson(),
-        masterKey: {
-          masterKeyAddress: tssKeyAddress,
-          keystore,
-          keyType: UnipassKeyType.ToBusiness,
-        },
-        web3Auth: web3AuthSig,
-        appId,
-      });
-      this.mpcClient = new UnipassClient(mpcServerUrl, fetch);
-      this.userKey = userKeySignContext;
-      this.authorization = registerAuthorization;
-      this.address = masterKey.address;
+      return this;
     }
-    this.storage?.updateMpcSignerInfo({
-      userKey: this.userKey,
-      authorization: this.authorization,
-      runningEnv,
-      address: this.address,
-    });
-    return this;
+    return undefined;
   }
 
   private static async getIdTokenWeb3AuthSig(idToken: string, web3AuthPrivateKey: string): Promise<Web3AuthSig> {

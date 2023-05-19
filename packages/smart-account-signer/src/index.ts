@@ -1,7 +1,7 @@
-export { LocalMpcStorage } from "./storage";
+export { LocalStorage } from "./storage";
 
 export { MpcSigner } from "./mpcSigner";
 
-export { Web3AuthSigner } from "./web3AuthSigner";
+export { UniPassJwtSigner } from "./unipassJwtSigner";
 
 export * from "./interface";

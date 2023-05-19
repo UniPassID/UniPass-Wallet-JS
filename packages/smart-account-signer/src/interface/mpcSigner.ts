@@ -2,15 +2,11 @@ import { Environment } from "@unipasswallet/smart-account";
 import { Fetch } from "@unipasswallet/smart-account/src/interface/unipassClient";
 import { IStorage } from "./storage";
 
-export type MpcSignerInitOptions = {
+export type MpcSignerOptions = {
+  storage: IStorage;
   idToken?: string;
-  appId?: string;
-  noStorage?: boolean;
+  appId: string;
   fetch?: Fetch;
   env?: Environment;
   expirationInterval?: string;
-};
-
-export type MpcSignerOptions = {
-  storage: IStorage;
 };

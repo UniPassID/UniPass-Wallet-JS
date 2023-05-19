@@ -2,4 +2,4 @@ export * from "./mpcSigner";
 
 export * from "./storage";
 
-export * from "./web3AuthSigner";
+export * from "./unipassJwtSigner";

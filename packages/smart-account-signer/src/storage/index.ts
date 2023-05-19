@@ -1,1 +1,1 @@
-export { LocalMpcStorage } from "./localMpcStorage";
+export { LocalStorage } from "./localStorage";
