@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/smart-account-signer",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -15,7 +15,7 @@
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.7.0",
     "@ethersproject/properties": "^5.7.0",
-    "@unipasswallet/smart-account": "workspace:^0.1.0-alpha.0",
+    "@unipasswallet/smart-account": "workspace:^0.1.0-alpha.1",
     "@unipasswallet/keys": "workspace:^0.3.2",
     "@unipasswallet/utils": "workspace:^0.3.2",
     "@web3auth/base": "^5.2.0",
