@@ -1,6 +1,7 @@
 import Web3Auth from "@web3auth/single-factor-auth";
-import { base64, hexlify, toUtf8String } from "ethers/lib/utils";
+import { hexlify, toUtf8String } from "ethers/lib/utils";
 import { SmartAccountError, SmartAccountErrorCode } from "@unipasswallet/smart-account";
+import base64url from "base64url";
 
 export async function getWeb3AuthPrivateKey(
   clientId: string,
@@ -40,7 +41,7 @@ export async function getWeb3AuthPrivateKey(
 export function getIdTokenSub(idToken: string, subKey: string): string | undefined {
   const payload = idToken.split(".")[1];
   if (payload) {
-    const decodedPayload = JSON.parse(toUtf8String(base64.decode(payload)));
+    const decodedPayload = JSON.parse(base64url.decode(payload));
     return decodedPayload[subKey];
   }
   return undefined;
