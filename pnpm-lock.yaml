@@ -503,6 +503,9 @@ importers:
         specifier: 0.6.0
         version: 0.6.0
     devDependencies:
+      '@changesets/cli':
+        specifier: ^2.24.4
+        version: 2.25.2
       '@jest/types':
         specifier: ^29.0.3
         version: 29.3.1
@@ -536,11 +539,14 @@ importers:
       '@ethersproject/properties':
         specifier: ^5.7.0
         version: 5.7.0
+      '@solana/web3.js':
+        specifier: ^1.76.0
+        version: 1.76.0
       '@unipasswallet/keys':
         specifier: workspace:^0.3.2
         version: link:../keys
       '@unipasswallet/smart-account':
-        specifier: workspace:^0.3.2
+        specifier: workspace:^0.1.0-alpha.2
         version: link:../smart-account
       '@unipasswallet/utils':
         specifier: workspace:^0.3.2
@@ -551,9 +557,6 @@ importers:
       '@web3auth/single-factor-auth':
         specifier: ^5.1.1
         version: 5.1.1(@babel/runtime@7.21.5)(@solana/web3.js@1.76.0)
-      comlink:
-        specifier: ^4.3.1
-        version: 4.3.1
       cross-fetch:
         specifier: ^3.1.6
         version: 3.1.6
@@ -564,6 +567,9 @@ importers:
         specifier: 0.6.0
         version: 0.6.0
     devDependencies:
+      '@changesets/cli':
+        specifier: ^2.24.4
+        version: 2.25.2
       '@jest/types':
         specifier: ^29.0.3
         version: 29.3.1
@@ -1090,7 +1096,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.11
-    dev: false
 
   /@babel/template@7.18.10:
     resolution: {integrity: sha512-TI+rCtooWHr3QJ27kJxfjutghu44DLnasDMwpDqCXVTal9RLp3RSYNh4NdBrRP2cQAoG9A8juOQl6P6oZG4JxA==}
@@ -1193,7 +1198,7 @@ packages:
     resolution: {integrity: sha512-ACScBJXI3kRyMd2R8n8SzfttDHi4tmKSwVwXBazJOylQItSRSF4cGmej2E4FVf/eNfGy6THkL9GzAahU9ErZrA==}
     hasBin: true
     dependencies:
-      '@babel/runtime': 7.20.1
+      '@babel/runtime': 7.21.5
       '@changesets/apply-release-plan': 6.1.2
       '@changesets/assemble-release-plan': 5.2.2
       '@changesets/changelog-git': 0.1.13
@@ -9025,7 +9030,6 @@ packages:
 
   /regenerator-runtime@0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
-    dev: false
 
   /regexp.prototype.flags@1.4.3:
     resolution: {integrity: sha512-fjggEOO3slI6Wvgjwflkc4NFRCTZAu5CnNfBd5qOMYhWdn67nJBBu34/TkD++eeFmd8C9r9jfXJ27+nSiRkSUA==}

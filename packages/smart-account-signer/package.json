@@ -15,12 +15,12 @@
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.7.0",
     "@ethersproject/properties": "^5.7.0",
-    "@unipasswallet/smart-account": "workspace:^0.1.0-alpha.2",
+    "@solana/web3.js": "^1.76.0",
     "@unipasswallet/keys": "workspace:^0.3.2",
+    "@unipasswallet/smart-account": "workspace:^0.1.0-alpha.2",
     "@unipasswallet/utils": "workspace:^0.3.2",
     "@web3auth/base": "^5.2.0",
     "@web3auth/single-factor-auth": "^5.1.1",
-    "comlink": "^4.3.1",
     "cross-fetch": "^3.1.6",
     "ethers": "^5.7.1",
     "tss-wasm": "0.6.0"
