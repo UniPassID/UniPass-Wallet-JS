@@ -1,4 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 importers:
 
@@ -101,7 +105,7 @@ importers:
         version: link:../dkim-base
       dkim:
         specifier: github:zzhengzhuo/node-dkim#next
-        version: github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565
+        version: github.com/zzhengzhuo/node-dkim/4a0f6bb94dd48908277d520d5beac0e63b2d21dc
       ethers:
         specifier: ^5.7.1
         version: 5.7.2
@@ -3776,10 +3780,6 @@ packages:
 
   /dkim-key@1.3.0:
     resolution: {integrity: sha512-19+M28U4pucj6R5OfOBpWjNwUNouQUJBEN/w20MIwOVodF17kDMr03rQxvk0m8V+JRrx3x3DGyexvXgubjo5dw==}
-    dev: false
-
-  /dkim-signature@1.3.0:
-    resolution: {integrity: sha512-/NPCgG9L+k1+QhCWkGO6QlTavFg1AuhutYE197O/TsQb8OrJk52UJMMBL8eHzZ8Ei8SaUVCeoluJJunQrvz5Vg==}
     dev: false
 
   /doctoc@2.2.1:
@@ -9020,11 +9020,17 @@ packages:
       tlds: 1.231.0
     dev: false
 
-  github.com/zzhengzhuo/node-dkim/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565:
-    resolution: {tarball: https://codeload.github.com/zzhengzhuo/node-dkim/tar.gz/ee71cdf5e0b15ef61c7a2da78a2eb2ec49447565}
+  github.com/zzhengzhuo/node-dkim-signature/a2152c680fba6d63fdb1d9bda0fd0d856d1bb063:
+    resolution: {tarball: https://codeload.github.com/zzhengzhuo/node-dkim-signature/tar.gz/a2152c680fba6d63fdb1d9bda0fd0d856d1bb063}
+    name: dkim-signature
+    version: 1.3.0
+    dev: false
+
+  github.com/zzhengzhuo/node-dkim/4a0f6bb94dd48908277d520d5beac0e63b2d21dc:
+    resolution: {tarball: https://codeload.github.com/zzhengzhuo/node-dkim/tar.gz/4a0f6bb94dd48908277d520d5beac0e63b2d21dc}
     name: dkim
     version: 0.7.2
     dependencies:
       dkim-key: 1.3.0
-      dkim-signature: 1.3.0
+      dkim-signature: github.com/zzhengzhuo/node-dkim-signature/a2152c680fba6d63fdb1d9bda0fd0d856d1bb063
     dev: false
