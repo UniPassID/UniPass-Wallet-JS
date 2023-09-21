@@ -1,5 +1,14 @@
 # @unipasswallet/transactions
 
+## 0.2.3
+
+### Patch Changes
+
+- chore: bump dkim signature version
+- Updated dependencies
+  - @unipasswallet/abi@0.2.3
+  - @unipasswallet/utils@0.2.3
+
 ## 0.2.2
 
 ### Patch Changes

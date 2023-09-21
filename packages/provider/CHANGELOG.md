@@ -1,5 +1,20 @@
 # @unipasswallet/provider
 
+## 0.2.3
+
+### Patch Changes
+
+- chore: bump dkim signature version
+- Updated dependencies
+  - @unipasswallet/keys@0.2.3
+  - @unipasswallet/network@0.2.3
+  - @unipasswallet/relayer@0.2.3
+  - @unipasswallet/sdk@0.2.3
+  - @unipasswallet/transaction-builders@0.2.3
+  - @unipasswallet/transactions@0.2.3
+  - @unipasswallet/utils@0.2.3
+  - @unipasswallet/wallet@0.2.3
+
 ## 0.2.2
 
 ### Patch Changes
