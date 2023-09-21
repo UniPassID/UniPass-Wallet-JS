@@ -1,6 +1,6 @@
 {
   "name": "@unipasswallet/deployer",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "main": "dist/index",
   "types": "dist/index",
   "files": [
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@ethereumjs/tx": "^4.0.0",
-    "@unipasswallet/utils": "workspace:^0.3.2",
+    "@unipasswallet/utils": "workspace:^0.3.3",
     "ethers": "^5.7.1"
   },
   "devDependencies": {

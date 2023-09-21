@@ -1,5 +1,11 @@
 # @unipasswallet/abi
 
+## 0.3.3
+
+### Patch Changes
+
+- chore: update dkim signature version
+
 ## 0.3.2
 
 ### Patch Changes
