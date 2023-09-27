@@ -144,7 +144,7 @@ export async function getAddEIP4337HookTransaction(
         ).build();
         txs.push(tx);
 
-        // TODO: if selector == updateEntryPoint, set permission for updateEntryPoint
+        // if selector == updateEntryPoint, set permission for updateEntryPoint
         if (selector === ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint")) {
           const addPermissionTx = new AddPermissionTransactionBuilder(
             true,
