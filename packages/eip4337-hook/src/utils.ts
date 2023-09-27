@@ -1,8 +1,9 @@
 import { UserOperationStruct } from "@account-abstraction/contracts";
-import { KeyERC1271, KeySecp256k1, KeySecp256k1Wallet, Keyset } from "@unipasswallet/keys";
+import { KeyERC1271, KeySecp256k1, KeySecp256k1Wallet, Keyset, RoleWeight } from "@unipasswallet/keys";
 import { Transaction } from "@unipasswallet/transactions";
 import {
   AddHookTransactionBuilder,
+  AddPermissionTransactionBuilder,
   CallTxBuilder,
   RemoveHookTransactionBuilder,
 } from "@unipasswallet/transaction-builders";
@@ -142,6 +143,19 @@ export async function getAddEIP4337HookTransaction(
           constants.Zero,
         ).build();
         txs.push(tx);
+
+        // TODO: if selector == updateEntryPoint, set permission for updateEntryPoint
+        if (selector === ModuleHookEIP4337WalletInterface.getSighash("updateEntryPoint")) {
+          const addPermissionTx = new AddPermissionTransactionBuilder(
+            true,
+            constants.Zero,
+            userAddr,
+            selector,
+            new RoleWeight(100, 100, 0),
+            constants.Zero
+          ).build()
+          txs.push(addPermissionTx)
+        }
       }
       return txs;
     })

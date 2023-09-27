@@ -9,6 +9,8 @@ export enum AccountLayerActionType {
 
 export * from "./addHookTransactionBuilder";
 
+export * from "./addPermissionTransactionBuilder";
+
 export * from "./removeHookTransactionBuilder";
 
 export * from "./updateKeysetHashTxBuilder";
