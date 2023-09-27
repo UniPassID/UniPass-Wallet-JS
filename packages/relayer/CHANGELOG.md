@@ -1,5 +1,17 @@
 # @unipasswallet/relayer
 
+## 0.3.4-alpha.0
+
+### Patch Changes
+
+- append add permission tx for EIP4337 updateEntrypoint
+- Updated dependencies
+  - @unipasswallet/abi@0.3.4-alpha.0
+  - @unipasswallet/keys@0.3.4-alpha.0
+  - @unipasswallet/network@0.3.4-alpha.0
+  - @unipasswallet/transactions@0.3.4-alpha.0
+  - @unipasswallet/utils@0.3.4-alpha.0
+
 ## 0.3.3
 
 ### Patch Changes
